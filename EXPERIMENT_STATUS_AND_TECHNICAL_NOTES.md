@@ -4,6 +4,8 @@ This document is the current dynamic status page for Attention Lab experiments. 
 
 Last updated from pasted local run artifacts: 2026-07-01 UTC.
 
+Latest incremental update: E002 CUDA/data/config validation passed, and `standard_refactor_control_30m_seed1` was observed actively training through step 890. The pasted log does not show completion, checkpoints, eval summaries, or verifier output for that run.
+
 ## Current Bottom Line
 
 E001 now has partial verified-looking full-run artifacts for three 3000-step runs:
@@ -132,13 +134,20 @@ This run matters because it distinguishes “the trilinear code path exists” f
 
 ## E002 Status
 
-E002 currently has at least one partial directory:
+E002 is now further along than the earlier tree snapshot. The latest pasted log shows:
+
+- CUDA environment verified on an RTX 5060 Ti with CUDA 12.8 and BF16 support.
+- FineWeb-Edu 100M train and 4M validation shards were present and manifest verification passed.
+- `validate_experiment.py --id E002_multitrack_qkv_shift_register` passed with 11 configs: 5 runnable, 6 unimplemented, and 4 canonical first-build configs.
+- `standard_refactor_control_30m_seed1` started a real CUDA training run with 29,938,560 model parameters and reached at least step 890 in the pasted output.
+
+This changes E002 status from simply “empty/incomplete directory” to:
 
 ```text
-runs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1
+standard_refactor_control_30m_seed1: running / partial observed, last pasted step 890, not yet complete, not yet verified
 ```
 
-The shown tree indicates it has metadata files, metrics files, empty checkpoints, empty evals, and empty samples. Treat it as incomplete / failed / interrupted until run summaries and verifier output exist.
+Do not call it complete until a run summary, checkpoints, eval artifacts, samples, and `verify_run.py` output exist. The paste does not show step 3000, `ckpt_last.pt`, `run_summary.json`, HellaSwag, generation samples, attention diagnostics, or final verifier output for E002.
 
 E002 should not be interpreted until the canonical first-build runs complete:
 
