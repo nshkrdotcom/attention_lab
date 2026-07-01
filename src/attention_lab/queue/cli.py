@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import signal
@@ -9,6 +10,13 @@ import sys
 from pathlib import Path
 
 from attention_lab.queue.doctor import render_doctor_report, run_doctor
+from attention_lab.queue.gauntlet import (
+    gauntlet_plan,
+    load_gauntlet_policy,
+    render_latest_gauntlet_report,
+    run_gauntlet_once,
+    run_gauntlet_until_blocked_or_complete,
+)
 from attention_lab.queue.leaderboard import render_leaderboard
 from attention_lab.queue.ledger import QueueLedger, hash_config_bytes
 from attention_lab.queue.paths import default_db_path, default_pid_path, ensure_queue_dirs
@@ -20,6 +28,10 @@ from attention_lab.queue.promotion import (
 )
 from attention_lab.queue.reporting import append_decision_log, export_queue_report
 from attention_lab.training.config import load_config
+
+
+def json_dumps(value: object) -> str:
+    return json.dumps(value, indent=2, sort_keys=True)
 
 
 def _open_ledger(args: argparse.Namespace) -> QueueLedger:
@@ -257,6 +269,54 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         ledger.close()
 
 
+def cmd_gauntlet_plan(args: argparse.Namespace) -> None:
+    policy = load_gauntlet_policy(args.policy)
+    if args.experiment != policy.experiment_id:
+        raise SystemExit(f"policy experiment_id is {policy.experiment_id}, not {args.experiment}")
+    plan = gauntlet_plan(policy, repo_root=args.root)
+    print(f"experiment: {plan['experiment_id']}")
+    print(f"control: {plan['control_run_name']}")
+    if plan["missing_prerequisites"]:
+        for missing in plan["missing_prerequisites"]:
+            print(f"MISSING: {missing}")
+    for entry in plan["entries"]:
+        print(f"{entry['run_name']} ({entry['attention_type']})")
+        for config_path in entry["rung_configs"]:
+            print(f"  {config_path}")
+    if not plan["ok"]:
+        raise SystemExit(1)
+
+
+def cmd_gauntlet_run(args: argparse.Namespace) -> None:
+    if args.experiment != load_gauntlet_policy(args.policy).experiment_id:
+        raise SystemExit("policy experiment_id does not match --experiment")
+    ledger = _open_ledger(args)
+    try:
+        if args.once == args.until_blocked:
+            raise SystemExit("choose exactly one of --once or --until-blocked")
+        if args.once:
+            result = run_gauntlet_once(
+                policy_path=args.policy,
+                ledger=ledger,
+                repo_root=args.root,
+                allow_full=args.allow_full,
+            )
+        else:
+            result = run_gauntlet_until_blocked_or_complete(
+                policy_path=args.policy,
+                ledger=ledger,
+                repo_root=args.root,
+                allow_full=args.allow_full,
+            )
+        print(json_dumps(result))
+    finally:
+        ledger.close()
+
+
+def cmd_gauntlet_report(args: argparse.Namespace) -> None:
+    print(render_latest_gauntlet_report(experiment_id=args.experiment, repo_root=args.root), end="")
+
+
 def cmd_start(args: argparse.Namespace) -> None:
     subprocess.Popen(["bash", "scripts/queue_daemon.sh"], cwd=args.root)
     print("queue daemon start requested")
@@ -349,6 +409,23 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = subparsers.add_parser("doctor")
     doctor.add_argument("--experiment", required=True)
     doctor.set_defaults(func=cmd_doctor)
+
+    gauntlet_plan_parser = subparsers.add_parser("gauntlet-plan")
+    gauntlet_plan_parser.add_argument("--experiment", required=True)
+    gauntlet_plan_parser.add_argument("--policy", required=True)
+    gauntlet_plan_parser.set_defaults(func=cmd_gauntlet_plan)
+
+    gauntlet_run = subparsers.add_parser("gauntlet-run")
+    gauntlet_run.add_argument("--experiment", required=True)
+    gauntlet_run.add_argument("--policy", required=True)
+    gauntlet_run.add_argument("--once", action="store_true")
+    gauntlet_run.add_argument("--until-blocked", action="store_true")
+    gauntlet_run.add_argument("--allow-full", action="store_true")
+    gauntlet_run.set_defaults(func=cmd_gauntlet_run)
+
+    gauntlet_report = subparsers.add_parser("gauntlet-report")
+    gauntlet_report.add_argument("--experiment", required=True)
+    gauntlet_report.set_defaults(func=cmd_gauntlet_report)
     return parser
 
 

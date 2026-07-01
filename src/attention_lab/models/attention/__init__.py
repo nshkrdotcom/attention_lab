@@ -1,5 +1,6 @@
 from attention_lab.models.attention.cp_bilinear import CPBilinearCausalSelfAttention
 from attention_lab.models.attention.cp_trilinear import CPTrilinearCausalSelfAttention
+from attention_lab.models.attention.differential_qkv import DifferentialQKVAntiValueCausalSelfAttention
 from attention_lab.models.attention.multi_qkv_common import (
     MultiQKVGlobalBank,
     MultiQKVGlobalCausalSelfAttention,
@@ -13,12 +14,14 @@ from attention_lab.models.attention.multi_qkv_position_rotation import MultiQKVP
 from attention_lab.models.attention.multi_qkv_static import MultiQKVStaticGlobalCausalSelfAttention
 from attention_lab.models.attention.multi_qkv_train_rotation import MultiQKVTrainRotationGlobalCausalSelfAttention
 from attention_lab.models.attention.registry import build_attention
+from attention_lab.models.attention.scope_gated_qkv import ScopeGatedQKVCausalSelfAttention
 from attention_lab.models.attention.standard import StandardCausalSelfAttention
 from attention_lab.models.attention.trilinear_cp import TrilinearCPCausalSelfAttention
 
 __all__ = [
     "CPBilinearCausalSelfAttention",
     "CPTrilinearCausalSelfAttention",
+    "DifferentialQKVAntiValueCausalSelfAttention",
     "MultiQKVPositionRotationGlobalCausalSelfAttention",
     "MultiQKVGlobalBank",
     "MultiQKVGlobalCausalSelfAttention",
@@ -28,6 +31,7 @@ __all__ = [
     "MultiQKVStaticGlobalCausalSelfAttention",
     "MultiQKVTrainRotationGlobalCausalSelfAttention",
     "ScheduleMode",
+    "ScopeGatedQKVCausalSelfAttention",
     "StandardCausalSelfAttention",
     "TrilinearCPCausalSelfAttention",
     "build_attention",

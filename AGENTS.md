@@ -301,6 +301,32 @@ The first-build Multi-QKV interpretation is limited to globally shared, hard-swi
 
 Multi-QKV candidates require mechanism diagnostics. Route behavior must be demonstrated by diagnostics and, after checkpointed runs exist, destructive route tests.
 
+## E003 rules
+
+E003 is:
+
+```text
+E003_qkv_architecture_gauntlet
+```
+
+The first implemented E003 attention types are:
+
+```text
+differential_qkv_anti_value
+scope_gated_qkv
+```
+
+E003 is not an efficiency experiment. Interpret it only as a screen-first architecture gauntlet for feature separation and mechanistic legibility. The gauntlet may advance candidates through `rung020`, `rung150`, and `rung500` only from structured promotion reports, metrics, checkpoints, and nondegenerate diagnostics.
+
+Do not treat generated rung configs, queue readiness, or gauntlet report existence as full-run evidence. Full 3000-step E003 runs still require clean promotion evidence and approval through the queue full-run gate.
+
+Required E003 mechanism checks:
+
+```text
+differential_qkv_activity
+scope_gated_qkv_activity
+```
+
 ## Queue rules
 
 The queue is a thin serial orchestration layer over the existing harness. It must not replace the training, verification, eval, or reporting contracts.
@@ -339,6 +365,9 @@ uv run attn-queue doctor --experiment <EXPERIMENT_ID>
 uv run attn-queue leaderboard --min-stage FULL --sort loss
 uv run attn-queue export-report --experiment <EXPERIMENT_ID>
 uv run attn-queue morning-note --experiment <EXPERIMENT_ID> --shows "..." --not-shows "..." --next "..."
+uv run attn-queue gauntlet-plan --experiment E003_qkv_architecture_gauntlet --policy configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml
+uv run attn-queue gauntlet-run --experiment E003_qkv_architecture_gauntlet --policy configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml --once
+uv run attn-queue gauntlet-report --experiment E003_qkv_architecture_gauntlet
 ```
 
 ## Documentation rules
@@ -369,12 +398,14 @@ uv run pytest
 uv run ruff check .
 uv run scripts/validate_experiment.py --id E001_cp_trilinear_attention
 uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
+uv run scripts/validate_experiment.py --id E003_qkv_architecture_gauntlet
 uv run scripts/verify_data.py \
   --data_root data/fineweb_edu_100m \
   --manifest data/fineweb_edu_100m/manifest.json \
   --verify_hashes
 uv run attn-queue doctor --experiment E001_cp_trilinear_attention
 uv run attn-queue doctor --experiment E002_multitrack_qkv_shift_register
+uv run attn-queue doctor --experiment E003_qkv_architecture_gauntlet
 ```
 
 For targeted implementation work, run the relevant targeted tests first, then the full QC set before commit.

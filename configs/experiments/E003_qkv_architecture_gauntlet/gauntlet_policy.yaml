@@ -1,0 +1,33 @@
+experiment_id: E003_qkv_architecture_gauntlet
+control_run_name: standard_refactor_control_30m_seed1
+
+base_configs:
+  - configs/experiments/E003_qkv_architecture_gauntlet/standard_refactor_control_30m_seed1.yaml
+  - configs/experiments/E003_qkv_architecture_gauntlet/differential_qkv_anti_value_30m_seed1.yaml
+  - configs/experiments/E003_qkv_architecture_gauntlet/scope_gated_qkv_30m_seed1.yaml
+
+rungs:
+  - name: rung020
+    max_steps: 20
+    val_every: 10
+    save_every: 20
+    diagnostics_every: 10
+  - name: rung150
+    max_steps: 150
+    val_every: 50
+    save_every: 150
+    diagnostics_every: 50
+  - name: rung500
+    max_steps: 500
+    val_every: 100
+    save_every: 500
+    diagnostics_every: 100
+
+gates:
+  require_loss_descended: true
+  require_checkpoint: true
+  require_mechanism_active: true
+  max_loss_ratio_vs_control: 1.20
+  min_speed_ratio_vs_control: 0.20
+  max_vram_ratio_vs_control: 2.75
+  require_no_nan_or_inf: true

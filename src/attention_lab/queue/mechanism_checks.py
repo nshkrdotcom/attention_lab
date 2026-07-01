@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,10 @@ def mechanism_check_name(attention_type: str, queue_config: dict[str, Any] | Non
         return None
     if attention_type in {"cp_bilinear", "cp_trilinear"}:
         return "cp_gradient_norm"
+    if attention_type == "differential_qkv_anti_value":
+        return "differential_qkv_activity"
+    if attention_type == "scope_gated_qkv":
+        return "scope_gated_qkv_activity"
     if attention_type.startswith(QKV_FAMILY_PREFIXES):
         return "qkv_track_activity"
     return None
@@ -72,6 +77,10 @@ def evaluate_mechanism_activity(
 
     if check_name == "cp_gradient_norm":
         return _check_cp_gradient_norm(rows, threshold)
+    if check_name == "differential_qkv_activity":
+        return _check_differential_qkv_activity(rows, threshold)
+    if check_name == "scope_gated_qkv_activity":
+        return _check_scope_gated_qkv_activity(rows, threshold)
     if check_name == "qkv_track_activity":
         return _check_qkv_track_activity(rows, threshold, attention_type=attention_type)
     return MechanismCheckResult(None, f"unknown mechanism_check={check_name}")
@@ -89,6 +98,76 @@ def _check_cp_gradient_norm(rows: list[dict[str, Any]], threshold: float) -> Mec
     if saw_value:
         return MechanismCheckResult(False, "cp_gradient_norm never exceeded threshold", {"rows_seen": len(rows)})
     return MechanismCheckResult(None, "diagnostics did not contain cp_gradient_norm", {"rows_seen": len(rows)})
+
+
+def _check_differential_qkv_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
+    qkv_rows = [row for row in rows if row.get("attention_type") == "differential_qkv_anti_value"]
+    if not qkv_rows:
+        return MechanismCheckResult(None, "diagnostics did not contain differential_qkv_anti_value rows", {"rows_seen": len(rows)})
+
+    pos_values = _finite_values(qkv_rows, "pos_output_norm")
+    neg_values = _finite_values(qkv_rows, "neg_output_norm")
+    delta_values = _finite_values(qkv_rows, "branch_output_delta")
+    lambda_values = _finite_values(qkv_rows, "diff_lambda")
+    details = {
+        "rows_seen": len(qkv_rows),
+        "pos_output_norm_max": max(pos_values) if pos_values else None,
+        "neg_output_norm_max": max(neg_values) if neg_values else None,
+        "branch_output_delta_max": max(delta_values) if delta_values else None,
+        "diff_lambda_min": min(lambda_values) if lambda_values else None,
+        "diff_lambda_max": max(lambda_values) if lambda_values else None,
+        "threshold": threshold,
+    }
+    failures = []
+    if not any(value > threshold for value in pos_values):
+        failures.append("pos_output_norm never exceeded threshold")
+    if not any(value > threshold for value in neg_values):
+        failures.append("neg_output_norm never exceeded threshold")
+    if not any(value > threshold for value in delta_values):
+        failures.append("branch_output_delta never exceeded threshold")
+    if not lambda_values:
+        failures.append("diff_lambda was missing or non-finite")
+    elif not all(value > 0.0 for value in lambda_values):
+        failures.append("diff_lambda was not finite and positive in every row")
+    if failures:
+        return MechanismCheckResult(False, "; ".join(failures), details)
+    return MechanismCheckResult(True, "differential_qkv_activity passed", details)
+
+
+def _check_scope_gated_qkv_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
+    qkv_rows = [row for row in rows if row.get("attention_type") == "scope_gated_qkv"]
+    if not qkv_rows:
+        return MechanismCheckResult(None, "diagnostics did not contain scope_gated_qkv rows", {"rows_seen": len(rows)})
+
+    scope_values = _finite_values(qkv_rows, "scope_output_norm")
+    content_values = _finite_values(qkv_rows, "content_output_norm")
+    interaction_values = _finite_values(qkv_rows, "scope_content_interaction_norm")
+    gate_means = _finite_values(qkv_rows, "gate_mean")
+    gate_stds = _finite_values(qkv_rows, "gate_std")
+    details = {
+        "rows_seen": len(qkv_rows),
+        "scope_output_norm_max": max(scope_values) if scope_values else None,
+        "content_output_norm_max": max(content_values) if content_values else None,
+        "scope_content_interaction_norm_max": max(interaction_values) if interaction_values else None,
+        "gate_mean_min": min(gate_means) if gate_means else None,
+        "gate_mean_max": max(gate_means) if gate_means else None,
+        "gate_std_max": max(gate_stds) if gate_stds else None,
+        "threshold": threshold,
+    }
+    failures = []
+    if not any(value > threshold for value in scope_values):
+        failures.append("scope_output_norm never exceeded threshold")
+    if not any(value > threshold for value in content_values):
+        failures.append("content_output_norm never exceeded threshold")
+    if not any(value > threshold for value in interaction_values):
+        failures.append("scope_content_interaction_norm never exceeded threshold")
+    if not gate_means:
+        failures.append("gate_mean was missing or non-finite")
+    elif not all(0.0 < value < 1.0 for value in gate_means):
+        failures.append("gate_mean was saturated to exactly 0 or 1")
+    if failures:
+        return MechanismCheckResult(False, "; ".join(failures), details)
+    return MechanismCheckResult(True, "scope_gated_qkv_activity passed", details)
 
 
 def _check_qkv_track_activity(
@@ -293,6 +372,21 @@ def _as_float(value: Any) -> float | None:
     if value is None:
         return None
     return float(value)
+
+
+def _finite_values(rows: list[dict[str, Any]], key: str) -> list[float]:
+    values = []
+    for row in rows:
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(parsed):
+            values.append(parsed)
+    return values
 
 
 def _max_nested_float(value: Any) -> float | None:

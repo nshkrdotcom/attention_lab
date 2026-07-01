@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +19,12 @@ MULTI_QKV_ROUTE_FORMULAS = {
     "multi_qkv_train_rotation_3track_global": "layer_plus_step_train_layer_eval",
     "multi_qkv_position_rotation_3track_global": "layer_plus_position",
 }
-IMPLEMENTED_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear"} | MULTI_QKV_ATTENTION_TYPES
-KNOWN_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear", "trilinear_cp"} | MULTI_QKV_ATTENTION_TYPES
+QKV_ATTENTION_TYPES = {
+    "differential_qkv_anti_value",
+    "scope_gated_qkv",
+}
+IMPLEMENTED_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear"} | MULTI_QKV_ATTENTION_TYPES | QKV_ATTENTION_TYPES
+KNOWN_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear", "trilinear_cp"} | MULTI_QKV_ATTENTION_TYPES | QKV_ATTENTION_TYPES
 DTYPES = {"bfloat16", "float16", "float32"}
 EXPERIMENTAL_UNIMPLEMENTED_STATUS = "experimental_unimplemented"
 RUN_KEYS = {"name", "out_dir", "seed"}
@@ -53,7 +58,12 @@ SAMPLE_KEYS = {
     "seed",
 }
 DIAGNOSTICS_KEYS = {"attention_diagnostics_every"}
-MECHANISM_CHECKS = {"cp_gradient_norm", "qkv_track_activity"}
+MECHANISM_CHECKS = {
+    "cp_gradient_norm",
+    "qkv_track_activity",
+    "differential_qkv_activity",
+    "scope_gated_qkv_activity",
+}
 QUEUE_KEYS = {
     "requires_run",
     "hypothesis_doc",
@@ -186,6 +196,20 @@ def validate_config(
         expected_route = MULTI_QKV_ROUTE_FORMULAS[attention_type]
         if route_formula != expected_route:
             raise ValueError(f"model.qkv_route_formula must be {expected_route!r} for {attention_type}")
+    if attention_type == "differential_qkv_anti_value":
+        lambda_init = model.get("diff_qkv_lambda_init", 0.5)
+        if isinstance(lambda_init, bool) or not isinstance(lambda_init, (int, float)) or not math.isfinite(float(lambda_init)):
+            raise ValueError("model.diff_qkv_lambda_init must be finite numeric")
+        if float(lambda_init) < 0.0:
+            raise ValueError("model.diff_qkv_lambda_init must be nonnegative")
+        for key in ("diff_qkv_lambda_trainable", "diff_qkv_share_value"):
+            if not isinstance(model.get(key, GPTConfig.__dataclass_fields__[key].default), bool):
+                raise ValueError(f"model.{key} must be a boolean")
+    if attention_type == "scope_gated_qkv":
+        for key in ("scope_gate_bias_init", "scope_stream_scale_init"):
+            value = model.get(key, GPTConfig.__dataclass_fields__[key].default)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                raise ValueError(f"model.{key} must be finite numeric")
 
     block_size = _require_positive_int(model, "block_size", "model.block_size")
     n_layer = _require_positive_int(model, "n_layer", "model.n_layer")

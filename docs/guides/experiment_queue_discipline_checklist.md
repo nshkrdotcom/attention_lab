@@ -66,6 +66,8 @@ Completed in this implementation pass:
 - [x] Passed screens enter `PROMOTION_CANDIDATE` instead of executable `FULL`.
 - [x] Screen promotion reports are generated under `reports/.../promotion/`.
 - [x] `attn-queue approve` is promotion-report-gated.
+- [x] E003 staged gauntlet added for policy-based screen rung generation, scoring,
+  advancement, and reporting.
 - [x] Watchdog full-run readiness requires clean promotion evidence.
 - [x] E001 hypothesis templates added without approving any run.
 - [x] End-to-end fake queue dry-run test added without launching training.
@@ -588,6 +590,14 @@ Command checklist:
   - [ ] Writes queue `run_index.json` and `run_index.md`.
 - [ ] `attn-queue morning-note --experiment <EXPERIMENT_ID> --shows ... --not-shows ... --next ...`
   - [ ] Appends to `decision_log.md`.
+- [ ] `attn-queue gauntlet-plan --experiment <EXPERIMENT_ID> --policy <POLICY>`
+  - [ ] Prints intended rung configs and missing prerequisites without launching training.
+- [ ] `attn-queue gauntlet-run --experiment <EXPERIMENT_ID> --policy <POLICY> --once`
+  - [ ] Performs one safe scheduling, screening, or decision step.
+- [ ] `attn-queue gauntlet-run --experiment <EXPERIMENT_ID> --policy <POLICY> --until-blocked`
+  - [ ] Repeats serial safe steps until no automatic action remains.
+- [ ] `attn-queue gauntlet-report --experiment <EXPERIMENT_ID>`
+  - [ ] Renders the latest gauntlet machine decisions.
 
 TDD checks:
 
@@ -901,6 +911,17 @@ Before adding this field:
 - [ ] Add tests for `requires_run` gating.
 - [ ] Add docs explaining queue fields are orchestration metadata, not model/training
   behavior.
+
+For E003 gauntlets, the policy file lives beside base configs but is not a training
+config:
+
+```text
+configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml
+```
+
+Rung configs are generated from base configs and are executed as `SCREEN` jobs. Do
+not commit generated run artifacts. Do not treat `ready_for_manual_full_promotion`
+as full-run approval.
 
 ## Phase 16 - TDD And QC Gates
 

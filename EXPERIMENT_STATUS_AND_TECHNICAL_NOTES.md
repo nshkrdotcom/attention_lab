@@ -165,6 +165,31 @@ runs/experiments/E002_multitrack_qkv_shift_register/<run_name>/evals/attention_d
 runs/experiments/E002_multitrack_qkv_shift_register/<run_name>/evals/qkv_track_destructive_test.json
 ```
 
+## E003 Status
+
+E003 has been added as:
+
+```text
+E003_qkv_architecture_gauntlet
+```
+
+Current implementation status:
+
+- `differential_qkv_anti_value` is implemented and registered.
+- `scope_gated_qkv` is implemented and registered.
+- Both variants emit attention diagnostics.
+- Queue mechanism checks exist for `differential_qkv_activity` and `scope_gated_qkv_activity`.
+- Base configs and gauntlet policy exist under `configs/experiments/E003_qkv_architecture_gauntlet/`.
+- The gauntlet CLI can plan, run one safe action, run until blocked, and render reports.
+
+Evidence status:
+
+```text
+implemented_not_run
+```
+
+No E003 screen or full training result is claimed in this status note. A gauntlet report is advancement metadata only until backed by actual screen artifacts. A full-run claim requires the same train/eval/summarize/verify boundary as E001/E002.
+
 ## What To Do Next
 
 1. Regenerate E001 comparison artifacts from actual run directories.
@@ -175,6 +200,7 @@ runs/experiments/E002_multitrack_qkv_shift_register/<run_name>/evals/qkv_track_d
 4. Update E001 results and run index after verification.
 5. Only then decide whether E001 merits replication seeds or a tighter diagnostic follow-up.
 6. Do not proceed to E002 scientific interpretation until E002 has complete run summaries, diagnostics, destructive tests, and verifier passes.
+7. For E003, run the gauntlet only after CUDA, data verification, and experiment validation pass.
 
 ## Suggested Report Regeneration Command
 
@@ -196,4 +222,3 @@ cat \
 - `incomplete / failed / interrupted`: a run directory exists but required checkpoints, evals, summaries, or samples are missing.
 - `not observed as completed`: no completed run summary was provided.
 - `stale report`: a checked-in or generated report contradicts newer local artifacts.
-

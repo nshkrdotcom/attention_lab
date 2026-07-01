@@ -60,7 +60,8 @@ def run_doctor(
         else:
             _fail(messages, f"{label} missing: {path}")
 
-    configs = _load_experiment_configs(config_dir, messages)
+    non_run_config_names = _non_run_config_names(experiment)
+    configs = _load_experiment_configs(config_dir, messages, non_run_config_names=non_run_config_names)
     _check_run_dirs(configs, messages)
     _check_configs(configs, messages)
     _check_ledger_approval(configs, ledger, messages)
@@ -80,11 +81,20 @@ def render_doctor_report(report: DoctorReport) -> str:
     return "\n".join(f"{message.level}: {message.text}" for message in report.messages) + "\n"
 
 
-def _load_experiment_configs(config_dir: Path, messages: list[DoctorMessage]) -> list[tuple[Path, dict[str, Any]]]:
+def _load_experiment_configs(
+    config_dir: Path,
+    messages: list[DoctorMessage],
+    *,
+    non_run_config_names: set[str] | None = None,
+) -> list[tuple[Path, dict[str, Any]]]:
     configs = []
+    non_run_config_names = non_run_config_names or set()
     if not config_dir.exists():
         return configs
     for config_path in sorted(config_dir.glob("*.yaml")):
+        if config_path.name in non_run_config_names:
+            _ok(messages, f"non-run config skipped: {config_path}")
+            continue
         try:
             config = load_yaml(config_path)
         except Exception as exc:  # noqa: BLE001
@@ -96,6 +106,15 @@ def _load_experiment_configs(config_dir: Path, messages: list[DoctorMessage]) ->
     else:
         _fail(messages, f"no configs found in {config_dir}")
     return configs
+
+
+def _non_run_config_names(experiment: dict[str, Any]) -> set[str]:
+    names: set[str] = set()
+    for key in ("policy_configs", "non_run_config_files"):
+        values = experiment.get(key) or []
+        if isinstance(values, list):
+            names.update(str(value) for value in values)
+    return names
 
 
 def _check_run_dirs(configs: list[tuple[Path, dict[str, Any]]], messages: list[DoctorMessage]) -> None:

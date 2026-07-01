@@ -69,6 +69,13 @@ def _manifest_config_names(experiment: dict[str, Any], key: str) -> list[str]:
     return values
 
 
+def _non_run_config_names(experiment: dict[str, Any]) -> list[str]:
+    names = []
+    for key in ("policy_configs", "non_run_config_files"):
+        names.extend(_manifest_config_names(experiment, key))
+    return names
+
+
 def validate_experiment(experiment_id: str) -> dict[str, Any]:
     experiment = get_experiment(experiment_id)
     validate_experiment_entry(experiment)
@@ -87,9 +94,13 @@ def validate_experiment(experiment_id: str) -> dict[str, Any]:
         if not path.exists():
             raise ExperimentValidationError(f"Missing {label}: {path}")
 
-    config_paths = sorted(config_dir.glob("*.yaml"))
+    non_run_config_names = _non_run_config_names(experiment)
+    config_paths = sorted(path for path in config_dir.glob("*.yaml") if path.name not in set(non_run_config_names))
     if not config_paths:
         raise ExperimentValidationError(f"No YAML configs found in {config_dir}")
+    for name in non_run_config_names:
+        if not (config_dir / name).exists():
+            raise ExperimentValidationError(f"Missing non-run config file: {config_dir / name}")
 
     canonical_first_build_configs = _manifest_config_names(experiment, "canonical_first_build_configs")
     legacy_or_auxiliary_runnable_configs = _manifest_config_names(
@@ -168,6 +179,7 @@ def validate_experiment(experiment_id: str) -> dict[str, Any]:
         "unimplemented_config_count": len(unimplemented),
         "canonical_first_build_config_count": len(canonical_first_build_configs),
         "legacy_or_auxiliary_runnable_config_count": len(legacy_or_auxiliary_runnable_configs),
+        "non_run_config_count": len(non_run_config_names),
         "canonical_first_build_configs": canonical_first_build_configs,
         "legacy_or_auxiliary_runnable_configs": legacy_or_auxiliary_runnable_configs,
         "baseline_summary_checked": baseline_summary_checked,

@@ -32,6 +32,11 @@ class GPTConfig:
     qkv_route_formula: str | None = None
     multi_qkv_track_count: int = 3
     multi_qkv_global: bool = True
+    diff_qkv_lambda_init: float = 0.5
+    diff_qkv_lambda_trainable: bool = True
+    diff_qkv_share_value: bool = False
+    scope_gate_bias_init: float = 0.0
+    scope_stream_scale_init: float = 1.0
 
 
 def config_from_dict(model_config: dict[str, Any], data_config: dict[str, Any] | None = None) -> GPTConfig:

@@ -26,3 +26,19 @@ experiments:
       - multi_qkv_position_rotation_3track_global_30m_seed1.yaml
     legacy_or_auxiliary_runnable_configs:
       - standard_30m_seed1.yaml
+  - id: E003_qkv_architecture_gauntlet
+    status: planned
+    plan: docs/experiments/E003_qkv_architecture_gauntlet_plan.md
+    config_dir: configs/experiments/E003_qkv_architecture_gauntlet
+    run_dir: runs/experiments/E003_qkv_architecture_gauntlet
+    report_dir: reports/experiments/E003_qkv_architecture_gauntlet
+    baseline_config: configs/experiments/E003_qkv_architecture_gauntlet/standard_refactor_control_30m_seed1.yaml
+    baseline_reference_run: runs/baseline_15m_fineweb100m_seed1
+    accurate_baseline_alias: configs/baseline_30m_fineweb100m.yaml
+    dataset_manifest: data/fineweb_edu_100m/manifest.json
+    canonical_first_build_configs:
+      - standard_refactor_control_30m_seed1.yaml
+      - differential_qkv_anti_value_30m_seed1.yaml
+      - scope_gated_qkv_30m_seed1.yaml
+    policy_configs:
+      - gauntlet_policy.yaml

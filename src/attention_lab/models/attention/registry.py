@@ -1,9 +1,11 @@
 from attention_lab.models.attention.cp_bilinear import CPBilinearCausalSelfAttention
 from attention_lab.models.attention.cp_trilinear import CPTrilinearCausalSelfAttention
+from attention_lab.models.attention.differential_qkv import DifferentialQKVAntiValueCausalSelfAttention
 from attention_lab.models.attention.multi_qkv_common import MultiQKVGlobalBank
 from attention_lab.models.attention.multi_qkv_position_rotation import MultiQKVPositionRotationGlobalCausalSelfAttention
 from attention_lab.models.attention.multi_qkv_static import MultiQKVStaticGlobalCausalSelfAttention
 from attention_lab.models.attention.multi_qkv_train_rotation import MultiQKVTrainRotationGlobalCausalSelfAttention
+from attention_lab.models.attention.scope_gated_qkv import ScopeGatedQKVCausalSelfAttention
 from attention_lab.models.attention.standard import StandardCausalSelfAttention
 from attention_lab.models.attention.trilinear_cp import TrilinearCPCausalSelfAttention
 
@@ -25,6 +27,10 @@ def build_attention(
         return CPBilinearCausalSelfAttention(config)
     if attention_type == "cp_trilinear":
         return CPTrilinearCausalSelfAttention(config)
+    if attention_type == "differential_qkv_anti_value":
+        return DifferentialQKVAntiValueCausalSelfAttention(config)
+    if attention_type == "scope_gated_qkv":
+        return ScopeGatedQKVCausalSelfAttention(config)
     if attention_type == "multi_qkv_static_3track_global":
         if layer_idx is None or bank is None:
             raise ValueError("multi_qkv_static_3track_global requires layer_idx and qkv_bank")

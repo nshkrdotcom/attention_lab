@@ -54,7 +54,19 @@
     "layer_idx": { "type": ["integer", "null"], "minimum": 0 },
     "position_routing_enabled": { "type": ["boolean", "null"] },
     "eval_freeze_mode": { "type": ["boolean", "null"] },
-    "track_output_delta": { "type": ["number", "null"] }
+    "track_output_delta": { "type": ["number", "null"] },
+    "diff_lambda": { "type": ["number", "null"] },
+    "pos_output_norm": { "type": ["number", "null"] },
+    "neg_output_norm": { "type": ["number", "null"] },
+    "neg_to_pos_output_norm_ratio": { "type": ["number", "null"] },
+    "branch_output_delta": { "type": ["number", "null"] },
+    "content_output_norm": { "type": ["number", "null"] },
+    "scope_output_norm": { "type": ["number", "null"] },
+    "scope_to_content_norm_ratio": { "type": ["number", "null"] },
+    "gate_mean": { "type": ["number", "null"] },
+    "gate_std": { "type": ["number", "null"] },
+    "scope_content_interaction_norm": { "type": ["number", "null"] },
+    "scope_stream_scale": { "type": ["number", "null"] }
   },
   "additionalProperties": true
 }
