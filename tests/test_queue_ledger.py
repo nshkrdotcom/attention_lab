@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+from pathlib import Path
 
 from attention_lab.queue.ledger import QueueLedger, hash_config_bytes
 from attention_lab.queue.paths import ensure_queue_dirs
@@ -112,6 +114,26 @@ def test_ledger_schema_insert_deduplicate_and_list(tmp_path, tiny_config):
     assert rows[0]["allow_overwrite_existing_run_dir"] == 0
 
 
+def test_sanity_stage_is_not_screen_until_explicit_advance(tmp_path, tiny_config):
+    ledger = QueueLedger(tmp_path / "queue.db")
+    ledger.initialize()
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config_path = tmp_path / "sanity.yaml"
+    content = b"sanity"
+    config_path.write_bytes(content)
+    run_id = ledger.enqueue_config(config_path, config, content, stage="SANITY")
+
+    row = ledger.get_run(run_id)
+    assert row["stage"] == "SANITY"
+    assert ledger.get_pending_screens() == []
+
+    ledger.advance_sanity_to_screen(run_id)
+    row = ledger.get_run(run_id)
+    assert row["stage"] == "SCREEN"
+    assert row["status"] == "PENDING"
+    assert ledger.get_pending_screens()[0]["id"] == run_id
+
+
 def test_ledger_approval_and_run_dir_collision(tmp_path, tiny_config):
     ledger = QueueLedger(tmp_path / "queue.db")
     ledger.initialize()
@@ -122,8 +144,12 @@ def test_ledger_approval_and_run_dir_collision(tmp_path, tiny_config):
     second.write_text("second", encoding="utf-8")
     run_id = ledger.enqueue_config(first, config, b"first")
 
-    ledger.set_full_run_approved(run_id, True)
-    assert ledger.get_run(run_id)["full_run_approved"] == 1
+    try:
+        ledger.set_full_run_approved(run_id, True)
+    except ValueError as exc:
+        assert "direct full-run approval is disabled" in str(exc)
+    else:
+        raise AssertionError("direct full-run approval was accepted")
     ledger.set_full_run_approved(run_id, False)
     assert ledger.get_run(run_id)["full_run_approved"] == 0
 
@@ -163,7 +189,11 @@ def test_ledger_notes_requeue_baseline_and_interrupted_reset(tmp_path, tiny_conf
     ledger.update_notes(run_id, "SHOWS: nothing yet")
     assert ledger.get_run(run_id)["notes"] == "SHOWS: nothing yet"
 
-    ledger.promote_to_full(run_id)
+    ledger.mark_promotion_candidate(run_id)
+    report_path = tmp_path / "promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
+    ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
+    ledger.approve_full_run(run_id)
     ledger.mark_failed(run_id, failure_class="NAN", notes="nan observed")
     ledger.requeue(run_id)
     row = ledger.get_run(run_id)
@@ -177,6 +207,43 @@ def test_ledger_notes_requeue_baseline_and_interrupted_reset(tmp_path, tiny_conf
     ledger.mark_started(run_id)
     ledger.reset_interrupted()
     assert ledger.get_run(run_id)["status"] == "PENDING"
+
+
+def test_ledger_approval_requires_clean_promotion_report(tmp_path, tiny_config):
+    ledger = QueueLedger(tmp_path / "queue.db")
+    ledger.initialize()
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config_path = tmp_path / "candidate.yaml"
+    config_path.write_bytes(b"candidate")
+    run_id = ledger.enqueue_config(config_path, config, b"candidate")
+    ledger.mark_promotion_candidate(run_id)
+
+    try:
+        ledger.approve_full_run(run_id)
+    except ValueError as exc:
+        assert "promotion report missing" in str(exc)
+    else:
+        raise AssertionError("approval without promotion report was accepted")
+
+    report_path = tmp_path / "promotion.json"
+    report = _clean_promotion_report(ledger.get_run(run_id), config)
+    report["promotion_blockers"] = ["manual blocker"]
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    ledger.record_promotion_report(run_id, report_path, report)
+    try:
+        ledger.approve_full_run(run_id)
+    except ValueError as exc:
+        assert "manual blocker" in str(exc)
+    else:
+        raise AssertionError("approval with blockers was accepted")
+
+    report["promotion_blockers"] = []
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    ledger.record_promotion_report(run_id, report_path, report)
+    ledger.approve_full_run(run_id)
+    approved = ledger.get_run(run_id)
+    assert approved["stage"] == "FULL"
+    assert approved["full_run_approved"] == 1
 
 
 def test_scan_inbox_validates_and_skips_bad_configs(tmp_path, tiny_config):
@@ -242,3 +309,54 @@ def test_queue_full_pending_state_transition(tmp_path):
     assert failed_path.exists()
     assert not pending_path.exists()
     assert not active_path.exists()
+
+
+def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
+    path.write_text(json.dumps(_clean_promotion_report(row, config)), encoding="utf-8")
+
+
+def _clean_promotion_report(row: dict, config: dict) -> dict:
+    return {
+        "schema_version": 1,
+        "experiment_id": None,
+        "run_id": row["id"],
+        "run_name": config["run"]["name"],
+        "config_path": str(row["config_path"]),
+        "screen_config_path": "screen_config.yaml",
+        "resolved_config_path": "resolved_config.yaml",
+        "screen_run_dir": "runs/screen/test",
+        "source_config_hash": None,
+        "attention_type": config["model"].get("attention_type", "standard"),
+        "stage": "SCREEN",
+        "max_step_reached": 150,
+        "expected_screen_steps": 150,
+        "loss_descended": True,
+        "nan_or_inf_seen": False,
+        "final_screen_train_loss": 4.0,
+        "final_screen_val_loss": 4.0,
+        "final_screen_loss": 4.0,
+        "first_val_loss": 5.0,
+        "final_val_loss": 4.0,
+        "median_tokens_per_sec": 100.0,
+        "peak_vram_mb": None,
+        "peak_vram_allocated_mb": None,
+        "diagnostics_present": config["model"].get("attention_type", "standard") != "standard",
+        "diagnostics_non_degenerate": config["model"].get("attention_type", "standard") != "standard",
+        "mechanism_check_name": None,
+        "mechanism_check_passed": None,
+        "mechanism_active": None if config["model"].get("attention_type", "standard") == "standard" else True,
+        "mechanism_activity_summary": {},
+        "checkpoint_present": True,
+        "train_points_seen": 2,
+        "eval_points_seen": 2,
+        "destructive_test_present": False,
+        "destructive_test_effect_summary": None,
+        "destructive_test_command_failed": False,
+        "destructive_test_failure_summary": None,
+        "promotion_recommendation": "promote",
+        "promotion_blockers": [],
+        "promotion_reason": "test report",
+        "created_at": "2026-07-01T00:00:00+00:00",
+        "source_git_commit": None,
+        "source_dirty": False,
+    }

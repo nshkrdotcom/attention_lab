@@ -34,7 +34,12 @@ def test_export_queue_report_writes_json_and_markdown(tmp_path, tiny_config, mon
     e001_path = tmp_path / "standard.yaml"
     e001_path.write_text(yaml.safe_dump(e001_config), encoding="utf-8")
     run_id = ledger.enqueue_config(e001_path, e001_config, e001_path.read_bytes())
-    ledger.promote_to_full(run_id)
+    ledger.mark_promotion_candidate(run_id)
+    report_path = tmp_path / "promotion.json"
+    report = _clean_promotion_report(ledger.get_run(run_id), e001_config)
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    ledger.record_promotion_report(run_id, report_path, report)
+    ledger.approve_full_run(run_id)
     ledger.mark_passed(
         run_id,
         step_reached=3000,
@@ -141,3 +146,50 @@ def test_morning_note_creates_and_appends(tmp_path, monkeypatch):
         assert "nonempty" in str(exc)
     else:
         raise AssertionError("empty morning-note field was accepted")
+
+
+def _clean_promotion_report(row: dict, config: dict) -> dict:
+    return {
+        "schema_version": 1,
+        "experiment_id": None,
+        "run_id": row["id"],
+        "run_name": config["run"]["name"],
+        "config_path": str(row["config_path"]),
+        "screen_config_path": "screen_config.yaml",
+        "resolved_config_path": "resolved_config.yaml",
+        "screen_run_dir": "runs/screen/test",
+        "source_config_hash": None,
+        "attention_type": config["model"].get("attention_type", "standard"),
+        "stage": "SCREEN",
+        "max_step_reached": 150,
+        "expected_screen_steps": 150,
+        "loss_descended": True,
+        "nan_or_inf_seen": False,
+        "final_screen_train_loss": 4.0,
+        "final_screen_val_loss": 4.0,
+        "final_screen_loss": 4.0,
+        "first_val_loss": 5.0,
+        "final_val_loss": 4.0,
+        "median_tokens_per_sec": 100.0,
+        "peak_vram_mb": None,
+        "peak_vram_allocated_mb": None,
+        "diagnostics_present": False,
+        "diagnostics_non_degenerate": False,
+        "mechanism_check_name": None,
+        "mechanism_check_passed": None,
+        "mechanism_active": None,
+        "mechanism_activity_summary": {},
+        "checkpoint_present": True,
+        "train_points_seen": 2,
+        "eval_points_seen": 2,
+        "destructive_test_present": False,
+        "destructive_test_effect_summary": None,
+        "destructive_test_command_failed": False,
+        "destructive_test_failure_summary": None,
+        "promotion_recommendation": "promote",
+        "promotion_blockers": [],
+        "promotion_reason": "test report",
+        "created_at": "2026-07-01T00:00:00+00:00",
+        "source_git_commit": None,
+        "source_dirty": False,
+    }

@@ -320,7 +320,7 @@ Queue safety requirements:
 - Existing run directories are protected by default.
 - Do not set `queue.allow_overwrite_existing_run_dir: true` casually.
 - Non-standard full runs require a passed `queue.requires_run` control unless `queue.skip_control_check: true` is explicitly documented.
-- Non-standard screen promotion requires mechanism diagnostics unless `queue.allow_missing_diagnostics: true` is explicitly documented.
+- Non-standard screen promotion requires non-degenerate mechanism diagnostics. `queue.allow_missing_diagnostics: true` is an auditable exception that produces `needs_investigation`, not a clean approval.
 - Do not interpret validation loss without required diagnostics.
 - Do not treat queue readiness or script existence as evidence.
 - The queue daemon is single-GPU and serial. Do not make it concurrent without a new design and tests.

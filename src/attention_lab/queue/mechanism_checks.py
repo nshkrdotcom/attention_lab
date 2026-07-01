@@ -231,6 +231,7 @@ def _check_static_qkv_rows(rows: list[dict[str, Any]]) -> str | None:
 def _check_train_rotation_qkv_rows(rows: list[dict[str, Any]]) -> str | None:
     train_steps: set[int] = set()
     tracks_by_layer: dict[int, set[int]] = {}
+    saw_eval_or_generate = False
     for row in rows:
         route = str(row.get("route_formula", ""))
         if "layer_idx + step" not in route or "eval/generate" not in route:
@@ -252,8 +253,13 @@ def _check_train_rotation_qkv_rows(rows: list[dict[str, Any]]) -> str | None:
             train_steps.add(int(row["last_forward_step"]))
             tracks_by_layer.setdefault(layer_idx, set()).add(int(active_track))
         elif row.get("schedule_mode") in {"eval", "generate"}:
+            saw_eval_or_generate = True
             if int(active_track) != layer_idx % 3:
                 return "train-rotation eval/generate row did not freeze to layer_idx % track_count"
+    if len(train_steps) < 2:
+        return "train rotation did not show multiple training steps"
+    if not saw_eval_or_generate:
+        return "train rotation did not include eval/generate freeze evidence"
     if len(train_steps) > 1 and not any(len(tracks) > 1 for tracks in tracks_by_layer.values()):
         return "train rotation did not show changing active tracks across steps"
     if train_steps and max(train_steps) > 0 and train_steps == {0}:

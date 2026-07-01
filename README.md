@@ -410,6 +410,7 @@ scripts/experiments/E001_cp_trilinear_attention/run_full_cp_trilinear_r8_lambda0
 ```
 
 These scripts are for frozen, promoted full runs only. They are not the default exploration path. The all-full matrix launcher refuses to run by design; use the queue screen-first workflow and approve selected full runs from promotion reports.
+Individual full-run scripts also refuse direct execution unless `ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1` is set for a manually promoted run.
 
 Screen the active CP path first:
 
@@ -479,6 +480,7 @@ scripts/experiments/E002_multitrack_qkv_shift_register/compare_initial_full_runs
 ```
 
 These are for approved full runs after promotion. The default E002 path is to screen the standard refactor control and the static/train/position Multi-QKV variants, generate promotion reports, approve at most selected full runs, and compare only after verified full-run plus destructive-test artifacts exist.
+Individual full-run scripts also require `ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1`; that acknowledgement is not a substitute for queue promotion evidence.
 
 Multi-QKV diagnostics are written to:
 
@@ -527,7 +529,14 @@ uv run attn-queue promotion-report multi_qkv_static_3track_global_30m_seed1
 uv run attn-queue approve multi_qkv_static_3track_global_30m_seed1
 ```
 
-The approver checks the promotion report before setting a row executable as `FULL`. Non-standard candidates need non-degenerate diagnostics unless an explicit config exception records why diagnostics are absent. Multi-QKV reports include screen destructive-test evidence when feasible, or a recorded screen-level infeasibility reason.
+Optional 20-step smoke runs are `SANITY`, not evidence. Queue them explicitly and advance to screen only when you are ready for the evidence run:
+
+```bash
+uv run attn-queue add --stage SANITY configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_static_3track_global_30m_seed1.yaml
+uv run attn-queue advance-to-screen multi_qkv_static_3track_global_30m_seed1
+```
+
+The approver checks the promotion report before setting a row executable as `FULL`. Directly setting `full_run_approved` is blocked in the ledger API. Non-standard candidates need non-degenerate diagnostics; `queue.allow_missing_diagnostics: true` records an exception and yields `needs_investigation`, not a clean promotion. Multi-QKV reports include screen destructive-test evidence when feasible, or a recorded screen-level infeasibility/failure reason.
 
 Each screen preserves `screen_config.yaml`, `resolved_config.yaml`, `metrics.jsonl`, `queue_screen.log`, `checkpoints/ckpt_last.pt`, diagnostics when applicable, and a screen-local `promotion_report.json`. The canonical promotion report is also written under `reports/`.
 
@@ -576,9 +585,10 @@ uv run attn-queue morning-note --experiment E001_cp_trilinear_attention \
 Queue safety rules:
 
 - Full runs require a clean promotion report and explicit approval.
+- `SANITY` rows are smoke checks only; use `attn-queue advance-to-screen <run>` before collecting screen evidence.
 - Existing run directories are protected unless `queue.allow_overwrite_existing_run_dir: true` is explicit.
 - Non-standard full runs require a passed control through `queue.requires_run` unless an explicit skip is documented.
-- Non-standard screen promotion requires mechanism diagnostics unless explicitly allowed.
+- Non-standard screen promotion requires non-degenerate mechanism diagnostics; missing diagnostics exceptions cannot cleanly promote.
 - The 150-step screener lowers or injects `diagnostics.attention_diagnostics_every: 50` for non-standard attention so mechanism diagnostics can exist during screening.
 - Screen length is configurable through `queue.screen_steps`, `queue.screen_val_every`, `queue.screen_save_every`, and `queue.screen_diagnostics_every`.
 - Supported mechanism checks include `cp_gradient_norm` and `qkv_track_activity`.

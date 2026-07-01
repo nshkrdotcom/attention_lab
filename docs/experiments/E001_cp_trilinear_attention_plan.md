@@ -120,7 +120,7 @@ reports/schema/attention_diagnostics.schema.json
 - `reports/experiments/E001_cp_trilinear_attention/comparison.json`
 - Completed experiment result report.
 
-The comparison script requires full-run summaries, eval artifacts, checkpoints, and CP diagnostics for CP candidates.
+The comparison script requires full-run summaries, eval artifacts, checkpoints, final `verify_run.py` success, and CP diagnostics with `cp_gradient_norm > 1e-6` for CP candidates.
 Lambda0 is skipped unless its manual promoted full-run artifacts exist.
 
 ## Manual Promotion-Stage Full-Run Commands
@@ -132,5 +132,6 @@ scripts/experiments/E001_cp_trilinear_attention/compare_full_runs.sh
 
 Individual full-run scripts verify data manifests, train, verify, run evals, summarize,
 and verify again. They are intentionally not executed by implementation-agent passes.
+They require `ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1` and still do not replace queue promotion approval.
 `run_all_full.sh` refuses to launch the matrix; it is not the exploration path.
 Lambda0 is a manual promoted control only after active CP evidence justifies running it.

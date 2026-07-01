@@ -66,7 +66,7 @@ def test_doctor_warns_missing_hypothesis_only_for_approved_full_rows(tmp_path, t
     ledger = QueueLedger(tmp_path / "queue.db")
     ledger.initialize()
     run_id = ledger.enqueue_config(config_path, config, config_path.read_bytes())
-    ledger.promote_to_full(run_id)
+    ledger.mark_promotion_candidate(run_id)
     report_path = tmp_path / "promotion.json"
     _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
     ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
@@ -136,6 +136,8 @@ def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
                 "eval_points_seen": 2,
                 "destructive_test_present": False,
                 "destructive_test_effect_summary": None,
+                "destructive_test_command_failed": False,
+                "destructive_test_failure_summary": None,
                 "promotion_recommendation": "promote",
                 "promotion_blockers": [],
                 "promotion_reason": "test report",

@@ -24,6 +24,14 @@ require_standard_artifacts() {
   require_file "${run_dir}" "evals/run_summary.json"
   require_file "${run_dir}" "evals/val_loss.json"
   require_file "${run_dir}" "evals/hellaswag.json"
+  require_file "${run_dir}" "checkpoints/ckpt_last.pt"
+  uv run scripts/verify_run.py \
+    --run_dir "${run_dir}" \
+    --expect-complete-training \
+    --expect-sample \
+    --expect-eval-loss \
+    --expect-hellaswag \
+    --expect-data-manifest >/dev/null
 }
 
 require_multi_qkv_artifacts() {
@@ -31,6 +39,17 @@ require_multi_qkv_artifacts() {
   require_standard_artifacts "${run_dir}"
   require_file "${run_dir}" "evals/attention_diagnostics.jsonl"
   require_file "${run_dir}" "evals/qkv_track_destructive_test.json"
+  python - "${run_dir}/evals/qkv_track_destructive_test.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+payload = json.load(open(path, encoding="utf-8"))
+if payload.get("destructive_test_passed") is True:
+    raise SystemExit(0)
+print(f"Multi-QKV destructive test did not pass: {path}", file=sys.stderr)
+raise SystemExit(1)
+PY
 }
 
 require_standard_artifacts "${STANDARD_RUN}"

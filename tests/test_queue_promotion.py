@@ -9,6 +9,7 @@ import yaml
 from attention_lab.queue.cli import main as queue_main
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.promotion import (
+    REQUIRED_PROMOTION_REPORT_FIELDS,
     approval_blockers,
     build_promotion_report,
     build_screen_destructive_test_command,
@@ -41,6 +42,17 @@ def test_cp_screen_missing_diagnostics_blocks_promotion(tmp_path, tiny_config):
     assert report["promotion_recommendation"] == "needs_investigation"
     assert "non-standard attention is missing required diagnostics" in report["promotion_blockers"]
     assert approval_blockers(report)
+
+
+def test_allow_missing_diagnostics_needs_investigation_not_promote(tmp_path, tiny_config):
+    config, row, screen_dir = _screen_case(tmp_path, tiny_config, attention_type="cp_trilinear")
+    config["queue"]["allow_missing_diagnostics"] = True
+    _write_metrics(screen_dir / "metrics.jsonl")
+    report = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+
+    assert report["promotion_recommendation"] == "needs_investigation"
+    assert "queue.allow_missing_diagnostics" in " ".join(report["promotion_blockers"])
+    assert "non-standard attention lacks non-degenerate diagnostics" in approval_blockers(report)
 
 
 def test_cp_screen_positive_gradient_allows_promotion(tmp_path, tiny_config):
@@ -97,6 +109,73 @@ def test_multi_qkv_screen_missing_diagnostics_blocks(tmp_path, tiny_config):
     assert "non-standard attention is missing required diagnostics" in report["promotion_blockers"]
 
 
+def test_multi_qkv_train_rotation_requires_step_routing_and_eval_freeze(tmp_path, tiny_config):
+    config, row, screen_dir = _screen_case(
+        tmp_path,
+        tiny_config,
+        attention_type="multi_qkv_train_rotation_3track_global",
+    )
+    _write_metrics(screen_dir / "metrics.jsonl")
+    _write_destructive(screen_dir / "evals" / "qkv_track_destructive_test.json")
+    _write_jsonl(
+        screen_dir / "evals" / "attention_diagnostics.jsonl",
+        [
+            _qkv_train_rotation_row(layer_idx=0, active_track=0, last_forward_step=0, schedule_mode="train"),
+            _qkv_train_rotation_row(layer_idx=0, active_track=0, last_forward_step=0, schedule_mode="eval"),
+        ],
+    )
+    single_step = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+    assert single_step["promotion_recommendation"] == "kill"
+    assert "multiple training steps" in single_step["mechanism_activity_summary"]["check_note"]
+
+    _write_jsonl(
+        screen_dir / "evals" / "attention_diagnostics.jsonl",
+        [
+            _qkv_train_rotation_row(layer_idx=0, active_track=0, last_forward_step=0, schedule_mode="train"),
+            _qkv_train_rotation_row(layer_idx=0, active_track=1, last_forward_step=1, schedule_mode="train"),
+        ],
+    )
+    no_eval_freeze = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+    assert no_eval_freeze["promotion_recommendation"] == "kill"
+    assert "eval/generate freeze evidence" in no_eval_freeze["mechanism_activity_summary"]["check_note"]
+
+    _write_jsonl(
+        screen_dir / "evals" / "attention_diagnostics.jsonl",
+        [
+            _qkv_train_rotation_row(layer_idx=0, active_track=0, last_forward_step=0, schedule_mode="train"),
+            _qkv_train_rotation_row(layer_idx=0, active_track=1, last_forward_step=1, schedule_mode="train"),
+            _qkv_train_rotation_row(layer_idx=0, active_track=0, last_forward_step=1, schedule_mode="eval"),
+        ],
+    )
+    valid = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+    assert valid["promotion_recommendation"] == "promote"
+
+
+def test_multi_qkv_position_rotation_rejects_scalar_routing(tmp_path, tiny_config):
+    config, row, screen_dir = _screen_case(
+        tmp_path,
+        tiny_config,
+        attention_type="multi_qkv_position_rotation_3track_global",
+    )
+    _write_metrics(screen_dir / "metrics.jsonl")
+    _write_destructive(screen_dir / "evals" / "qkv_track_destructive_test.json")
+    _write_jsonl(
+        screen_dir / "evals" / "attention_diagnostics.jsonl",
+        [_qkv_position_rotation_row(layer_idx=0, active_track=0)],
+    )
+    scalar = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+
+    assert scalar["promotion_recommendation"] == "kill"
+    assert "scalar active_track_index" in scalar["mechanism_activity_summary"]["check_note"]
+
+    _write_jsonl(
+        screen_dir / "evals" / "attention_diagnostics.jsonl",
+        [_qkv_position_rotation_row(layer_idx=0, active_track=None, counts={"0": 3, "1": 3, "2": 2})],
+    )
+    valid = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+    assert valid["promotion_recommendation"] == "promote"
+
+
 def test_screen_missing_checkpoint_is_killed(tmp_path, tiny_config):
     config, row, screen_dir = _screen_case(tmp_path, tiny_config, checkpoint=False)
     _write_metrics(screen_dir / "metrics.jsonl")
@@ -147,6 +226,7 @@ def test_destructive_test_summary_uses_actual_fields(tmp_path, tiny_config):
     report = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
 
     assert report["destructive_test_present"] is True
+    assert report["destructive_test_command_failed"] is False
     assert report["destructive_test_effect_summary"] == {
         "destructive_test_passed": True,
         "max_loss_delta": 0.2,
@@ -176,6 +256,12 @@ def test_screen_destructive_command_uses_screen_artifacts(tmp_path):
         "--num-batches",
         "1",
     ]
+
+
+def test_schema_required_fields_match_python_validator(repo_root):
+    schema = json.loads((repo_root / "reports" / "schema" / "promotion_report.schema.json").read_text(encoding="utf-8"))
+
+    assert set(schema["required"]) == REQUIRED_PROMOTION_REPORT_FIELDS
 
 
 def test_approve_requires_clean_promotion_report(tmp_path, tiny_config, capsys):
@@ -279,6 +365,79 @@ def test_run_screen_preserves_artifacts_and_writes_report(tmp_path, tiny_config,
     assert Path(report["artifact_paths"]["attention_diagnostics"]).exists()
 
 
+def test_run_screen_records_multi_qkv_destructive_failure(tmp_path, tiny_config, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config["model"].update(
+        {
+            "attention_type": "multi_qkv_static_3track_global",
+            "qkv_track_count": 3,
+            "qkv_global_bank": True,
+            "qkv_route_formula": "layer_mod",
+        }
+    )
+    config["queue"] = {"mechanism_check": "qkv_track_activity"}
+    config_path = tmp_path / "candidate.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    ledger = QueueLedger(tmp_path / "queue.db")
+    ledger.initialize()
+    run_id = ledger.enqueue_config(config_path, config, config_path.read_bytes())
+    row = ledger.get_run(run_id)
+
+    def fake_command(cmd, log_path):
+        screen_dir = Path(log_path).parent
+        if "scripts/qkv_track_destructive_test.py" in cmd:
+            return CommandResult(returncode=2, stdout="", stderr="route perturbation failed")
+        _write_metrics(screen_dir / "metrics.jsonl")
+        _write_jsonl(
+            screen_dir / "evals" / "attention_diagnostics.jsonl",
+            [_qkv_row(layer_idx=layer_idx, active_track=layer_idx) for layer_idx in range(3)],
+        )
+        (screen_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (screen_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"test checkpoint")
+        return CommandResult(returncode=0, stdout="ok", stderr="")
+
+    result = run_screen(row, ledger, command_runner=fake_command, repo_root=tmp_path)
+    report = json.loads(Path(ledger.get_run(run_id)["promotion_report_path"]).read_text(encoding="utf-8"))
+
+    assert result["destructive_test_failed"] is True
+    assert report["destructive_test_command_failed"] is True
+    assert report["destructive_test_failure_summary"]["returncode"] == 2
+    assert report["promotion_recommendation"] == "needs_investigation"
+    assert "destructive test command failed" in " ".join(approval_blockers(report))
+
+
+def test_run_screen_uses_repo_root_when_cwd_differs(tmp_path, tiny_config, monkeypatch):
+    repo_root = tmp_path / "repo"
+    outside = tmp_path / "outside"
+    repo_root.mkdir()
+    outside.mkdir()
+    monkeypatch.chdir(outside)
+    config = tiny_config(repo_root, repo_root / "data")
+    config_path = repo_root / "queue" / "inbox" / "candidate.yaml"
+    config_path.parent.mkdir(parents=True)
+    (repo_root / "data").mkdir(parents=True)
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    ledger = QueueLedger(repo_root / "data" / "queue.db")
+    ledger.initialize()
+    run_id = ledger.enqueue_config(config_path, config, config_path.read_bytes())
+    row = ledger.get_run(run_id)
+
+    def fake_command(cmd, log_path):  # noqa: ARG001
+        screen_dir = Path(log_path).parent
+        _write_metrics(screen_dir / "metrics.jsonl")
+        (screen_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (screen_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"test checkpoint")
+        return CommandResult(returncode=0, stdout="ok", stderr="")
+
+    run_screen(row, ledger, command_runner=fake_command, repo_root=repo_root)
+
+    updated = ledger.get_run(run_id)
+    assert Path(updated["promotion_report_path"]).is_relative_to(repo_root)
+    assert Path(updated["screen_run_dir"]).is_relative_to(repo_root)
+    assert not (outside / "reports").exists()
+
+
 def _screen_case(
     tmp_path: Path,
     tiny_config,
@@ -362,6 +521,61 @@ def _qkv_row(*, layer_idx: int, active_track: int) -> dict:
         "per_track_gradient_norm": {str(track): (0.1 if track == active_track else 0.0) for track in range(3)},
         "per_track_qkv_weight_norm": {"0": 1.0, "1": 1.0, "2": 1.0},
         "position_routing_enabled": False,
+        "eval_freeze_mode": False,
+    }
+
+
+def _qkv_train_rotation_row(
+    *,
+    layer_idx: int,
+    active_track: int,
+    last_forward_step: int,
+    schedule_mode: str,
+) -> dict:
+    return {
+        "schema_version": 1,
+        "attention_type": "multi_qkv_train_rotation_3track_global",
+        "route_formula": "(layer_idx + step) % track_count during train; layer_idx % track_count during eval/generate",
+        "uses_global_bank": True,
+        "track_count": 3,
+        "layer_idx": layer_idx,
+        "layer": layer_idx,
+        "step": last_forward_step,
+        "last_forward_step": last_forward_step,
+        "schedule_mode": schedule_mode,
+        "active_track_index": active_track,
+        "active_track_counts": {str(track): (8 if track == active_track else 0) for track in range(3)},
+        "track_gradient_norm": 0.1,
+        "per_track_gradient_norm": {"0": 0.1, "1": 0.1, "2": 0.1},
+        "per_track_qkv_weight_norm": {"0": 1.0, "1": 1.0, "2": 1.0},
+        "position_routing_enabled": False,
+        "eval_freeze_mode": True,
+    }
+
+
+def _qkv_position_rotation_row(
+    *,
+    layer_idx: int,
+    active_track: int | None,
+    counts: dict[str, int] | None = None,
+) -> dict:
+    return {
+        "schema_version": 1,
+        "attention_type": "multi_qkv_position_rotation_3track_global",
+        "route_formula": "(layer_idx + position) % track_count",
+        "uses_global_bank": True,
+        "track_count": 3,
+        "layer_idx": layer_idx,
+        "layer": layer_idx,
+        "step": 50,
+        "last_forward_step": 50,
+        "schedule_mode": "train",
+        "active_track_index": active_track,
+        "active_track_counts": counts or {"0": 8, "1": 0, "2": 0},
+        "track_gradient_norm": 0.1,
+        "per_track_gradient_norm": {"0": 0.1, "1": 0.1, "2": 0.1},
+        "per_track_qkv_weight_norm": {"0": 1.0, "1": 1.0, "2": 1.0},
+        "position_routing_enabled": True,
         "eval_freeze_mode": False,
     }
 

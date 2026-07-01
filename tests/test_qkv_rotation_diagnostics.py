@@ -264,6 +264,22 @@ def test_qkv_track_activity_mechanism_check_accepts_valid_train_rotation_diagnos
                     eval_freeze_mode=True,
                 )
             )
+    for layer_idx in range(3):
+        active = layer_idx % 3
+        rows.append(
+            _qkv_row(
+                attention_type="multi_qkv_train_rotation_3track_global",
+                route_formula=route,
+                layer_idx=layer_idx,
+                step=1,
+                active_track_index=active,
+                active_track_counts=_scalar_counts(active),
+                per_track_gradient_norm=_scalar_grads(active),
+                schedule_mode="eval",
+                last_forward_step=1,
+                eval_freeze_mode=True,
+            )
+        )
     _write_jsonl(diagnostics_path, rows)
 
     verdict = evaluate_mechanism_activity(

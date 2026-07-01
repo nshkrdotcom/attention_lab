@@ -124,7 +124,7 @@ def test_cli_ls_note_requeue_and_status(tmp_path, tiny_config, capsys):
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
     ledger.mark_failed(run_id, failure_class="NAN")
     ledger.close()
 
@@ -209,6 +209,26 @@ def test_cli_add_validates_and_copies(tmp_path, tiny_config, capsys):
     assert json.dumps({"ok": True}) != ""
 
 
+def test_cli_can_queue_sanity_then_advance_to_screen(tmp_path, tiny_config, capsys):
+    root = tmp_path / "root"
+    root.mkdir()
+    db_path = root / "data" / "queue.db"
+    source = tmp_path / "candidate.yaml"
+    import yaml
+
+    source.write_text(yaml.safe_dump(tiny_config(tmp_path, tmp_path / "data")), encoding="utf-8")
+    queue_main(["--root", str(root), "--db", str(db_path), "add", "--stage", "SANITY", str(source)])
+    capsys.readouterr()
+    queue_main(["--root", str(root), "--db", str(db_path), "ls", "--stage", "SANITY"])
+    output = capsys.readouterr().out
+    assert "SANITY" in output
+    run_id = output.split()[0]
+
+    queue_main(["--root", str(root), "--db", str(db_path), "advance-to-screen", run_id])
+    queue_main(["--root", str(root), "--db", str(db_path), "ls", "--stage", "SCREEN"])
+    assert "SCREEN" in capsys.readouterr().out
+
+
 def test_cli_export_report_and_morning_note_commands(tmp_path, capsys, monkeypatch):
     db_path = tmp_path / "queue.db"
 
@@ -264,7 +284,7 @@ def test_watchdog_requires_control_dependency_for_nonstandard_full(tmp_path, tin
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    ledger.mark_promotion_candidate(run_id)
     report_path = tmp_path / "candidate_promotion.json"
     _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
     ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
@@ -291,7 +311,7 @@ def test_watchdog_requires_control_dependency_for_nonstandard_full(tmp_path, tin
 
 def test_watchdog_blocks_full_rows_without_promotion_report(tmp_path, tiny_config):
     ledger, run_id, _config, _config_path = _full_row(tmp_path, tiny_config)
-    ledger.set_full_run_approved(run_id, True)
+    _force_full_pending(ledger, run_id, approved=True)
     events = []
     watchdog = Watchdog(
         ledger,
@@ -314,7 +334,7 @@ def test_watchdog_blocks_full_rows_with_blocked_promotion_report(tmp_path, tiny_
     report["promotion_blockers"] = ["needs review"]
     report_path.write_text(json.dumps(report), encoding="utf-8")
     ledger.record_promotion_report(run_id, report_path, report)
-    ledger.approve_full_run(run_id)
+    _force_full_pending(ledger, run_id, approved=True)
     events = []
     watchdog = Watchdog(
         ledger,
@@ -373,9 +393,9 @@ def test_watchdog_waits_for_required_run_to_pass(tmp_path, tiny_config):
     candidate_path.write_text(yaml.safe_dump(candidate), encoding="utf-8")
     standard_id = ledger.enqueue_config(standard_path, standard, standard_path.read_bytes())
     candidate_id = ledger.enqueue_config(candidate_path, candidate, candidate_path.read_bytes())
-    ledger.promote_to_full(standard_id)
+    _force_full_pending(ledger, standard_id)
     ledger.mark_failed(standard_id, failure_class="UNKNOWN")
-    ledger.promote_to_full(candidate_id)
+    ledger.mark_promotion_candidate(candidate_id)
     report_path = tmp_path / "candidate_promotion.json"
     _write_clean_promotion_report(report_path, ledger.get_run(candidate_id), candidate)
     ledger.record_promotion_report(candidate_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
@@ -409,7 +429,7 @@ def _full_row(tmp_path: Path, tiny_config):
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
     return ledger, run_id, config, config_path
 
 
@@ -451,6 +471,8 @@ def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
                 "eval_points_seen": 2,
                 "destructive_test_present": False,
                 "destructive_test_effect_summary": None,
+                "destructive_test_command_failed": False,
+                "destructive_test_failure_summary": None,
                 "promotion_recommendation": "promote",
                 "promotion_blockers": [],
                 "promotion_reason": "test report",
@@ -461,3 +483,11 @@ def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def _force_full_pending(ledger: QueueLedger, run_id: str, *, approved: bool = False) -> None:
+    ledger.conn.execute(
+        "UPDATE runs SET stage = 'FULL', status = 'PENDING', full_run_approved = ? WHERE id = ?",
+        (int(approved), run_id),
+    )
+    ledger.conn.commit()

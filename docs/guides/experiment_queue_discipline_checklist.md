@@ -41,8 +41,9 @@ Completed in this implementation pass:
 - [x] Queue daemon script added at `scripts/queue_daemon.sh`.
 - [x] Unit tests added for ledger, ingestion, screener, runner, watchdog, CLI, and
   leaderboard.
-- [x] FULL-run approval gate implemented through `queue.full_run_approved` and
-  `attn-queue approve` / `attn-queue unapprove`.
+- [x] FULL-run approval gate implemented through clean promotion reports and
+  `attn-queue approve`; `full_run_approved` is internal ledger state, not a
+  caller-set approval shortcut.
 - [x] Run-directory clobber protection implemented through
   `queue.allow_overwrite_existing_run_dir`.
 - [x] Screener nonzero-exit and missing-metrics semantics hardened.
@@ -281,6 +282,15 @@ FULL
 KILLED
 ```
 
+Stage semantics:
+
+- [ ] `SANITY` is a smoke/sanity state only and is not promotion evidence.
+- [ ] `SANITY` rows must be advanced explicitly with `attn-queue advance-to-screen <run>` before screen evidence is collected.
+- [ ] `SCREEN` is the short evidence run for stability, loss descent, throughput/VRAM, diagnostics, and mechanism activity.
+- [ ] `PROMOTION_CANDIDATE` means a screen completed and a promotion report exists or can be reviewed.
+- [ ] `FULL` execution requires a clean promotion report plus explicit approval.
+- [ ] `KILLED` records rejected candidates and a reason.
+
 Required statuses:
 
 ```text
@@ -343,7 +353,8 @@ Checklist:
 - [ ] `scan_inbox()` lists all `.yaml` files in `queue/inbox/`.
 - [ ] Each config is validated with existing `load_config()`.
 - [ ] Invalid configs are logged and skipped; watchdog must not crash.
-- [ ] Valid configs are inserted as `stage=SCREEN`, `status=PENDING`.
+- [ ] Valid configs are inserted as `stage=SCREEN`, `status=PENDING` by default.
+- [ ] `attn-queue add --stage SANITY <config>` inserts smoke-only rows that the watchdog does not treat as screen evidence.
 - [ ] Existing content hashes are skipped.
 - [ ] `attention_type`, `run_dir`, and `config_name` are stored.
 - [ ] Config copy/move semantics are explicit.
@@ -406,9 +417,8 @@ Mechanism-active check:
   `per_track_gradient_norm`, `branch_off_logit_delta`, or `track_output_delta`.
 - [ ] Mark `mechanism_active=0` and `DEAD_GRAD` when diagnostics prove dead activity.
 - [ ] Mark `mechanism_active=null` when diagnostics are missing.
-- [ ] Block non-standard FULL promotion on missing diagnostics unless
-  `queue.allow_missing_diagnostics: true` is explicit.
-- [ ] Record any missing-diagnostics exception in the promotion report.
+- [ ] Block non-standard FULL promotion on missing diagnostics.
+- [ ] If `queue.allow_missing_diagnostics: true` is explicit, record the exception in the promotion report and recommend `needs_investigation`, not `promote`.
 
 Baseline calibration:
 

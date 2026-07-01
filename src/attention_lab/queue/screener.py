@@ -191,12 +191,16 @@ def run_screen(
     ledger: QueueLedger,
     *,
     command_runner: CommandRunner = default_command_runner,
+    repo_root: str | Path = ".",
     keep_screens: bool = True,  # noqa: ARG001 - retained for compatibility; screen artifacts are durable by default.
 ) -> dict:
     run_id = row["id"]
+    repo_root = Path(repo_root)
     config_path = Path(row["config_path"])
+    if not config_path.is_absolute():
+        config_path = repo_root / config_path
     config = load_config(config_path)
-    screen_run_dir = Path("runs") / "screen" / f"{row['config_name']}_{run_id}"
+    screen_run_dir = repo_root / "runs" / "screen" / f"{row['config_name']}_{run_id}"
     screen_profile = resolve_screen_profile(config.get("queue", {}))
     screen_config = screen_config_with_overrides(config, screen_run_dir, screen_profile)
     screen_config_path = screen_run_dir / "screen_config.yaml"
@@ -212,6 +216,7 @@ def run_screen(
     result: CommandResult = command_runner(cmd, log_path)
     attention_type = config["model"].get("attention_type", "standard")
     destructive_cmd: list[str] | None = None
+    destructive_result: CommandResult | None = None
     checkpoint_path = screen_run_dir / "checkpoints" / "ckpt_last.pt"
     if result.returncode == 0 and is_multi_qkv_attention_type(attention_type) and checkpoint_path.exists():
         destructive_cmd = build_screen_destructive_test_command(
@@ -220,7 +225,23 @@ def run_screen(
             out_path=screen_run_dir / "evals" / "qkv_track_destructive_test.json",
             num_batches=1,
         )
-        command_runner(destructive_cmd, log_path)
+        destructive_result = command_runner(destructive_cmd, log_path)
+        if destructive_result.returncode != 0:
+            error_path = screen_run_dir / "evals" / "qkv_track_destructive_test_error.json"
+            error_path.parent.mkdir(parents=True, exist_ok=True)
+            error_path.write_text(
+                json.dumps(
+                    {
+                        "command": destructive_cmd,
+                        "returncode": destructive_result.returncode,
+                        "stderr_tail": destructive_result.stderr[-4000:],
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
     metrics = load_metrics(screen_run_dir / "metrics.jsonl")
     verdict = classify_screen_result(
         returncode=result.returncode,
@@ -237,10 +258,11 @@ def run_screen(
         config=config,
         screen_run_dir=screen_run_dir,
         screen_config_path=screen_config_path,
+        repo_root=repo_root,
         failure_class=verdict.failure_class,
         mechanism_active=verdict.mechanism_active,
     )
-    report_path = write_promotion_report(report)
+    report_path = write_promotion_report(report, repo_root=repo_root)
     ledger.record_promotion_report(run_id, report_path, report)
 
     if verdict.passed:
@@ -277,4 +299,7 @@ def run_screen(
     }
     if destructive_cmd is not None:
         response["destructive_test_command"] = destructive_cmd
+    if destructive_result is not None and destructive_result.returncode != 0:
+        response["destructive_test_failed"] = True
+        response["destructive_test_returncode"] = destructive_result.returncode
     return response

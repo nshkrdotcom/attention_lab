@@ -207,7 +207,9 @@ def _check_queue_state_classification(ledger: QueueLedger, messages: list[Doctor
         status = row.get("status")
         name = row.get("config_name")
         report_path = row.get("promotion_report_path")
-        if stage == "SCREEN" and status == "PENDING":
+        if stage == "SANITY":
+            _ok(messages, f"sanity-not-evidence: {name} status={status}")
+        elif stage == "SCREEN" and status == "PENDING":
             _ok(messages, f"screen-ready: {name}")
         elif stage == "SCREEN" and status in {"PASSED", "FAILED", "KILLED"}:
             _ok(messages, f"screen-complete: {name} status={status}")

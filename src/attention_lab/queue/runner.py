@@ -217,10 +217,17 @@ def run_full(
     repo_root: str | Path = ".",
 ) -> dict:
     run_id = row["id"]
+    repo_root = Path(repo_root)
     config_path = Path(row["config_path"])
+    if not config_path.is_absolute():
+        config_path = repo_root / config_path
     config = load_config(config_path)
     run_dir = Path(config["run"]["out_dir"])
+    if not run_dir.is_absolute():
+        run_dir = repo_root / run_dir
     data_root = Path(config["data"]["data_root"])
+    if not data_root.is_absolute():
+        data_root = repo_root / data_root
     manifest_path = _manifest_path_for_data_root(data_root)
     log_path = run_dir / "queue_runner.log"
     queue_config = config.get("queue", {})

@@ -292,9 +292,10 @@ uv run scripts/qkv_track_destructive_test.py \
 scripts/experiments/E002_multitrack_qkv_shift_register/compare_initial_full_runs.sh
 ```
 
-The all-full launcher refuses by design. Individual full-run scripts are manual promotion-stage scripts only. Full A/B/C
-comparison is valid only after the selected runs were promoted, approved, completed, verified, and paired with
-`qkv_track_destructive_test.py` artifacts.
+The all-full launcher refuses by design. Individual full-run scripts are manual promotion-stage scripts only and require
+`ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1`. That acknowledgement is not promotion approval.
+Full A/B/C comparison is valid only after the selected runs were promoted, approved, completed, verified by
+`verify_run.py`, and paired with passing `qkv_track_destructive_test.py` artifacts.
 
 ## Comparison Requirements
 

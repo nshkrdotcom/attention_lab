@@ -75,11 +75,68 @@ def test_all_full_matrix_scripts_refuse_to_launch(repo_root):
         assert "Refusing" in result.stderr
 
 
+def test_individual_full_scripts_require_promoted_full_ack(repo_root):
+    scripts = [
+        repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "run_full_standard_30m.sh",
+        repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "run_full_cp_bilinear_r8_30m.sh",
+        repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "run_full_cp_trilinear_r8_30m.sh",
+        repo_root
+        / "scripts"
+        / "experiments"
+        / "E001_cp_trilinear_attention"
+        / "run_full_cp_trilinear_r8_lambda0_30m.sh",
+        repo_root
+        / "scripts"
+        / "experiments"
+        / "E002_multitrack_qkv_shift_register"
+        / "run_full_standard_refactor_control.sh",
+        repo_root / "scripts" / "experiments" / "E002_multitrack_qkv_shift_register" / "run_full_static_global.sh",
+        repo_root
+        / "scripts"
+        / "experiments"
+        / "E002_multitrack_qkv_shift_register"
+        / "run_full_train_rotation_global.sh",
+        repo_root
+        / "scripts"
+        / "experiments"
+        / "E002_multitrack_qkv_shift_register"
+        / "run_full_position_rotation_global.sh",
+    ]
+
+    for script in scripts:
+        result = subprocess.run(
+            [str(script)],
+            cwd=repo_root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        assert result.returncode == 2
+        assert "approve a clean promotion report first" in result.stderr
+
+
 def test_e001_compare_requires_cp_diagnostics_and_optional_lambda0(repo_root):
     compare_script = (
         repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "compare_full_runs.sh"
     ).read_text(encoding="utf-8")
 
     assert "evals/attention_diagnostics.jsonl" in compare_script
+    assert "scripts/verify_run.py" in compare_script
+    assert "cp_gradient_norm" in compare_script
     assert "Skipping lambda0 comparison" in compare_script
     assert "manual promoted control" in compare_script
+
+
+def test_e002_compare_requires_verified_full_and_destructive_pass(repo_root):
+    compare_script = (
+        repo_root
+        / "scripts"
+        / "experiments"
+        / "E002_multitrack_qkv_shift_register"
+        / "compare_initial_full_runs.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "scripts/verify_run.py" in compare_script
+    assert "evals/qkv_track_destructive_test.json" in compare_script
+    assert "destructive_test_passed" in compare_script

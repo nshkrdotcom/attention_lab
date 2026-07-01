@@ -28,12 +28,18 @@ class Watchdog:
         screen_runner: ScreenRunner | None = None,
         full_runner: FullRunner | None = None,
         sleep_seconds: int = 60,
+        repo_root: str | Path = ".",
     ):
         self.ledger = ledger
+        self.repo_root = Path(repo_root)
         self.inbox_dir = Path(inbox_dir)
+        if not self.inbox_dir.is_absolute():
+            self.inbox_dir = self.repo_root / self.inbox_dir
         self.pid_path = Path(pid_path)
-        self.screen_runner = screen_runner or (lambda row, ledger: run_screen(row, ledger))
-        self.full_runner = full_runner or (lambda row, ledger: run_full(row, ledger))
+        if not self.pid_path.is_absolute():
+            self.pid_path = self.repo_root / self.pid_path
+        self.screen_runner = screen_runner or (lambda row, ledger: run_screen(row, ledger, repo_root=self.repo_root))
+        self.full_runner = full_runner or (lambda row, ledger: run_full(row, ledger, repo_root=self.repo_root))
         self.sleep_seconds = sleep_seconds
         self.should_stop = False
 
@@ -80,7 +86,10 @@ class Watchdog:
                 self.pid_path.unlink()
 
     def _full_run_ready(self, row: dict) -> tuple[bool, str | None]:
-        config = load_config(row["config_path"])
+        config_path = Path(row["config_path"])
+        if not config_path.is_absolute():
+            config_path = self.repo_root / config_path
+        config = load_config(config_path)
         queue_config = config.get("queue", {})
         notes = []
 
@@ -90,6 +99,9 @@ class Watchdog:
         report_path = row.get("promotion_report_path")
         if not report_path:
             return False, "waiting for promotion report"
+        report_path = Path(report_path)
+        if not report_path.is_absolute():
+            report_path = self.repo_root / report_path
         try:
             report = load_promotion_report(report_path)
         except Exception as exc:  # noqa: BLE001 - watchdog records readable state and waits
@@ -115,7 +127,7 @@ class Watchdog:
             notes.append("WARNING: hypothesis check explicitly skipped")
             return True, "\n".join(notes)
 
-        hypothesis_path = default_hypothesis_path(row["config_path"], config)
+        hypothesis_path = default_hypothesis_path(config_path, config)
         hypothesis = validate_hypothesis_doc(hypothesis_path)
         if not hypothesis.ok:
             return False, f"missing or incomplete hypothesis doc: {hypothesis.path}"

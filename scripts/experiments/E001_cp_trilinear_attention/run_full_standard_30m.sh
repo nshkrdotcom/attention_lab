@@ -3,6 +3,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/../../.."
 
+if [[ "${ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN:-}" != "1" ]]; then
+  echo "Refusing direct full run. Use the screen-first queue workflow and approve a clean promotion report first." >&2
+  echo "Set ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1 only for a manually promoted full run." >&2
+  exit 2
+fi
+
 CONFIG="configs/experiments/E001_cp_trilinear_attention/standard_30m_seed1.yaml"
 RUN_DIR="runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1"
 

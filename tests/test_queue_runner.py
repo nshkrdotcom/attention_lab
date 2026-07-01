@@ -66,7 +66,7 @@ def test_run_full_stops_on_failure_and_updates_ledger(tmp_path, tiny_config):
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
 
     calls = []
 
@@ -93,7 +93,7 @@ def test_run_full_ingests_summary_and_hellaswag_on_success(tmp_path, tiny_config
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
     run_dir = Path(config["run"]["out_dir"])
     (run_dir / "evals").mkdir(parents=True)
     (run_dir / "checkpoints").mkdir(parents=True)
@@ -135,7 +135,7 @@ def test_run_full_refuses_existing_artifacts_without_allow(tmp_path, tiny_config
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
     run_dir = Path(config["run"]["out_dir"])
     (run_dir / "checkpoints").mkdir(parents=True)
     assert existing_run_artifacts(run_dir)
@@ -163,7 +163,7 @@ def test_run_full_requires_summary_eval_and_checkpoint_artifacts(tmp_path, tiny_
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
 
     def fake_runner(cmd, log_path):
         return CommandResult(returncode=0, stdout="ok", stderr="")
@@ -186,7 +186,7 @@ def test_run_full_rejects_missing_required_summary_field(tmp_path, tiny_config):
     content = yaml.safe_dump(config).encode()
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
-    ledger.promote_to_full(run_id)
+    _force_full_pending(ledger, run_id)
     run_dir = Path(config["run"]["out_dir"])
     (run_dir / "evals").mkdir(parents=True)
     (run_dir / "checkpoints").mkdir(parents=True)
@@ -203,3 +203,8 @@ def test_run_full_rejects_missing_required_summary_field(tmp_path, tiny_config):
     assert result["ok"] is False
     assert row["failure_class"] == "VERIFY_FAIL"
     assert "run_summary.json missing required fields" in row["notes"]
+
+
+def _force_full_pending(ledger: QueueLedger, run_id: str) -> None:
+    ledger.conn.execute("UPDATE runs SET stage = 'FULL', status = 'PENDING' WHERE id = ?", (run_id,))
+    ledger.conn.commit()

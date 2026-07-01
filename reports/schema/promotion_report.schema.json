@@ -37,6 +37,8 @@
     "eval_points_seen",
     "destructive_test_present",
     "destructive_test_effect_summary",
+    "destructive_test_command_failed",
+    "destructive_test_failure_summary",
     "promotion_recommendation",
     "promotion_blockers",
     "promotion_reason",
@@ -80,6 +82,8 @@
     "eval_points_seen": { "type": "integer", "minimum": 0 },
     "destructive_test_present": { "type": "boolean" },
     "destructive_test_effect_summary": { "type": ["object", "null"] },
+    "destructive_test_command_failed": { "type": "boolean" },
+    "destructive_test_failure_summary": { "type": ["object", "null"] },
     "promotion_recommendation": {
       "type": "string",
       "enum": ["promote", "kill", "needs_investigation"]

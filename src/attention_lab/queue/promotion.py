@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import subprocess
-import hashlib
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -74,6 +74,8 @@ REQUIRED_PROMOTION_REPORT_FIELDS = {
     "eval_points_seen",
     "destructive_test_present",
     "destructive_test_effect_summary",
+    "destructive_test_command_failed",
+    "destructive_test_failure_summary",
     "promotion_recommendation",
     "promotion_blockers",
     "promotion_reason",
@@ -140,6 +142,7 @@ def build_promotion_report(
     metrics_path = screen_run_dir / "metrics.jsonl"
     diagnostics_path = screen_run_dir / "evals" / "attention_diagnostics.jsonl"
     destructive_path = screen_run_dir / "evals" / "qkv_track_destructive_test.json"
+    destructive_error_path = screen_run_dir / "evals" / "qkv_track_destructive_test_error.json"
     checkpoint_path = screen_run_dir / "checkpoints" / "ckpt_last.pt"
     metrics = load_metrics(metrics_path)
     attention_type = config["model"].get("attention_type", "standard")
@@ -184,6 +187,7 @@ def build_promotion_report(
 
     destructive_summary = _destructive_test_summary(
         destructive_path=destructive_path,
+        destructive_error_path=destructive_error_path,
         checkpoint_path=checkpoint_path,
         attention_type=attention_type,
     )
@@ -221,6 +225,7 @@ def build_promotion_report(
             "metrics": str(metrics_path) if metrics_path.exists() else None,
             "attention_diagnostics": str(diagnostics_path) if diagnostics_path.exists() else None,
             "destructive_test": str(destructive_path) if destructive_path.exists() else None,
+            "destructive_test_error": str(destructive_error_path) if destructive_error_path.exists() else None,
             "checkpoint": str(checkpoint_path) if checkpoint_path.exists() else None,
             "promotion_report": str(screen_run_dir / "promotion_report.json"),
         },
@@ -254,6 +259,8 @@ def build_promotion_report(
         "eval_points_seen": len(val_losses),
         "destructive_test_present": destructive_summary["present"],
         "destructive_test_effect_summary": destructive_summary["summary"],
+        "destructive_test_command_failed": destructive_summary["command_failed"],
+        "destructive_test_failure_summary": destructive_summary["failure_summary"],
         "promotion_recommendation": decision.recommendation,
         "promotion_blockers": decision.blockers,
         "promotion_reason": decision.reason,
@@ -297,10 +304,20 @@ def decide_promotion(
     if attention_type != "standard":
         if mechanism_active is False:
             return PromotionDecision("kill", ["mechanism diagnostics were degenerate"], "mechanism check failed")
-        if mechanism_active is None and not missing_diagnostics_allowed:
-            blockers.append("non-standard attention is missing required diagnostics")
-        if not diagnostics_non_degenerate and not missing_diagnostics_allowed:
-            blockers.append("non-standard attention lacks non-degenerate mechanism diagnostics")
+        if mechanism_active is None:
+            if missing_diagnostics_allowed:
+                blockers.append(
+                    "non-standard attention is missing diagnostics under queue.allow_missing_diagnostics"
+                )
+            else:
+                blockers.append("non-standard attention is missing required diagnostics")
+        if not diagnostics_non_degenerate:
+            if missing_diagnostics_allowed:
+                blockers.append(
+                    "queue.allow_missing_diagnostics exception requires human investigation"
+                )
+            else:
+                blockers.append("non-standard attention lacks non-degenerate mechanism diagnostics")
     if is_multi_qkv_attention_type(attention_type):
         destructive_status = (destructive_test_effect_summary or {}).get("status")
         destructive_passed = (destructive_test_effect_summary or {}).get("destructive_test_passed")
@@ -380,6 +397,10 @@ def validate_promotion_report(report: dict[str, Any]) -> list[str]:
             errors.append(f"{key} must be a boolean")
     if "destructive_test_present" in report and not isinstance(report["destructive_test_present"], bool):
         errors.append("destructive_test_present must be a boolean")
+    if "destructive_test_command_failed" in report and not isinstance(
+        report["destructive_test_command_failed"], bool
+    ):
+        errors.append("destructive_test_command_failed must be a boolean")
     return errors
 
 
@@ -391,11 +412,12 @@ def approval_blockers(report: dict[str, Any]) -> list[str]:
     if report.get("checkpoint_present") is not True:
         blockers.append("final screen checkpoint is missing")
     attention_type = str(report.get("attention_type") or "")
-    mechanism_summary = report.get("mechanism_activity_summary") or {}
-    missing_allowed = bool(mechanism_summary.get("missing_diagnostics_allowed"))
-    if attention_type != "standard" and not bool(report.get("diagnostics_non_degenerate")) and not missing_allowed:
+    if attention_type != "standard" and not bool(report.get("diagnostics_non_degenerate")):
         blockers.append("non-standard attention lacks non-degenerate diagnostics")
     if is_multi_qkv_attention_type(attention_type):
+        if report.get("destructive_test_command_failed"):
+            summary = report.get("destructive_test_failure_summary") or {}
+            blockers.append(f"Multi-QKV destructive test command failed: {summary.get('reason') or 'see screen log'}")
         summary = report.get("destructive_test_effect_summary") or {}
         if report.get("destructive_test_present"):
             if summary.get("destructive_test_passed") is not True:
@@ -512,6 +534,7 @@ def _mechanism_activity_summary(
 def _destructive_test_summary(
     *,
     destructive_path: Path,
+    destructive_error_path: Path,
     checkpoint_path: Path,
     attention_type: str,
 ) -> dict[str, Any]:
@@ -520,12 +543,28 @@ def _destructive_test_summary(
         perturbations = payload.get("perturbations") or []
         return {
             "present": True,
+            "command_failed": False,
+            "failure_summary": None,
             "summary": {
                 "destructive_test_passed": payload.get("destructive_test_passed"),
                 "max_loss_delta": _max_abs([row.get("loss_delta") for row in perturbations]),
                 "max_logit_delta": _max_abs([row.get("max_abs_logit_delta") for row in perturbations]),
                 "perturbation_count": len(perturbations),
             },
+        }
+    if destructive_error_path.exists():
+        payload = json.loads(destructive_error_path.read_text(encoding="utf-8"))
+        failure_summary = {
+            "status": "failed",
+            "reason": "screen destructive test command failed",
+            "returncode": payload.get("returncode"),
+            "stderr_tail": payload.get("stderr_tail"),
+        }
+        return {
+            "present": False,
+            "command_failed": True,
+            "failure_summary": failure_summary,
+            "summary": failure_summary,
         }
     if is_multi_qkv_attention_type(attention_type):
         if not checkpoint_path.exists():
@@ -534,12 +573,14 @@ def _destructive_test_summary(
             reason = "screen destructive test artifact was not generated"
         return {
             "present": False,
+            "command_failed": False,
+            "failure_summary": None,
             "summary": {
                 "status": "not_feasible_for_screen" if not checkpoint_path.exists() else "missing",
                 "reason": reason,
             },
         }
-    return {"present": False, "summary": None}
+    return {"present": False, "command_failed": False, "failure_summary": None, "summary": None}
 
 
 def _val_losses(metrics: list[dict[str, Any]]) -> list[tuple[int, float]]:

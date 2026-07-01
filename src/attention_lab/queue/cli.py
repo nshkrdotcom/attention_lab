@@ -64,7 +64,7 @@ def cmd_add(args: argparse.Namespace) -> None:
             load_config(source_path)
             dest = paths["inbox"] / source_path.name
             shutil.copy2(source_path, dest)
-            result = ledger.scan_inbox(paths["inbox"])
+            result = ledger.scan_inbox(paths["inbox"], stage=args.stage)
             print(f"added: {dest} inserted={result['inserted']} skipped={result['skipped']}")
             for error in result["errors"]:
                 print(f"error: {error['path']}: {error['error']}")
@@ -130,6 +130,15 @@ def cmd_requeue(args: argparse.Namespace) -> None:
         ledger.close()
 
 
+def cmd_advance_to_screen(args: argparse.Namespace) -> None:
+    ledger = _open_ledger(args)
+    try:
+        ledger.advance_sanity_to_screen(args.run_id_or_name)
+        print(f"screen-pending: {args.run_id_or_name}")
+    finally:
+        ledger.close()
+
+
 def cmd_approve(args: argparse.Namespace) -> None:
     ledger = _open_ledger(args)
     try:
@@ -159,7 +168,7 @@ def cmd_approve(args: argparse.Namespace) -> None:
             for blocker in blockers:
                 print(f"BLOCKED: {blocker}", file=sys.stderr)
             raise SystemExit(2)
-        ledger.approve_full_run(row["id"])
+        ledger.approve_full_run(row["id"], repo_root=args.root)
         print(f"approved: {args.run_id_or_name}")
     finally:
         ledger.close()
@@ -267,6 +276,7 @@ def build_parser() -> argparse.ArgumentParser:
     status.set_defaults(func=cmd_status)
 
     add = subparsers.add_parser("add")
+    add.add_argument("--stage", choices=["SANITY", "SCREEN"], default="SCREEN")
     add.add_argument("config_paths", nargs="+")
     add.set_defaults(func=cmd_add)
 
@@ -291,6 +301,10 @@ def build_parser() -> argparse.ArgumentParser:
     requeue = subparsers.add_parser("requeue")
     requeue.add_argument("run_id_or_name")
     requeue.set_defaults(func=cmd_requeue)
+
+    advance_to_screen = subparsers.add_parser("advance-to-screen")
+    advance_to_screen.add_argument("run_id_or_name")
+    advance_to_screen.set_defaults(func=cmd_advance_to_screen)
 
     approve = subparsers.add_parser("approve")
     approve.add_argument("run_id_or_name")

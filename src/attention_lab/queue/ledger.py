@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from attention_lab.queue.promotion import approval_blockers, load_promotion_report
 from attention_lab.training.config import load_config
 
 STAGES = {"SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL", "KILLED"}
@@ -109,7 +110,16 @@ class QueueLedger:
                         raise
                 columns.add(column)
 
-    def enqueue_config(self, config_path: str | Path, config: dict[str, Any], content: bytes) -> str:
+    def enqueue_config(
+        self,
+        config_path: str | Path,
+        config: dict[str, Any],
+        content: bytes,
+        *,
+        stage: str = "SCREEN",
+    ) -> str:
+        if stage not in {"SANITY", "SCREEN"}:
+            raise ValueError("enqueue stage must be SANITY or SCREEN")
         run_id = hash_config_bytes(content)
         existing = self.get_run(run_id)
         if existing is not None:
@@ -124,7 +134,7 @@ class QueueLedger:
             INSERT INTO runs (
                 id, config_path, config_name, run_dir, attention_type, stage, status,
                 enqueued_at, full_run_approved, allow_overwrite_existing_run_dir, notes
-            ) VALUES (?, ?, ?, ?, ?, 'SCREEN', 'PENDING', ?, ?, ?, '')
+            ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, 0, ?, '')
             """,
             (
                 run_id,
@@ -132,8 +142,8 @@ class QueueLedger:
                 Path(config_path).stem,
                 str(config["run"]["out_dir"]),
                 config["model"].get("attention_type", "standard"),
+                stage,
                 utc_now(),
-                int(queue_config.get("full_run_approved", False)),
                 int(queue_config.get("allow_overwrite_existing_run_dir", False)),
             ),
         )
@@ -151,7 +161,7 @@ class QueueLedger:
                     f"run.out_dir collision with {row['config_name']} ({row['status']}): {run_dir}"
                 )
 
-    def scan_inbox(self, inbox_dir: str | Path) -> dict[str, Any]:
+    def scan_inbox(self, inbox_dir: str | Path, *, stage: str = "SCREEN") -> dict[str, Any]:
         inbox_dir = Path(inbox_dir)
         inserted = 0
         skipped = 0
@@ -164,7 +174,7 @@ class QueueLedger:
                 if self.get_run(run_id) is not None:
                     skipped += 1
                     continue
-                self.enqueue_config(config_path, config, content)
+                self.enqueue_config(config_path, config, content, stage=stage)
                 inserted += 1
             except Exception as exc:  # noqa: BLE001 - queue must not crash on a bad inbox config
                 errors.append({"path": str(config_path), "error": str(exc)})
@@ -204,7 +214,17 @@ class QueueLedger:
         )
         self.conn.commit()
 
-    def promote_to_full(self, run_id: str, *, notes: str | None = None) -> None:
+    def promote_to_full(
+        self,
+        run_id: str,
+        *,
+        notes: str | None = None,
+        repo_root: str | Path = ".",
+    ) -> None:
+        row = self.get_run(run_id)
+        if row is None:
+            raise KeyError(f"Unknown queue run: {run_id}")
+        self._raise_without_clean_promotion_report(row, repo_root=repo_root)
         if notes is None:
             self.conn.execute("UPDATE runs SET stage = 'FULL', status = 'PENDING', failure_class = NULL WHERE id = ?", (run_id,))
         else:
@@ -242,6 +262,32 @@ class QueueLedger:
                 """,
                 (utc_now(), notes, run_id),
             )
+        self.conn.commit()
+
+    def advance_sanity_to_screen(self, run_id_or_name: str) -> None:
+        row = self.get_run(run_id_or_name)
+        if row is None:
+            raise KeyError(f"Unknown queue run: {run_id_or_name}")
+        if row.get("stage") != "SANITY":
+            raise ValueError("only SANITY rows can advance to SCREEN")
+        if row.get("status") == "RUNNING":
+            raise ValueError("cannot advance a running SANITY row")
+        self.conn.execute(
+            """
+            UPDATE runs
+            SET stage = 'SCREEN',
+                status = 'PENDING',
+                full_run_approved = 0,
+                promotion_report_path = NULL,
+                promotion_recommendation = NULL,
+                promotion_approved_at = NULL,
+                approval_reason = NULL,
+                failure_class = NULL,
+                notes = COALESCE(notes, '')
+            WHERE id = ?
+            """,
+            (row["id"],),
+        )
         self.conn.commit()
 
     def record_promotion_report(
@@ -282,10 +328,19 @@ class QueueLedger:
         )
         self.conn.commit()
 
-    def approve_full_run(self, run_id_or_name: str, *, reason: str | None = None) -> None:
+    def approve_full_run(
+        self,
+        run_id_or_name: str,
+        *,
+        reason: str | None = None,
+        repo_root: str | Path = ".",
+    ) -> None:
         row = self.get_run(run_id_or_name)
         if row is None:
             raise KeyError(f"Unknown queue run: {run_id_or_name}")
+        if row.get("stage") not in {"PROMOTION_CANDIDATE", "FULL"} or row.get("status") != "PENDING":
+            raise ValueError("run must be a pending promotion candidate or pending full row")
+        self._raise_without_clean_promotion_report(row, repo_root=repo_root)
         self.conn.execute(
             """
             UPDATE runs
@@ -409,10 +464,7 @@ class QueueLedger:
         if row is None:
             raise KeyError(f"Unknown queue run: {run_id_or_name}")
         if approved:
-            self.conn.execute(
-                "UPDATE runs SET full_run_approved = ?, promotion_approved_at = COALESCE(promotion_approved_at, ?) WHERE id = ?",
-                (1, utc_now(), row["id"]),
-            )
+            raise ValueError("direct full-run approval is disabled; use approve_full_run() with a clean promotion report")
         else:
             self.conn.execute(
                 "UPDATE runs SET full_run_approved = 0, promotion_approved_at = NULL, approval_reason = NULL WHERE id = ?",
@@ -439,6 +491,23 @@ class QueueLedger:
             (row["id"],),
         )
         self.conn.commit()
+
+    def _raise_without_clean_promotion_report(
+        self,
+        row: dict[str, Any],
+        *,
+        repo_root: str | Path = ".",
+    ) -> None:
+        report_path = row.get("promotion_report_path")
+        if not report_path:
+            raise ValueError("promotion report missing")
+        path = Path(str(report_path))
+        if not path.is_absolute():
+            path = Path(repo_root) / path
+        report = load_promotion_report(path)
+        blockers = approval_blockers(report)
+        if blockers:
+            raise ValueError(f"promotion report blocked: {'; '.join(blockers)}")
 
     def reset_interrupted(self) -> int:
         cursor = self.conn.execute(
