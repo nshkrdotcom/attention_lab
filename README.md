@@ -15,6 +15,14 @@ The repository is intentionally not a chat fine-tuning stack, API evaluation fra
 - Record experiment outputs under reproducible run and report directories.
 - Use the queue layer to screen candidate configs before committing GPU time to full runs.
 
+## Current experiment status
+
+See [`EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`](EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md) before interpreting any E001/E002 result. That file is the dynamic status and technical discussion layer for completed, partial, stale, and not-yet-verified experiment artifacts.
+
+## Evidence boundary
+
+README.md explains how to use the harness. It is not the source of truth for live experiment state. If README.md, generated reports, queue indexes, and local run directories disagree, reconcile them in [`EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`](EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md), then regenerate the reports.
+
 ## Repository map
 
 ```text

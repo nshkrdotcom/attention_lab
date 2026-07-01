@@ -400,3 +400,11 @@ Before presenting work as done:
 4. State honestly whether data-dependent checks were skipped because data was unavailable.
 5. State whether any full runs were actually executed.
 6. Do not claim scientific results unless verified artifacts support them.
+
+
+## Dynamic Experiment Status
+
+Before summarizing, updating, or claiming anything about E001, E002, or later experiments, read:
+
+```text
+EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md
