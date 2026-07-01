@@ -16,7 +16,7 @@ from attention_lab.queue.promotion import (
     resolve_screen_profile,
     write_promotion_report,
 )
-from attention_lab.queue.runner import CommandRunner, CommandResult, default_command_runner
+from attention_lab.queue.runner import CommandRunner, CommandResult, default_command_runner, uv_project_command
 from attention_lab.queue.state_files import copy_to_active, finalize_config, move_to_full_pending
 from attention_lab.training.config import load_config, save_config
 
@@ -212,7 +212,12 @@ def run_screen(
     ledger.mark_started(run_id)
     copy_to_active(config_path)
     log_path = screen_run_dir / "queue_screen.log"
-    cmd = ["uv", "run", "scripts/train.py", "--config", str(screen_config_path), "--overwrite"]
+    cmd = [
+        *uv_project_command("scripts/train.py", repo_root=repo_root),
+        "--config",
+        str(screen_config_path),
+        "--overwrite",
+    ]
     result: CommandResult = command_runner(cmd, log_path)
     attention_type = config["model"].get("attention_type", "standard")
     destructive_cmd: list[str] | None = None
@@ -224,6 +229,7 @@ def run_screen(
             checkpoint_path=checkpoint_path,
             out_path=screen_run_dir / "evals" / "qkv_track_destructive_test.json",
             num_batches=1,
+            repo_root=repo_root,
         )
         destructive_result = command_runner(destructive_cmd, log_path)
         if destructive_result.returncode != 0:

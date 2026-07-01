@@ -529,7 +529,7 @@ uv run attn-queue promotion-report multi_qkv_static_3track_global_30m_seed1
 uv run attn-queue approve multi_qkv_static_3track_global_30m_seed1
 ```
 
-Optional 20-step smoke runs are `SANITY`, not evidence. Queue them explicitly and advance to screen only when you are ready for the evidence run:
+`SANITY` rows are non-evidence holding/smoke-intent rows, not executed evidence screens. Use them when you want to record that a config is not ready for screening yet, then advance to `SCREEN` only when you are ready for the short evidence run:
 
 ```bash
 uv run attn-queue add --stage SANITY configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_static_3track_global_30m_seed1.yaml
@@ -585,7 +585,7 @@ uv run attn-queue morning-note --experiment E001_cp_trilinear_attention \
 Queue safety rules:
 
 - Full runs require a clean promotion report and explicit approval.
-- `SANITY` rows are smoke checks only; use `attn-queue advance-to-screen <run>` before collecting screen evidence.
+- `SANITY` rows are non-evidence holding/smoke-intent rows; use `attn-queue advance-to-screen <run>` before collecting screen evidence.
 - Existing run directories are protected unless `queue.allow_overwrite_existing_run_dir: true` is explicit.
 - Non-standard full runs require a passed control through `queue.requires_run` unless an explicit skip is documented.
 - Non-standard screen promotion requires non-degenerate mechanism diagnostics; missing diagnostics exceptions cannot cleanly promote.

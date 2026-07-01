@@ -124,6 +124,7 @@ def test_e001_compare_requires_cp_diagnostics_and_optional_lambda0(repo_root):
     assert "evals/attention_diagnostics.jsonl" in compare_script
     assert "scripts/verify_run.py" in compare_script
     assert "cp_gradient_norm" in compare_script
+    assert "DEFAULT_ACTIVITY_THRESHOLD" in compare_script
     assert "Skipping lambda0 comparison" in compare_script
     assert "manual promoted control" in compare_script
 

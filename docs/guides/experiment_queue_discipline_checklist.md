@@ -284,7 +284,7 @@ KILLED
 
 Stage semantics:
 
-- [ ] `SANITY` is a smoke/sanity state only and is not promotion evidence.
+- [ ] `SANITY` is a non-evidence holding/smoke-intent state only; the queue does not treat it as an executed 20-step run.
 - [ ] `SANITY` rows must be advanced explicitly with `attn-queue advance-to-screen <run>` before screen evidence is collected.
 - [ ] `SCREEN` is the short evidence run for stability, loss descent, throughput/VRAM, diagnostics, and mechanism activity.
 - [ ] `PROMOTION_CANDIDATE` means a screen completed and a promotion report exists or can be reviewed.
@@ -412,7 +412,7 @@ Mechanism-active check:
 - [ ] For `standard`, mechanism-active is not required.
 - [ ] For non-standard attention, read `evals/attention_diagnostics.jsonl` when present.
 - [ ] For CP variants, mark `mechanism_active=1` if any row has
-  `cp_gradient_norm > 1e-6`.
+  `cp_gradient_norm` above the shared queue activity threshold.
 - [ ] For future QKV-track variants, use `track_gradient_norm`,
   `per_track_gradient_norm`, `branch_off_logit_delta`, or `track_output_delta`.
 - [ ] Mark `mechanism_active=0` and `DEAD_GRAD` when diagnostics prove dead activity.
@@ -740,7 +740,8 @@ Required evidence for novel mechanisms:
 For current CP variants:
 
 - [ ] `attention_diagnostics.jsonl` exists for CP runs.
-- [ ] `cp_gradient_norm > 1e-6` in at least one row for a basic active check.
+- [ ] `cp_gradient_norm` above the shared queue activity threshold in at least
+  one row for a basic active check.
 - [ ] `lambda_value` is logged.
 - [ ] `cp_score_std` and `standard_score_std` are logged.
 - [ ] `cp_to_standard_score_std_ratio` is logged.

@@ -258,6 +258,19 @@ def test_screen_destructive_command_uses_screen_artifacts(tmp_path):
     ]
 
 
+def test_screen_destructive_command_uses_repo_root_project(tmp_path):
+    cmd = build_screen_destructive_test_command(
+        screen_config_path=tmp_path / "screen_config.yaml",
+        checkpoint_path=tmp_path / "checkpoints" / "ckpt_last.pt",
+        out_path=tmp_path / "evals" / "qkv_track_destructive_test.json",
+        num_batches=1,
+        repo_root=tmp_path,
+    )
+
+    assert cmd[:4] == ["uv", "--project", str(tmp_path), "run"]
+    assert cmd[4] == str(tmp_path / "scripts" / "qkv_track_destructive_test.py")
+
+
 def test_schema_required_fields_match_python_validator(repo_root):
     schema = json.loads((repo_root / "reports" / "schema" / "promotion_report.schema.json").read_text(encoding="utf-8"))
 
@@ -386,7 +399,7 @@ def test_run_screen_records_multi_qkv_destructive_failure(tmp_path, tiny_config,
 
     def fake_command(cmd, log_path):
         screen_dir = Path(log_path).parent
-        if "scripts/qkv_track_destructive_test.py" in cmd:
+        if _command_has_script(cmd, "scripts/qkv_track_destructive_test.py"):
             return CommandResult(returncode=2, stdout="", stderr="route perturbation failed")
         _write_metrics(screen_dir / "metrics.jsonl")
         _write_jsonl(
@@ -422,8 +435,10 @@ def test_run_screen_uses_repo_root_when_cwd_differs(tmp_path, tiny_config, monke
     ledger.initialize()
     run_id = ledger.enqueue_config(config_path, config, config_path.read_bytes())
     row = ledger.get_run(run_id)
+    commands = []
 
-    def fake_command(cmd, log_path):  # noqa: ARG001
+    def fake_command(cmd, log_path):
+        commands.append(cmd)
         screen_dir = Path(log_path).parent
         _write_metrics(screen_dir / "metrics.jsonl")
         (screen_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
@@ -433,6 +448,8 @@ def test_run_screen_uses_repo_root_when_cwd_differs(tmp_path, tiny_config, monke
     run_screen(row, ledger, command_runner=fake_command, repo_root=repo_root)
 
     updated = ledger.get_run(run_id)
+    assert commands[0][:4] == ["uv", "--project", str(repo_root), "run"]
+    assert commands[0][4] == str(repo_root / "scripts" / "train.py")
     assert Path(updated["promotion_report_path"]).is_relative_to(repo_root)
     assert Path(updated["screen_run_dir"]).is_relative_to(repo_root)
     assert not (outside / "reports").exists()
@@ -594,3 +611,7 @@ def _write_destructive(path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+
+def _command_has_script(cmd: list[str], script_path: str) -> bool:
+    return any(str(part).endswith(script_path) for part in cmd)

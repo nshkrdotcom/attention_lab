@@ -119,16 +119,16 @@ def _write_screen_metrics(path: Path) -> None:
 
 
 def _write_full_artifact_for_command(cmd: list[str], run_dir: Path) -> None:
-    if "scripts/train.py" in cmd:
+    if _command_has_script(cmd, "scripts/train.py"):
         (run_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
         (run_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"tiny")
-    if "scripts/eval_loss.py" in cmd:
+    if _command_has_script(cmd, "scripts/eval_loss.py"):
         (run_dir / "evals").mkdir(parents=True, exist_ok=True)
         (run_dir / "evals" / "val_loss.json").write_text(json.dumps({"val_loss": 4.0}), encoding="utf-8")
-    if "scripts/eval_hellaswag.py" in cmd:
+    if _command_has_script(cmd, "scripts/eval_hellaswag.py"):
         (run_dir / "evals").mkdir(parents=True, exist_ok=True)
         (run_dir / "evals" / "hellaswag.json").write_text(json.dumps({"accuracy_norm": 0.25}), encoding="utf-8")
-    if "scripts/summarize_run.py" in cmd:
+    if _command_has_script(cmd, "scripts/summarize_run.py"):
         (run_dir / "evals").mkdir(parents=True, exist_ok=True)
         (run_dir / "evals" / "run_summary.json").write_text(
             json.dumps(
@@ -143,6 +143,10 @@ def _write_full_artifact_for_command(cmd: list[str], run_dir: Path) -> None:
             ),
             encoding="utf-8",
         )
+
+
+def _command_has_script(cmd: list[str], script_path: str) -> bool:
+    return any(str(part).endswith(script_path) for part in cmd)
 
 
 def _write_hypothesis(path: Path) -> None:

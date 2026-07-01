@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Callable, Sequence
 
 from attention_lab.queue.ledger import QueueLedger
+from attention_lab.queue.promotion import full_run_preflight_blockers
 from attention_lab.queue.state_files import copy_to_active, finalize_config
 from attention_lab.training.config import load_config
 
@@ -28,48 +29,44 @@ def build_full_pipeline(
     run_dir: str | Path,
     data_root: str | Path,
     manifest_path: str | Path,
+    repo_root: str | Path | None = None,
 ) -> list[list[str]]:
     run_dir = str(run_dir)
     data_root = str(data_root)
     manifest_path = str(manifest_path)
     ckpt_last = f"{run_dir}/checkpoints/ckpt_last.pt"
+    def run_script(script_path: str, *args: str) -> list[str]:
+        return [*uv_project_command(script_path, repo_root=repo_root), *args]
+
     return [
-        [
-            "uv",
-            "run",
+        run_script(
             "scripts/verify_data.py",
             "--data_root",
             data_root,
             "--manifest",
             manifest_path,
             "--verify_hashes",
-        ],
-        ["uv", "run", "scripts/train.py", "--config", str(config_path), "--overwrite"],
-        [
-            "uv",
-            "run",
+        ),
+        run_script("scripts/train.py", "--config", str(config_path), "--overwrite"),
+        run_script(
             "scripts/verify_run.py",
             "--run_dir",
             run_dir,
             "--expect-complete-training",
             "--expect-sample",
             "--expect-data-manifest",
-        ],
-        ["uv", "run", "scripts/eval_loss.py", "--checkpoint", ckpt_last, "--data_root", data_root],
-        [
-            "uv",
-            "run",
+        ),
+        run_script("scripts/eval_loss.py", "--checkpoint", ckpt_last, "--data_root", data_root),
+        run_script(
             "scripts/eval_generate.py",
             "--checkpoint",
             ckpt_last,
             "--prompt",
             "The history of mathematics",
-        ],
-        ["uv", "run", "scripts/eval_hellaswag.py", "--checkpoint", ckpt_last, "--max_examples", "100"],
-        ["uv", "run", "scripts/summarize_run.py", "--run_dir", run_dir],
-        [
-            "uv",
-            "run",
+        ),
+        run_script("scripts/eval_hellaswag.py", "--checkpoint", ckpt_last, "--max_examples", "100"),
+        run_script("scripts/summarize_run.py", "--run_dir", run_dir),
+        run_script(
             "scripts/verify_run.py",
             "--run_dir",
             run_dir,
@@ -78,7 +75,7 @@ def build_full_pipeline(
             "--expect-eval-loss",
             "--expect-hellaswag",
             "--expect-data-manifest",
-        ],
+        ),
     ]
 
 
@@ -163,7 +160,14 @@ def _manifest_path_for_data_root(data_root: str | Path) -> Path:
 
 
 def _is_verify_step(cmd: Sequence[str]) -> bool:
-    return "scripts/verify_run.py" in cmd
+    return any(str(part).endswith("scripts/verify_run.py") for part in cmd)
+
+
+def uv_project_command(script_path: str, *, repo_root: str | Path | None = None) -> list[str]:
+    if repo_root is None:
+        return ["uv", "run", script_path]
+    root = Path(repo_root)
+    return ["uv", "--project", str(root), "run", str(root / script_path)]
 
 
 def existing_run_artifacts(run_dir: str | Path) -> list[str]:
@@ -215,9 +219,16 @@ def run_full(
     *,
     command_runner: CommandRunner = default_command_runner,
     repo_root: str | Path = ".",
+    unsafe_skip_promotion_preflight: bool = False,
 ) -> dict:
     run_id = row["id"]
     repo_root = Path(repo_root)
+    if not unsafe_skip_promotion_preflight:
+        blockers = full_run_preflight_blockers(row, repo_root=repo_root)
+        if blockers:
+            notes = f"full-run promotion preflight blocked: {'; '.join(blockers)}"
+            ledger.append_notes(run_id, notes)
+            return {"ok": False, "failure_class": "VERIFY_FAIL", "notes": notes}
     config_path = Path(row["config_path"])
     if not config_path.is_absolute():
         config_path = repo_root / config_path
@@ -255,6 +266,7 @@ def run_full(
         run_dir=run_dir,
         data_root=data_root,
         manifest_path=manifest_path,
+        repo_root=repo_root,
     ):
         result = command_runner(cmd, log_path)
         if result.returncode != 0:

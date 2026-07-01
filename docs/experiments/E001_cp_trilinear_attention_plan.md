@@ -120,7 +120,7 @@ reports/schema/attention_diagnostics.schema.json
 - `reports/experiments/E001_cp_trilinear_attention/comparison.json`
 - Completed experiment result report.
 
-The comparison script requires full-run summaries, eval artifacts, checkpoints, final `verify_run.py` success, and CP diagnostics with `cp_gradient_norm > 1e-6` for CP candidates.
+The comparison script requires full-run summaries, eval artifacts, checkpoints, final `verify_run.py` success, and CP diagnostics with `cp_gradient_norm` above the shared queue activity threshold for CP candidates.
 Lambda0 is skipped unless its manual promoted full-run artifacts exist.
 
 ## Manual Promotion-Stage Full-Run Commands

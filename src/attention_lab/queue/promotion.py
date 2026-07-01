@@ -109,11 +109,16 @@ def build_screen_destructive_test_command(
     checkpoint_path: str | Path,
     out_path: str | Path,
     num_batches: int = 1,
+    repo_root: str | Path | None = None,
 ) -> list[str]:
+    script = "scripts/qkv_track_destructive_test.py"
+    if repo_root is None:
+        command = ["uv", "run", script]
+    else:
+        root = Path(repo_root)
+        command = ["uv", "--project", str(root), "run", str(root / script)]
     return [
-        "uv",
-        "run",
-        "scripts/qkv_track_destructive_test.py",
+        *command,
         "--config",
         str(screen_config_path),
         "--checkpoint",
@@ -424,6 +429,26 @@ def approval_blockers(report: dict[str, Any]) -> list[str]:
                 blockers.append("Multi-QKV destructive test did not pass")
         elif summary.get("status") != "not_feasible_for_screen" or not summary.get("reason"):
             blockers.append("Multi-QKV destructive test is missing without a not_feasible_for_screen reason")
+    return blockers
+
+
+def full_run_preflight_blockers(row: dict[str, Any], repo_root: str | Path = ".") -> list[str]:
+    blockers: list[str] = []
+    if not bool(row.get("full_run_approved")):
+        blockers.append("full_run_approved is false")
+    report_path = row.get("promotion_report_path")
+    if not report_path:
+        blockers.append("promotion report missing")
+        return blockers
+    path = Path(str(report_path))
+    if not path.is_absolute():
+        path = Path(repo_root) / path
+    try:
+        report = load_promotion_report(path)
+    except Exception as exc:  # noqa: BLE001 - caller reports blocker text instead of traceback
+        blockers.append(f"promotion report unreadable: {exc}")
+        return blockers
+    blockers.extend(approval_blockers(report))
     return blockers
 
 

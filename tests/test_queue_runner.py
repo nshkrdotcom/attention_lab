@@ -41,6 +41,20 @@ def test_full_pipeline_command_contract():
     assert len(steps) == 8
 
 
+def test_full_pipeline_command_contract_with_repo_root(tmp_path):
+    steps = build_full_pipeline(
+        config_path=tmp_path / "queue" / "full_pending" / "candidate.yaml",
+        run_dir=tmp_path / "runs" / "candidate",
+        data_root=tmp_path / "data",
+        manifest_path=tmp_path / "data" / "manifest.json",
+        repo_root=tmp_path,
+    )
+
+    assert steps[0][:4] == ["uv", "--project", str(tmp_path), "run"]
+    assert steps[0][4] == str(tmp_path / "scripts" / "verify_data.py")
+    assert str(tmp_path / "scripts" / "train.py") in steps[1]
+
+
 def test_failure_classifier_prefers_known_patterns():
     assert classify_failure(1, "CUDA out of memory") == "OOM"
     assert classify_failure(1, "loss is nan") == "NAN"
@@ -74,7 +88,13 @@ def test_run_full_stops_on_failure_and_updates_ledger(tmp_path, tiny_config):
         calls.append(cmd)
         return CommandResult(returncode=1, stdout="", stderr="CUDA out of memory")
 
-    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+    result = run_full(
+        ledger.get_run(run_id),
+        ledger,
+        command_runner=fake_runner,
+        repo_root=Path.cwd(),
+        unsafe_skip_promotion_preflight=True,
+    )
     row = ledger.get_run(run_id)
     assert result["ok"] is False
     assert row["status"] == "FAILED"
@@ -117,7 +137,13 @@ def test_run_full_ingests_summary_and_hellaswag_on_success(tmp_path, tiny_config
     def fake_runner(cmd, log_path):
         return CommandResult(returncode=0, stdout="ok", stderr="")
 
-    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+    result = run_full(
+        ledger.get_run(run_id),
+        ledger,
+        command_runner=fake_runner,
+        repo_root=Path.cwd(),
+        unsafe_skip_promotion_preflight=True,
+    )
     row = ledger.get_run(run_id)
     assert result["ok"] is True
     assert row["status"] == "PASSED"
@@ -146,7 +172,13 @@ def test_run_full_refuses_existing_artifacts_without_allow(tmp_path, tiny_config
         calls.append(cmd)
         return CommandResult(returncode=0, stdout="ok", stderr="")
 
-    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+    result = run_full(
+        ledger.get_run(run_id),
+        ledger,
+        command_runner=fake_runner,
+        repo_root=Path.cwd(),
+        unsafe_skip_promotion_preflight=True,
+    )
     row = ledger.get_run(run_id)
     assert result["ok"] is False
     assert row["failure_class"] == "RUN_DIR_EXISTS"
@@ -168,7 +200,13 @@ def test_run_full_requires_summary_eval_and_checkpoint_artifacts(tmp_path, tiny_
     def fake_runner(cmd, log_path):
         return CommandResult(returncode=0, stdout="ok", stderr="")
 
-    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+    result = run_full(
+        ledger.get_run(run_id),
+        ledger,
+        command_runner=fake_runner,
+        repo_root=Path.cwd(),
+        unsafe_skip_promotion_preflight=True,
+    )
     row = ledger.get_run(run_id)
     assert result["ok"] is False
     assert row["failure_class"] == "VERIFY_FAIL"
@@ -198,13 +236,46 @@ def test_run_full_rejects_missing_required_summary_field(tmp_path, tiny_config):
     def fake_runner(cmd, log_path):
         return CommandResult(returncode=0, stdout="ok", stderr="")
 
-    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+    result = run_full(
+        ledger.get_run(run_id),
+        ledger,
+        command_runner=fake_runner,
+        repo_root=Path.cwd(),
+        unsafe_skip_promotion_preflight=True,
+    )
     row = ledger.get_run(run_id)
     assert result["ok"] is False
     assert row["failure_class"] == "VERIFY_FAIL"
     assert "run_summary.json missing required fields" in row["notes"]
 
 
-def _force_full_pending(ledger: QueueLedger, run_id: str) -> None:
-    ledger.conn.execute("UPDATE runs SET stage = 'FULL', status = 'PENDING' WHERE id = ?", (run_id,))
+def test_run_full_preflight_blocks_direct_forced_full_without_report(tmp_path, tiny_config):
+    ledger = QueueLedger(tmp_path / "queue.db")
+    ledger.initialize()
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config_path = tmp_path / "candidate.yaml"
+    import yaml
+
+    content = yaml.safe_dump(config).encode()
+    config_path.write_bytes(content)
+    run_id = ledger.enqueue_config(config_path, config, content)
+    _force_full_pending(ledger, run_id, approved=True)
+    calls = []
+
+    def fake_runner(cmd, log_path):  # noqa: ARG001
+        calls.append(cmd)
+        return CommandResult(returncode=0, stdout="ok", stderr="")
+
+    result = run_full(ledger.get_run(run_id), ledger, command_runner=fake_runner, repo_root=Path.cwd())
+
+    assert result["ok"] is False
+    assert calls == []
+    assert "promotion report missing" in (ledger.get_run(run_id)["notes"] or "")
+
+
+def _force_full_pending(ledger: QueueLedger, run_id: str, *, approved: bool = False) -> None:
+    ledger.conn.execute(
+        "UPDATE runs SET stage = 'FULL', status = 'PENDING', full_run_approved = ? WHERE id = ?",
+        (int(approved), run_id),
+    )
     ledger.conn.commit()

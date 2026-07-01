@@ -42,13 +42,18 @@ require_cp_artifacts() {
 import json
 import sys
 
+from attention_lab.queue.mechanism_checks import DEFAULT_ACTIVITY_THRESHOLD
+
 path = sys.argv[1]
 for line in open(path, encoding="utf-8"):
     row = json.loads(line)
     value = row.get("cp_gradient_norm")
-    if value is not None and float(value) > 1e-6:
+    if value is not None and float(value) > DEFAULT_ACTIVITY_THRESHOLD:
         raise SystemExit(0)
-print(f"CP diagnostics did not show cp_gradient_norm > 1e-6: {path}", file=sys.stderr)
+print(
+    f"CP diagnostics did not show cp_gradient_norm > {DEFAULT_ACTIVITY_THRESHOLD:g}: {path}",
+    file=sys.stderr,
+)
 raise SystemExit(1)
 PY
 }
