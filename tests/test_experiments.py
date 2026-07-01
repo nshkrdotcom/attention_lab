@@ -73,3 +73,13 @@ def test_all_full_matrix_scripts_refuse_to_launch(repo_root):
         assert result.returncode != 0
         assert "screen-first" in result.stderr
         assert "Refusing" in result.stderr
+
+
+def test_e001_compare_requires_cp_diagnostics_and_optional_lambda0(repo_root):
+    compare_script = (
+        repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "compare_full_runs.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "evals/attention_diagnostics.jsonl" in compare_script
+    assert "Skipping lambda0 comparison" in compare_script
+    assert "manual promoted control" in compare_script

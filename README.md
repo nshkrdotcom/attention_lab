@@ -529,6 +529,8 @@ uv run attn-queue approve multi_qkv_static_3track_global_30m_seed1
 
 The approver checks the promotion report before setting a row executable as `FULL`. Non-standard candidates need non-degenerate diagnostics unless an explicit config exception records why diagnostics are absent. Multi-QKV reports include screen destructive-test evidence when feasible, or a recorded screen-level infeasibility reason.
 
+Each screen preserves `screen_config.yaml`, `resolved_config.yaml`, `metrics.jsonl`, `queue_screen.log`, `checkpoints/ckpt_last.pt`, diagnostics when applicable, and a screen-local `promotion_report.json`. The canonical promotion report is also written under `reports/`.
+
 ## Experiment queue
 
 The queue layer is a serial, single-GPU operator tool. It does not decide what is scientifically worth running. It screens candidate configs, writes promotion reports, records state in SQLite, blocks unsafe full runs, executes approved runs, and exports run indexes.

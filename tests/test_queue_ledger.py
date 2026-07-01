@@ -135,6 +135,10 @@ def test_ledger_approval_and_run_dir_collision(tmp_path, tiny_config):
         raise AssertionError("duplicate run.out_dir was accepted")
 
     ledger.mark_failed(run_id, failure_class="UNKNOWN", killed=True)
+    killed_row = ledger.get_run(run_id)
+    assert killed_row["stage"] == "KILLED"
+    assert killed_row["status"] == "KILLED"
+    assert killed_row["killed_at"] is not None
     try:
         ledger.enqueue_config(second, config, b"second")
     except ValueError as exc:

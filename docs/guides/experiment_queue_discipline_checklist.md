@@ -266,6 +266,8 @@ promotion_approved_at
 approval_reason
 screen_run_dir
 screen_config_path
+killed_at
+kill_reason
 notes
 ```
 
@@ -276,6 +278,7 @@ SANITY
 SCREEN
 PROMOTION_CANDIDATE
 FULL
+KILLED
 ```
 
 Required statuses:
@@ -372,9 +375,10 @@ Screen behavior:
 - [ ] Capture stdout/stderr.
 - [ ] Apply kill criteria in order.
 - [ ] Write verdict to ledger.
-- [ ] Preserve `screen_config.yaml`, `metrics.jsonl`, diagnostics, logs, and screen
-  checkpoints when emitted.
+- [ ] Preserve `screen_config.yaml`, `resolved_config.yaml`, `metrics.jsonl`,
+  diagnostics, logs, and the final screen checkpoint.
 - [ ] Write a promotion report under `reports/.../promotion/`.
+- [ ] Write a screen-local `promotion_report.json` copy for review.
 
 Kill criteria in order:
 
@@ -388,6 +392,7 @@ Kill criteria in order:
 - [ ] `FLAT_LOSS`: step-150 val loss is greater than step-10 val loss times `0.97`.
 - [ ] `DEAD_GRAD`: mechanism-active check fails.
 - [ ] `SLOW`: median tokens/sec below `baseline_tokens_per_sec * 0.30`.
+- [ ] `VERIFY_FAIL`: final screen checkpoint is missing.
 - [ ] Otherwise mark `PROMOTION_CANDIDATE`; do not make the row executable as
   `FULL` until `attn-queue approve` validates the promotion report.
 
@@ -557,7 +562,7 @@ Command checklist:
   - [ ] Launches `scripts/queue_daemon.sh`.
 - [ ] `attn-queue stop`
   - [ ] Sends SIGTERM to PID in `data/queue.pid`.
-- [ ] `attn-queue leaderboard [--min-stage SCREEN|PROMOTION_CANDIDATE|FULL] [--sort loss|ppl|speed]`
+- [ ] `attn-queue leaderboard [--min-stage SCREEN|PROMOTION_CANDIDATE|FULL|KILLED] [--sort loss|ppl|speed]`
   - [ ] Prints filtered/sorted leaderboard.
 - [ ] `attn-queue promotion-report <run_id_or_name>`
   - [ ] Regenerates a promotion report from preserved screen artifacts.

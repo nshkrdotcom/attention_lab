@@ -64,6 +64,7 @@ def run_doctor(
     _check_run_dirs(configs, messages)
     _check_configs(configs, messages)
     _check_ledger_approval(configs, ledger, messages)
+    _check_queue_state_classification(ledger, messages)
     _check_promotion_state(ledger, messages)
     _check_approved_hypotheses(configs, ledger, messages)
 
@@ -198,6 +199,35 @@ def _check_promotion_state(ledger: QueueLedger, messages: list[DoctorMessage]) -
                 _fail(messages, f"full-approved row has promotion blockers: {row.get('config_name')}: {'; '.join(blockers)}")
             else:
                 _ok(messages, f"full-approved row has promotion evidence: {row.get('config_name')}")
+
+
+def _check_queue_state_classification(ledger: QueueLedger, messages: list[DoctorMessage]) -> None:
+    for row in ledger.list_runs():
+        stage = row.get("stage")
+        status = row.get("status")
+        name = row.get("config_name")
+        report_path = row.get("promotion_report_path")
+        if stage == "SCREEN" and status == "PENDING":
+            _ok(messages, f"screen-ready: {name}")
+        elif stage == "SCREEN" and status in {"PASSED", "FAILED", "KILLED"}:
+            _ok(messages, f"screen-complete: {name} status={status}")
+        elif stage == "PROMOTION_CANDIDATE":
+            if not report_path:
+                _warn(messages, f"promotion-blocked: {name}: missing promotion report")
+                continue
+            _report, blockers = _load_report_and_blockers(report_path)
+            if blockers:
+                _warn(messages, f"promotion-blocked: {name}: {'; '.join(blockers)}")
+            else:
+                _ok(messages, f"promotion-candidate: {name}")
+        elif stage == "FULL" and row.get("full_run_approved"):
+            if status == "PASSED":
+                _ok(messages, f"full-complete: {name}")
+            else:
+                _ok(messages, f"full-approved: {name} status={status}")
+        elif stage == "KILLED" or status == "KILLED":
+            reason = row.get("kill_reason") or row.get("failure_class") or "unspecified"
+            _ok(messages, f"killed: {name}: {reason}")
 
 
 def _load_report_and_blockers(report_path: str | Path) -> tuple[dict[str, Any] | None, list[str]]:

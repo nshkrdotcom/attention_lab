@@ -200,8 +200,10 @@ def run_screen(
     screen_profile = resolve_screen_profile(config.get("queue", {}))
     screen_config = screen_config_with_overrides(config, screen_run_dir, screen_profile)
     screen_config_path = screen_run_dir / "screen_config.yaml"
+    resolved_config_path = screen_run_dir / "resolved_config.yaml"
     screen_run_dir.mkdir(parents=True, exist_ok=True)
     save_config(screen_config, screen_config_path)
+    save_config(screen_config, resolved_config_path)
 
     ledger.mark_started(run_id)
     copy_to_active(config_path)

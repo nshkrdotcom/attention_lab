@@ -271,7 +271,7 @@ def build_parser() -> argparse.ArgumentParser:
     add.set_defaults(func=cmd_add)
 
     ls = subparsers.add_parser("ls")
-    ls.add_argument("--stage", choices=["SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL"], default=None)
+    ls.add_argument("--stage", choices=["SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL", "KILLED"], default=None)
     ls.add_argument("--status", choices=["PENDING", "RUNNING", "PASSED", "FAILED", "KILLED"], default=None)
     ls.set_defaults(func=cmd_ls)
 
@@ -307,7 +307,7 @@ def build_parser() -> argparse.ArgumentParser:
     stop.set_defaults(func=cmd_stop)
 
     leaderboard = subparsers.add_parser("leaderboard")
-    leaderboard.add_argument("--min-stage", choices=["SCREEN", "PROMOTION_CANDIDATE", "FULL"], default=None)
+    leaderboard.add_argument("--min-stage", choices=["SCREEN", "PROMOTION_CANDIDATE", "FULL", "KILLED"], default=None)
     leaderboard.add_argument("--sort", choices=["loss", "ppl", "speed"], default=None)
     leaderboard.set_defaults(func=cmd_leaderboard)
 

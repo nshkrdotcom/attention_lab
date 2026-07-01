@@ -8,7 +8,7 @@ from typing import Any
 
 from attention_lab.training.config import load_config
 
-STAGES = {"SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL"}
+STAGES = {"SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL", "KILLED"}
 STATUSES = {"PENDING", "RUNNING", "PASSED", "FAILED", "KILLED"}
 FAILURE_CLASSES = {
     "NAN",
@@ -75,6 +75,8 @@ class QueueLedger:
                 approval_reason TEXT,
                 screen_run_dir TEXT,
                 screen_config_path TEXT,
+                killed_at TEXT,
+                kill_reason TEXT,
                 notes TEXT
             )
             """
@@ -95,6 +97,8 @@ class QueueLedger:
             "approval_reason": "ALTER TABLE runs ADD COLUMN approval_reason TEXT",
             "screen_run_dir": "ALTER TABLE runs ADD COLUMN screen_run_dir TEXT",
             "screen_config_path": "ALTER TABLE runs ADD COLUMN screen_config_path TEXT",
+            "killed_at": "ALTER TABLE runs ADD COLUMN killed_at TEXT",
+            "kill_reason": "ALTER TABLE runs ADD COLUMN kill_reason TEXT",
         }
         for column, statement in migrations.items():
             if column not in columns:
@@ -357,12 +361,16 @@ class QueueLedger:
         if failure_class not in FAILURE_CLASSES:
             failure_class = "UNKNOWN"
         status = "KILLED" if killed else "FAILED"
+        stage_assignment = "stage = 'KILLED'," if killed else ""
         self.conn.execute(
-            """
+            f"""
             UPDATE runs
-            SET status = ?,
+            SET {stage_assignment}
+                status = ?,
                 failure_class = ?,
                 finished_at = ?,
+                killed_at = COALESCE(?, killed_at),
+                kill_reason = COALESCE(?, kill_reason),
                 step_reached = COALESCE(?, step_reached),
                 mechanism_active = COALESCE(?, mechanism_active),
                 notes = COALESCE(?, notes)
@@ -372,6 +380,8 @@ class QueueLedger:
                 status,
                 failure_class,
                 utc_now(),
+                utc_now() if killed else None,
+                notes if killed else None,
                 step_reached,
                 None if mechanism_active is None else int(mechanism_active),
                 notes,

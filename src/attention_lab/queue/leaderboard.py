@@ -97,6 +97,8 @@ def _filter_rows(rows: list[dict[str, Any]], *, min_stage: str | None) -> list[d
         return [row for row in rows if row.get("stage") in {"PROMOTION_CANDIDATE", "FULL"}]
     if min_stage == "FULL":
         return [row for row in rows if row.get("stage") == "FULL"]
+    if min_stage == "KILLED":
+        return [row for row in rows if row.get("stage") == "KILLED" or row.get("status") == "KILLED"]
     return list(rows)
 
 

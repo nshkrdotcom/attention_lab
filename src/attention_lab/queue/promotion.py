@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import subprocess
+import hashlib
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -45,7 +46,9 @@ REQUIRED_PROMOTION_REPORT_FIELDS = {
     "run_name",
     "config_path",
     "screen_config_path",
+    "resolved_config_path",
     "screen_run_dir",
+    "source_config_hash",
     "attention_type",
     "stage",
     "max_step_reached",
@@ -54,6 +57,7 @@ REQUIRED_PROMOTION_REPORT_FIELDS = {
     "nan_or_inf_seen",
     "final_screen_train_loss",
     "final_screen_val_loss",
+    "final_screen_loss",
     "first_val_loss",
     "final_val_loss",
     "median_tokens_per_sec",
@@ -62,8 +66,12 @@ REQUIRED_PROMOTION_REPORT_FIELDS = {
     "diagnostics_present",
     "diagnostics_non_degenerate",
     "mechanism_check_name",
+    "mechanism_check_passed",
     "mechanism_active",
     "mechanism_activity_summary",
+    "checkpoint_present",
+    "train_points_seen",
+    "eval_points_seen",
     "destructive_test_present",
     "destructive_test_effect_summary",
     "promotion_recommendation",
@@ -128,9 +136,11 @@ def build_promotion_report(
     repo_root = Path(repo_root)
     screen_run_dir = Path(screen_run_dir)
     screen_config_path = Path(screen_config_path) if screen_config_path is not None else screen_run_dir / "screen_config.yaml"
+    resolved_config_path = screen_run_dir / "resolved_config.yaml"
     metrics_path = screen_run_dir / "metrics.jsonl"
     diagnostics_path = screen_run_dir / "evals" / "attention_diagnostics.jsonl"
     destructive_path = screen_run_dir / "evals" / "qkv_track_destructive_test.json"
+    checkpoint_path = screen_run_dir / "checkpoints" / "ckpt_last.pt"
     metrics = load_metrics(metrics_path)
     attention_type = config["model"].get("attention_type", "standard")
     queue_config = config.get("queue", {})
@@ -141,6 +151,7 @@ def build_promotion_report(
     final_train_loss = train_losses[-1][1] if train_losses else None
     first_val_loss = val_losses[0][1] if val_losses else None
     final_val_loss = val_losses[-1][1] if val_losses else None
+    final_screen_loss = final_val_loss if final_val_loss is not None else final_train_loss
     loss_descended = _loss_descended(val_losses, train_losses)
     nan_or_inf_seen = _nan_or_inf_seen(metrics)
     max_step = step_reached(metrics)
@@ -173,7 +184,7 @@ def build_promotion_report(
 
     destructive_summary = _destructive_test_summary(
         destructive_path=destructive_path,
-        checkpoint_path=screen_run_dir / "checkpoints" / "ckpt_last.pt",
+        checkpoint_path=checkpoint_path,
         attention_type=attention_type,
     )
     decision = decide_promotion(
@@ -187,6 +198,7 @@ def build_promotion_report(
         missing_diagnostics_allowed=missing_diagnostics_allowed,
         destructive_test_present=destructive_summary["present"],
         destructive_test_effect_summary=destructive_summary["summary"],
+        checkpoint_present=checkpoint_path.exists(),
         failure_class=failure_class or row.get("failure_class"),
     )
     experiment_id = resolve_experiment_id(
@@ -202,14 +214,15 @@ def build_promotion_report(
         "run_name": config["run"].get("name") or row.get("config_name"),
         "config_path": str(row.get("config_path") or ""),
         "screen_config_path": str(screen_config_path),
+        "resolved_config_path": str(resolved_config_path if resolved_config_path.exists() else screen_config_path),
         "screen_run_dir": str(screen_run_dir),
+        "source_config_hash": _file_sha256(row.get("config_path"), repo_root),
         "artifact_paths": {
             "metrics": str(metrics_path) if metrics_path.exists() else None,
             "attention_diagnostics": str(diagnostics_path) if diagnostics_path.exists() else None,
             "destructive_test": str(destructive_path) if destructive_path.exists() else None,
-            "checkpoint": str(screen_run_dir / "checkpoints" / "ckpt_last.pt")
-            if (screen_run_dir / "checkpoints" / "ckpt_last.pt").exists()
-            else None,
+            "checkpoint": str(checkpoint_path) if checkpoint_path.exists() else None,
+            "promotion_report": str(screen_run_dir / "promotion_report.json"),
         },
         "attention_type": attention_type,
         "stage": "SCREEN",
@@ -219,6 +232,7 @@ def build_promotion_report(
         "nan_or_inf_seen": nan_or_inf_seen,
         "final_screen_train_loss": final_train_loss,
         "final_screen_val_loss": final_val_loss,
+        "final_screen_loss": final_screen_loss,
         "first_val_loss": first_val_loss,
         "final_val_loss": final_val_loss,
         "median_tokens_per_sec": _median(tokens_per_sec),
@@ -227,6 +241,7 @@ def build_promotion_report(
         "diagnostics_present": bool(diagnostics_rows),
         "diagnostics_non_degenerate": diagnostics_non_degenerate,
         "mechanism_check_name": check_name,
+        "mechanism_check_passed": bool(mechanism_result and mechanism_result.passed) if mechanism_result is not None else None,
         "mechanism_active": resolved_mechanism_active,
         "mechanism_activity_summary": _mechanism_activity_summary(
             attention_type=attention_type,
@@ -234,6 +249,9 @@ def build_promotion_report(
             mechanism_result=mechanism_result,
             missing_diagnostics_allowed=missing_diagnostics_allowed,
         ),
+        "checkpoint_present": checkpoint_path.exists(),
+        "train_points_seen": len(train_losses),
+        "eval_points_seen": len(val_losses),
         "destructive_test_present": destructive_summary["present"],
         "destructive_test_effect_summary": destructive_summary["summary"],
         "promotion_recommendation": decision.recommendation,
@@ -258,6 +276,7 @@ def decide_promotion(
     missing_diagnostics_allowed: bool,
     destructive_test_present: bool,
     destructive_test_effect_summary: dict[str, Any] | None,
+    checkpoint_present: bool,
     failure_class: str | None = None,
 ) -> PromotionDecision:
     blockers: list[str] = []
@@ -271,6 +290,8 @@ def decide_promotion(
         blockers.append("screen throughput was below the configured baseline threshold")
     if max_step_reached is None or max_step_reached < expected_screen_steps:
         blockers.append(f"screen did not reach expected step {expected_screen_steps}")
+    if not checkpoint_present:
+        return PromotionDecision("kill", ["final screen checkpoint is missing"], "screen did not preserve a checkpoint")
     if not loss_descended:
         blockers.append("loss did not descend during the screen")
     if attention_type != "standard":
@@ -310,6 +331,12 @@ def write_promotion_report(report: dict[str, Any], repo_root: str | Path = ".") 
     report_dir.mkdir(parents=True, exist_ok=True)
     path = report_dir / f"{_safe_filename(report['run_name'])}_{_safe_filename(report['run_id'])}.json"
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    screen_report_dir = Path(str(report["screen_run_dir"]))
+    if not screen_report_dir.is_absolute():
+        screen_report_dir = repo_root / screen_report_dir
+    screen_report_path = screen_report_dir / "promotion_report.json"
+    screen_report_path.parent.mkdir(parents=True, exist_ok=True)
+    screen_report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
 
@@ -331,10 +358,24 @@ def validate_promotion_report(report: dict[str, Any]) -> list[str]:
         errors.append("promotion_blockers must be a list")
     if report.get("stage") != "SCREEN":
         errors.append("stage must be SCREEN")
-    for key in ("run_id", "run_name", "config_path", "screen_config_path", "screen_run_dir", "attention_type"):
+    for key in (
+        "run_id",
+        "run_name",
+        "config_path",
+        "screen_config_path",
+        "resolved_config_path",
+        "screen_run_dir",
+        "attention_type",
+    ):
         if key in report and (not isinstance(report[key], str) or not report[key].strip()):
             errors.append(f"{key} must be a nonempty string")
-    for key in ("loss_descended", "nan_or_inf_seen", "diagnostics_present", "diagnostics_non_degenerate"):
+    for key in (
+        "loss_descended",
+        "nan_or_inf_seen",
+        "diagnostics_present",
+        "diagnostics_non_degenerate",
+        "checkpoint_present",
+    ):
         if key in report and not isinstance(report[key], bool):
             errors.append(f"{key} must be a boolean")
     if "destructive_test_present" in report and not isinstance(report["destructive_test_present"], bool):
@@ -347,6 +388,8 @@ def approval_blockers(report: dict[str, Any]) -> list[str]:
     if report.get("promotion_recommendation") != "promote":
         blockers.append(f"promotion_recommendation is {report.get('promotion_recommendation')!r}, not 'promote'")
     blockers.extend(str(item) for item in report.get("promotion_blockers") or [])
+    if report.get("checkpoint_present") is not True:
+        blockers.append("final screen checkpoint is missing")
     attention_type = str(report.get("attention_type") or "")
     mechanism_summary = report.get("mechanism_activity_summary") or {}
     missing_allowed = bool(mechanism_summary.get("missing_diagnostics_allowed"))
@@ -604,3 +647,14 @@ def _repo_relative_text(path: str | Path | None, repo_root: Path) -> str:
 def _safe_filename(value: Any) -> str:
     text = str(value)
     return "".join(char if char.isalnum() or char in {"-", "_", "."} else "_" for char in text)
+
+
+def _file_sha256(path: Any, repo_root: Path) -> str | None:
+    if not path:
+        return None
+    config_path = Path(path)
+    if not config_path.is_absolute():
+        config_path = repo_root / config_path
+    if not config_path.exists():
+        return None
+    return hashlib.sha256(config_path.read_bytes()).hexdigest()

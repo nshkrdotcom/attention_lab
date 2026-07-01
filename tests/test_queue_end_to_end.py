@@ -40,6 +40,8 @@ def test_queue_end_to_end_dry_run_with_fake_commands(tmp_path, tiny_config, monk
     def fake_screen_command(cmd, log_path):  # noqa: ARG001
         screen_run_dir = Path(log_path).parent
         _write_screen_metrics(screen_run_dir / "metrics.jsonl")
+        (screen_run_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (screen_run_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"test checkpoint")
         return CommandResult(returncode=0, stdout="screen ok", stderr="")
 
     def screen_runner(row, ledger_obj):

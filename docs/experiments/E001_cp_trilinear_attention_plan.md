@@ -120,6 +120,9 @@ reports/schema/attention_diagnostics.schema.json
 - `reports/experiments/E001_cp_trilinear_attention/comparison.json`
 - Completed experiment result report.
 
+The comparison script requires full-run summaries, eval artifacts, checkpoints, and CP diagnostics for CP candidates.
+Lambda0 is skipped unless its manual promoted full-run artifacts exist.
+
 ## Manual Promotion-Stage Full-Run Commands
 
 ```bash

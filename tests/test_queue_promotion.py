@@ -27,6 +27,8 @@ def test_standard_screen_descending_loss_promotes(tmp_path, tiny_config):
     assert validate_promotion_report(report) == []
     assert report["promotion_recommendation"] == "promote"
     assert report["promotion_blockers"] == []
+    assert report["checkpoint_present"] is True
+    assert report["final_screen_loss"] == 5.0
     assert report["diagnostics_present"] is False
     assert approval_blockers(report) == []
 
@@ -73,11 +75,12 @@ def test_multi_qkv_screen_valid_diagnostics_marks_mechanism_active(tmp_path, tin
         screen_dir / "evals" / "attention_diagnostics.jsonl",
         [_qkv_row(layer_idx=layer_idx, active_track=layer_idx) for layer_idx in range(3)],
     )
+    _write_destructive(screen_dir / "evals" / "qkv_track_destructive_test.json")
     report = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
 
     assert report["mechanism_active"] is True
     assert report["diagnostics_non_degenerate"] is True
-    assert report["destructive_test_effect_summary"]["status"] == "not_feasible_for_screen"
+    assert report["destructive_test_present"] is True
     assert report["promotion_recommendation"] == "promote"
 
 
@@ -92,6 +95,17 @@ def test_multi_qkv_screen_missing_diagnostics_blocks(tmp_path, tiny_config):
 
     assert report["promotion_recommendation"] == "needs_investigation"
     assert "non-standard attention is missing required diagnostics" in report["promotion_blockers"]
+
+
+def test_screen_missing_checkpoint_is_killed(tmp_path, tiny_config):
+    config, row, screen_dir = _screen_case(tmp_path, tiny_config, checkpoint=False)
+    _write_metrics(screen_dir / "metrics.jsonl")
+    report = build_promotion_report(row=row, config=config, screen_run_dir=screen_dir, repo_root=tmp_path)
+
+    assert report["checkpoint_present"] is False
+    assert report["promotion_recommendation"] == "kill"
+    assert "final screen checkpoint is missing" in report["promotion_blockers"]
+    assert approval_blockers(report)
 
 
 def test_nan_flat_and_slow_screens_do_not_promote(tmp_path, tiny_config):
@@ -206,6 +220,7 @@ def test_approve_requires_clean_promotion_report(tmp_path, tiny_config, capsys):
 
     report["promotion_recommendation"] = "promote"
     report_path = write_promotion_report(report, repo_root=tmp_path)
+    assert (Path(report["screen_run_dir"]) / "promotion_report.json").exists()
     ledger = QueueLedger(db_path)
     ledger.initialize()
     ledger.record_promotion_report(run_id, report_path, report)
@@ -244,6 +259,8 @@ def test_run_screen_preserves_artifacts_and_writes_report(tmp_path, tiny_config,
         screen_dir = Path(log_path).parent
         _write_metrics(screen_dir / "metrics.jsonl")
         _write_jsonl(screen_dir / "evals" / "attention_diagnostics.jsonl", [{"step": 50, "cp_gradient_norm": 1e-3}])
+        (screen_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (screen_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"test checkpoint")
         return CommandResult(returncode=0, stdout="ok", stderr="")
 
     result = run_screen(row, ledger, command_runner=fake_screen_command)
@@ -254,13 +271,22 @@ def test_run_screen_preserves_artifacts_and_writes_report(tmp_path, tiny_config,
     assert result["ok"] is True
     assert updated["stage"] == "PROMOTION_CANDIDATE"
     assert (screen_dir / "screen_config.yaml").exists()
+    assert (screen_dir / "resolved_config.yaml").exists()
+    assert (screen_dir / "promotion_report.json").exists()
     assert (screen_dir / "metrics.jsonl").exists()
     assert (screen_dir / "evals" / "attention_diagnostics.jsonl").exists()
     assert Path(report["artifact_paths"]["metrics"]).exists()
     assert Path(report["artifact_paths"]["attention_diagnostics"]).exists()
 
 
-def _screen_case(tmp_path: Path, tiny_config, *, attention_type: str = "standard", name: str = "candidate"):
+def _screen_case(
+    tmp_path: Path,
+    tiny_config,
+    *,
+    attention_type: str = "standard",
+    name: str = "candidate",
+    checkpoint: bool = True,
+):
     config = tiny_config(tmp_path, tmp_path / "data")
     config["run"]["name"] = name
     config["run"]["out_dir"] = str(tmp_path / "runs" / name)
@@ -295,6 +321,10 @@ def _screen_case(tmp_path: Path, tiny_config, *, attention_type: str = "standard
     screen_dir = tmp_path / "runs" / "screen" / name
     screen_dir.mkdir(parents=True)
     (screen_dir / "screen_config.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
+    (screen_dir / "resolved_config.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
+    if checkpoint:
+        (screen_dir / "checkpoints").mkdir(parents=True)
+        (screen_dir / "checkpoints" / "ckpt_last.pt").write_bytes(b"test checkpoint")
     return config, row, screen_dir
 
 
