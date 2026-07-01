@@ -358,7 +358,8 @@ Checklist:
 - [ ] Existing content hashes are skipped.
 - [ ] `attention_type`, `run_dir`, and `config_name` are stored.
 - [ ] Config copy/move semantics are explicit.
-- [ ] `attn-queue add` copies one or more configs into inbox and validates first.
+- [ ] `attn-queue add` copies one or more requested configs into inbox, validates first, and enqueues only those requested paths.
+- [ ] Watchdog/inbox scanning may ingest all pending `.yaml` files in `queue/inbox/`; direct `attn-queue add --stage SANITY <config>` must not reclassify unrelated inbox files as `SANITY`.
 - [ ] Ingested configs should retain original content for provenance.
 
 TDD checks:

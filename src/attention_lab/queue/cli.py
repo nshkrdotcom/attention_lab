@@ -10,7 +10,7 @@ from pathlib import Path
 
 from attention_lab.queue.doctor import render_doctor_report, run_doctor
 from attention_lab.queue.leaderboard import render_leaderboard
-from attention_lab.queue.ledger import QueueLedger
+from attention_lab.queue.ledger import QueueLedger, hash_config_bytes
 from attention_lab.queue.paths import default_db_path, default_pid_path, ensure_queue_dirs
 from attention_lab.queue.promotion import (
     approval_blockers,
@@ -61,10 +61,16 @@ def cmd_add(args: argparse.Namespace) -> None:
     try:
         for source in args.config_paths:
             source_path = Path(source)
-            load_config(source_path)
+            content = source_path.read_bytes()
+            config = load_config(source_path)
             dest = paths["inbox"] / source_path.name
             shutil.copy2(source_path, dest)
-            result = ledger.scan_inbox(paths["inbox"], stage=args.stage)
+            run_id = hash_config_bytes(content)
+            if ledger.get_run(run_id) is None:
+                ledger.enqueue_config(dest, config, content, stage=args.stage)
+                result = {"inserted": 1, "skipped": 0, "errors": []}
+            else:
+                result = {"inserted": 0, "skipped": 1, "errors": []}
             print(f"added: {dest} inserted={result['inserted']} skipped={result['skipped']}")
             for error in result["errors"]:
                 print(f"error: {error['path']}: {error['error']}")

@@ -229,6 +229,30 @@ def test_cli_can_queue_sanity_then_advance_to_screen(tmp_path, tiny_config, caps
     assert "SCREEN" in capsys.readouterr().out
 
 
+def test_cli_add_stage_only_enqueues_requested_paths(tmp_path, tiny_config, capsys):
+    root = tmp_path / "root"
+    inbox = root / "queue" / "inbox"
+    inbox.mkdir(parents=True)
+    db_path = root / "data" / "queue.db"
+    source = tmp_path / "candidate.yaml"
+    unrelated = inbox / "unrelated.yaml"
+    import yaml
+
+    source.write_text(yaml.safe_dump(tiny_config(tmp_path / "candidate", tmp_path / "data")), encoding="utf-8")
+    unrelated.write_text(yaml.safe_dump(tiny_config(tmp_path / "unrelated", tmp_path / "data")), encoding="utf-8")
+
+    queue_main(["--root", str(root), "--db", str(db_path), "add", "--stage", "SANITY", str(source)])
+    output = capsys.readouterr().out
+    assert "inserted=1 skipped=0" in output
+
+    ledger = QueueLedger(db_path)
+    try:
+        rows = ledger.list_runs()
+    finally:
+        ledger.close()
+    assert [(row["config_name"], row["stage"]) for row in rows] == [("candidate", "SANITY")]
+
+
 def test_cli_export_report_and_morning_note_commands(tmp_path, capsys, monkeypatch):
     db_path = tmp_path / "queue.db"
 
