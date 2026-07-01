@@ -2,13 +2,20 @@ from __future__ import annotations
 
 import json
 import math
-import shutil
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.mechanism_checks import evaluate_mechanism_activity
+from attention_lab.queue.promotion import (
+    ScreenProfile,
+    build_promotion_report,
+    build_screen_destructive_test_command,
+    is_multi_qkv_attention_type,
+    resolve_screen_profile,
+    write_promotion_report,
+)
 from attention_lab.queue.runner import CommandRunner, CommandResult, default_command_runner
 from attention_lab.queue.state_files import copy_to_active, finalize_config, move_to_full_pending
 from attention_lab.training.config import load_config, save_config
@@ -23,17 +30,26 @@ class ScreenVerdict:
     notes: str | None = None
 
 
-def screen_config_with_overrides(config: dict, screen_run_dir: str | Path) -> dict:
+def screen_config_with_overrides(
+    config: dict,
+    screen_run_dir: str | Path,
+    profile: ScreenProfile | None = None,
+) -> dict:
+    profile = profile or resolve_screen_profile(config.get("queue", {}))
     screened = deepcopy(config)
     screened["run"]["out_dir"] = str(screen_run_dir)
-    screened["train"]["max_steps"] = 150
-    screened["train"]["val_every"] = 50
-    screened["train"]["save_every"] = 150
+    screened["train"]["max_steps"] = profile.max_steps
+    screened["train"]["val_every"] = profile.val_every
+    screened["train"]["save_every"] = profile.save_every
     attention_type = screened["model"].get("attention_type", "standard")
     if "diagnostics" in screened or attention_type != "standard":
         diagnostics = screened.setdefault("diagnostics", {})
         current = diagnostics.get("attention_diagnostics_every")
-        diagnostics["attention_diagnostics_every"] = min(int(current), 50) if current is not None else 50
+        diagnostics["attention_diagnostics_every"] = (
+            min(int(current), profile.diagnostics_every_nonstandard)
+            if current is not None
+            else profile.diagnostics_every_nonstandard
+        )
     return screened
 
 
@@ -175,13 +191,14 @@ def run_screen(
     ledger: QueueLedger,
     *,
     command_runner: CommandRunner = default_command_runner,
-    keep_screens: bool = False,
+    keep_screens: bool = True,  # noqa: ARG001 - retained for compatibility; screen artifacts are durable by default.
 ) -> dict:
     run_id = row["id"]
     config_path = Path(row["config_path"])
     config = load_config(config_path)
     screen_run_dir = Path("runs") / "screen" / f"{row['config_name']}_{run_id}"
-    screen_config = screen_config_with_overrides(config, screen_run_dir)
+    screen_profile = resolve_screen_profile(config.get("queue", {}))
+    screen_config = screen_config_with_overrides(config, screen_run_dir, screen_profile)
     screen_config_path = screen_run_dir / "screen_config.yaml"
     screen_run_dir.mkdir(parents=True, exist_ok=True)
     save_config(screen_config, screen_config_path)
@@ -191,19 +208,41 @@ def run_screen(
     log_path = screen_run_dir / "queue_screen.log"
     cmd = ["uv", "run", "scripts/train.py", "--config", str(screen_config_path), "--overwrite"]
     result: CommandResult = command_runner(cmd, log_path)
+    attention_type = config["model"].get("attention_type", "standard")
+    destructive_cmd: list[str] | None = None
+    checkpoint_path = screen_run_dir / "checkpoints" / "ckpt_last.pt"
+    if result.returncode == 0 and is_multi_qkv_attention_type(attention_type) and checkpoint_path.exists():
+        destructive_cmd = build_screen_destructive_test_command(
+            screen_config_path=screen_config_path,
+            checkpoint_path=checkpoint_path,
+            out_path=screen_run_dir / "evals" / "qkv_track_destructive_test.json",
+            num_batches=1,
+        )
+        command_runner(destructive_cmd, log_path)
     metrics = load_metrics(screen_run_dir / "metrics.jsonl")
     verdict = classify_screen_result(
         returncode=result.returncode,
         stderr=result.stderr,
         metrics=metrics,
-        attention_type=config["model"].get("attention_type", "standard"),
+        attention_type=attention_type,
         diagnostics_path=screen_run_dir / "evals" / "attention_diagnostics.jsonl",
         baseline_tokens_per_sec=ledger.get_baseline_screen_tokens_per_sec(),
         queue_config=config.get("queue", {}),
+        expected_steps=screen_profile.max_steps,
     )
+    report = build_promotion_report(
+        row=row,
+        config=config,
+        screen_run_dir=screen_run_dir,
+        screen_config_path=screen_config_path,
+        failure_class=verdict.failure_class,
+        mechanism_active=verdict.mechanism_active,
+    )
+    report_path = write_promotion_report(report)
+    ledger.record_promotion_report(run_id, report_path, report)
 
     if verdict.passed:
-        if config["model"].get("attention_type", "standard") == "standard":
+        if attention_type == "standard":
             train_speeds = [
                 float(row["tokens_per_sec"])
                 for row in metrics
@@ -215,7 +254,7 @@ def run_screen(
         pending_path = move_to_full_pending(config_path)
         if pending_path is not None:
             ledger.update_config_path(run_id, pending_path)
-        ledger.promote_to_full(run_id, notes=verdict.notes)
+        ledger.mark_promotion_candidate(run_id, notes=verdict.notes)
     else:
         ledger.mark_failed(
             run_id,
@@ -227,11 +266,13 @@ def run_screen(
         )
         finalize_config(config_path, "failed")
 
-    if not keep_screens:
-        shutil.rmtree(screen_run_dir, ignore_errors=True)
-    return {
+    response = {
         "ok": verdict.passed,
         "failure_class": verdict.failure_class,
         "mechanism_active": verdict.mechanism_active,
         "step_reached": verdict.step_reached,
+        "promotion_report_path": str(report_path),
     }
+    if destructive_cmd is not None:
+        response["destructive_test_command"] = destructive_cmd
+    return response

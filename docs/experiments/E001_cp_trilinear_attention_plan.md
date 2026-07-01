@@ -1,8 +1,9 @@
 # E001 CP Trilinear Attention Plan
 
 Status: implementation prepared. CP-bilinear and CP-trilinear attention modules are
-implemented behind the registry, but the 3000-step E001 comparison runs are intentionally
-manual and are not claimed until their run scripts complete and verify.
+implemented behind the registry, but E001 exploration is screen-first. Full 3000-step
+runs are promotion-stage artifacts only and are not claimed until their run scripts
+complete and verify.
 
 ## Hypothesis
 
@@ -49,15 +50,32 @@ All direct comparisons must hold fixed:
 - Optimizer and LR schedule from `baseline_30m_fineweb100m.yaml`
 - Validation, checkpoint, sample, and HellaSwag commands
 
-## Run Matrix
+## Screen-First Run Matrix
 
 | Config | Status | Run Directory |
 | --- | --- | --- |
-| `standard_30m_seed1.yaml` | runnable | `runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1` |
-| `standard_refactor_control_30m_seed1.yaml` | runnable | `runs/experiments/E001_cp_trilinear_attention/standard_refactor_control_30m_seed1` |
-| `cp_bilinear_r8_30m_seed1.yaml` | runnable/manual full run prepared | `runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1` |
-| `cp_trilinear_r8_30m_seed1.yaml` | runnable/manual full run prepared | `runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1` |
-| `cp_trilinear_r8_lambda0_30m_seed1.yaml` | runnable/manual full run prepared | `runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_lambda0_30m_seed1` |
+| `standard_30m_seed1.yaml` | screen first; full only if approved | `runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1` |
+| `standard_refactor_control_30m_seed1.yaml` | screen first when shared code changes | `runs/experiments/E001_cp_trilinear_attention/standard_refactor_control_30m_seed1` |
+| `cp_bilinear_r8_30m_seed1.yaml` | screen first; requires active CP diagnostics | `runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1` |
+| `cp_trilinear_r8_30m_seed1.yaml` | screen first; requires active CP diagnostics | `runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1` |
+| `cp_trilinear_r8_lambda0_30m_seed1.yaml` | manual promoted control only | `runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_lambda0_30m_seed1` |
+
+Default operator path:
+
+```bash
+uv run scripts/validate_experiment.py --id E001_cp_trilinear_attention
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/standard_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1.yaml
+uv run attn-queue start
+uv run attn-queue promotion-report cp_trilinear_r8_30m_seed1
+```
+
+Approve at most selected full runs after promotion report review:
+
+```bash
+uv run attn-queue approve cp_trilinear_r8_30m_seed1
+```
 
 ## Success Criteria
 
@@ -102,13 +120,14 @@ reports/schema/attention_diagnostics.schema.json
 - `reports/experiments/E001_cp_trilinear_attention/comparison.json`
 - Completed experiment result report.
 
-## Manual Full-Run Commands
+## Manual Promotion-Stage Full-Run Commands
 
 ```bash
 uv run scripts/validate_experiment.py --id E001_cp_trilinear_attention
-scripts/experiments/E001_cp_trilinear_attention/run_all_full.sh
 scripts/experiments/E001_cp_trilinear_attention/compare_full_runs.sh
 ```
 
-The full-run scripts verify data manifests, train, verify, run evals, summarize, and
-verify again. They are intentionally not executed by the implementation agent pass.
+Individual full-run scripts verify data manifests, train, verify, run evals, summarize,
+and verify again. They are intentionally not executed by implementation-agent passes.
+`run_all_full.sh` refuses to launch the matrix; it is not the exploration path.
+Lambda0 is a manual promoted control only after active CP evidence justifies running it.

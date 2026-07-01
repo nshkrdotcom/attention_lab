@@ -44,8 +44,14 @@ def test_config_validation_accepts_strict_queue_section(tiny_config, tmp_path):
         "mechanism_check": "cp_gradient_norm",
         "allow_missing_diagnostics": False,
         "skip_control_check": False,
+        "screen_steps": 300,
+        "screen_val_every": 75,
+        "screen_save_every": 300,
+        "screen_diagnostics_every": 25,
     }
-    assert validate_config(config)["queue"]["requires_run"] == "standard_30m_seed1"
+    validated = validate_config(config)
+    assert validated["queue"]["requires_run"] == "standard_30m_seed1"
+    assert validated["queue"]["screen_steps"] == 300
 
     bad = deepcopy(config)
     bad["queue"]["requires"] = "typo"
@@ -73,6 +79,15 @@ def test_config_validation_accepts_strict_queue_section(tiny_config, tmp_path):
         assert "queue.mechanism_check" in str(exc)
     else:
         raise AssertionError("unknown mechanism_check was accepted")
+
+    bad_screen_steps = deepcopy(config)
+    bad_screen_steps["queue"]["screen_steps"] = 0
+    try:
+        validate_config(bad_screen_steps)
+    except ValueError as exc:
+        assert "queue.screen_steps must be a positive integer" in str(exc)
+    else:
+        raise AssertionError("non-positive queue.screen_steps was accepted")
 
 
 def test_ledger_schema_insert_deduplicate_and_list(tmp_path, tiny_config):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 from attention_lab.training.experiments import EXPERIMENT_STATUSES, get_experiment, list_experiments, main
@@ -53,3 +54,22 @@ def test_e001_manual_full_run_scripts_are_executable(repo_root):
         "scripts/summarize_run.py",
     ):
         assert command in full_script
+
+
+def test_all_full_matrix_scripts_refuse_to_launch(repo_root):
+    scripts = [
+        repo_root / "scripts" / "experiments" / "E001_cp_trilinear_attention" / "run_all_full.sh",
+        repo_root / "scripts" / "experiments" / "E002_multitrack_qkv_shift_register" / "run_all_full_initial.sh",
+    ]
+    for script in scripts:
+        result = subprocess.run(
+            [str(script)],
+            cwd=repo_root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        assert result.returncode != 0
+        assert "screen-first" in result.stderr
+        assert "Refusing" in result.stderr

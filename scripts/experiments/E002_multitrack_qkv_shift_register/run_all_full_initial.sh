@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "$0")/../../.."
+cat >&2 <<'EOF'
+Refusing to launch all E002 full runs.
 
-scripts/experiments/E002_multitrack_qkv_shift_register/run_full_standard_refactor_control.sh
-scripts/experiments/E002_multitrack_qkv_shift_register/run_full_static_global.sh
-scripts/experiments/E002_multitrack_qkv_shift_register/run_full_train_rotation_global.sh
-scripts/experiments/E002_multitrack_qkv_shift_register/run_full_position_rotation_global.sh
+E002 is screen-first:
+  1. queue/screen standard_refactor_control
+  2. queue/screen static/train/position variants
+  3. generate promotion reports
+  4. approve only selected full runs
+  5. run full only after promotion
 
-echo
-echo "Initial E002 full runs completed."
-echo "Now run qkv_track_destructive_test.py for A/B/C, then compare_initial_full_runs.sh."
+Use README.md and docs/experiments/E002_multitrack_qkv_shift_register_plan.md for the screen-first workflow.
+EOF
+
+exit 2

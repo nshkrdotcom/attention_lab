@@ -20,6 +20,28 @@ def test_screen_config_overrides_training_budget(tiny_config, tmp_path):
     assert "diagnostics" not in screened
 
 
+def test_screen_config_uses_queue_screen_profile(tiny_config, tmp_path):
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config["queue"] = {
+        "screen_steps": 300,
+        "screen_val_every": 75,
+        "screen_save_every": 300,
+        "screen_diagnostics_every": 25,
+    }
+    config["model"]["attention_type"] = "cp_bilinear"
+    config["model"]["cp_rank"] = 8
+    config["model"]["cp_lambda_init"] = 0.0
+    config["model"]["cp_lambda_trainable"] = True
+    config["model"]["cp_lambda_fixed"] = False
+
+    screened = screen_config_with_overrides(config, tmp_path / "runs" / "screen" / "candidate")
+
+    assert screened["train"]["max_steps"] == 300
+    assert screened["train"]["val_every"] == 75
+    assert screened["train"]["save_every"] == 300
+    assert screened["diagnostics"]["attention_diagnostics_every"] == 25
+
+
 def test_screen_config_forces_diagnostics_during_nonstandard_screen(tiny_config, tmp_path):
     config = tiny_config(tmp_path, tmp_path / "data")
     config["model"]["attention_type"] = "cp_trilinear"

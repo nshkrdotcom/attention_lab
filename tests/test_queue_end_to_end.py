@@ -5,6 +5,7 @@ from pathlib import Path
 
 import yaml
 
+from attention_lab.queue.cli import main as queue_main
 from attention_lab.queue.discipline import REQUIRED_HYPOTHESIS_FIELDS
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.paths import ensure_queue_dirs
@@ -16,6 +17,7 @@ from attention_lab.queue.watchdog import Watchdog
 
 def test_queue_end_to_end_dry_run_with_fake_commands(tmp_path, tiny_config, monkeypatch):
     root = tmp_path
+    monkeypatch.chdir(root)
     paths = ensure_queue_dirs(root)
     data_root = root / "data_shards"
     hypothesis_path = root / "hypothesis_tiny_standard.md"
@@ -67,9 +69,10 @@ def test_queue_end_to_end_dry_run_with_fake_commands(tmp_path, tiny_config, monk
     assert first["action"] == "screen"
     assert len(rows) == 1
     row = rows[0]
-    assert row["stage"] == "FULL"
+    assert row["stage"] == "PROMOTION_CANDIDATE"
     assert row["status"] == "PENDING"
     assert row["full_run_approved"] == 0
+    assert row["promotion_report_path"]
     assert not config_path.exists()
     pending_path = paths["full_pending"] / "tiny_standard.yaml"
     assert pending_path.exists()
@@ -77,10 +80,9 @@ def test_queue_end_to_end_dry_run_with_fake_commands(tmp_path, tiny_config, monk
     second = watchdog.run_once()
     row = ledger.get_run(row["id"])
     assert second["action"] == "sleep"
-    assert "full_run_approved" in (row["notes"] or "")
     assert full_calls == []
 
-    ledger.set_full_run_approved(row["id"], True)
+    queue_main(["--root", str(root), "--db", str(root / "data" / "queue.db"), "approve", row["id"]])
     third = watchdog.run_once()
     row = ledger.get_run(row["id"])
     assert third["action"] == "full"

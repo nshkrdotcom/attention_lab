@@ -47,6 +47,15 @@ def test_queue_discipline_guide_is_linked_from_operator_docs(repo_root):
     assert guide_ref in checklist
 
 
+def test_readme_documents_screen_first_workflow(repo_root):
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    assert "## Screen-first experiment workflow" in readme
+    assert "Attention Lab is screen-first for architecture exploration." in readme
+    assert "Full 3000-step runs are promotion artifacts, not default exploration." in readme
+    assert "A screen report is not a scientific result." in readme
+    assert "run_all_full_initial.sh" not in readme
+
+
 def test_agents_md_summarizes_agent_process(repo_root):
     agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
     required = [

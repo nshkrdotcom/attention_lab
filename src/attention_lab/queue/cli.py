@@ -5,12 +5,19 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 from pathlib import Path
 
 from attention_lab.queue.doctor import render_doctor_report, run_doctor
 from attention_lab.queue.leaderboard import render_leaderboard
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.paths import default_db_path, default_pid_path, ensure_queue_dirs
+from attention_lab.queue.promotion import (
+    approval_blockers,
+    build_promotion_report,
+    load_promotion_report,
+    write_promotion_report,
+)
 from attention_lab.queue.reporting import append_decision_log, export_queue_report
 from attention_lab.training.config import load_config
 
@@ -126,7 +133,33 @@ def cmd_requeue(args: argparse.Namespace) -> None:
 def cmd_approve(args: argparse.Namespace) -> None:
     ledger = _open_ledger(args)
     try:
-        ledger.set_full_run_approved(args.run_id_or_name, True)
+        row = ledger.get_run(args.run_id_or_name)
+        if row is None:
+            raise SystemExit(f"unknown run: {args.run_id_or_name}")
+        if row.get("stage") not in {"PROMOTION_CANDIDATE", "FULL"} or row.get("status") != "PENDING":
+            print(
+                "BLOCKED: run must be a pending promotion candidate or pending full row",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+        report_path = row.get("promotion_report_path")
+        if not report_path:
+            print("BLOCKED: promotion report missing", file=sys.stderr)
+            raise SystemExit(2)
+        report_path = Path(report_path)
+        if not report_path.is_absolute():
+            report_path = Path(args.root) / report_path
+        try:
+            report = load_promotion_report(report_path)
+        except Exception as exc:  # noqa: BLE001 - CLI should report a blocker, not a traceback
+            print(f"BLOCKED: promotion report unreadable: {exc}", file=sys.stderr)
+            raise SystemExit(2) from exc
+        blockers = approval_blockers(report)
+        if blockers:
+            for blocker in blockers:
+                print(f"BLOCKED: {blocker}", file=sys.stderr)
+            raise SystemExit(2)
+        ledger.approve_full_run(row["id"])
         print(f"approved: {args.run_id_or_name}")
     finally:
         ledger.close()
@@ -148,6 +181,41 @@ def cmd_export_report(args: argparse.Namespace) -> None:
         print(f"wrote: {result['json_path']}")
         print(f"wrote: {result['markdown_path']}")
         print(f"rows: {result['row_count']}")
+    finally:
+        ledger.close()
+
+
+def cmd_promotion_report(args: argparse.Namespace) -> None:
+    ledger = _open_ledger(args)
+    try:
+        row = ledger.get_run(args.run_id_or_name)
+        if row is None:
+            raise SystemExit(f"unknown run: {args.run_id_or_name}")
+        root = Path(args.root)
+        config_path = Path(row["config_path"])
+        if not config_path.is_absolute():
+            config_path = root / config_path
+        config = load_config(config_path)
+        screen_run_dir = root / "runs" / "screen" / f"{row['config_name']}_{row['id']}"
+        if row.get("screen_run_dir"):
+            screen_run_dir = Path(row["screen_run_dir"])
+            if not screen_run_dir.is_absolute():
+                screen_run_dir = root / screen_run_dir
+        screen_config_path = Path(row.get("screen_config_path") or screen_run_dir / "screen_config.yaml")
+        if not screen_config_path.is_absolute():
+            screen_config_path = root / screen_config_path
+        report = build_promotion_report(
+            row=row,
+            config=config,
+            screen_run_dir=screen_run_dir,
+            screen_config_path=screen_config_path,
+            repo_root=args.root,
+        )
+        report_path = write_promotion_report(report, repo_root=args.root)
+        ledger.record_promotion_report(row["id"], report_path, report)
+        print(f"{report['promotion_recommendation']}: {report_path}")
+        for blocker in report["promotion_blockers"]:
+            print(f"BLOCKED: {blocker}")
     finally:
         ledger.close()
 
@@ -203,7 +271,7 @@ def build_parser() -> argparse.ArgumentParser:
     add.set_defaults(func=cmd_add)
 
     ls = subparsers.add_parser("ls")
-    ls.add_argument("--stage", choices=["SCREEN", "FULL"], default=None)
+    ls.add_argument("--stage", choices=["SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL"], default=None)
     ls.add_argument("--status", choices=["PENDING", "RUNNING", "PASSED", "FAILED", "KILLED"], default=None)
     ls.set_defaults(func=cmd_ls)
 
@@ -239,9 +307,13 @@ def build_parser() -> argparse.ArgumentParser:
     stop.set_defaults(func=cmd_stop)
 
     leaderboard = subparsers.add_parser("leaderboard")
-    leaderboard.add_argument("--min-stage", choices=["SCREEN", "FULL"], default=None)
+    leaderboard.add_argument("--min-stage", choices=["SCREEN", "PROMOTION_CANDIDATE", "FULL"], default=None)
     leaderboard.add_argument("--sort", choices=["loss", "ppl", "speed"], default=None)
     leaderboard.set_defaults(func=cmd_leaderboard)
+
+    promotion_report = subparsers.add_parser("promotion-report")
+    promotion_report.add_argument("run_id_or_name")
+    promotion_report.set_defaults(func=cmd_promotion_report)
 
     export_report = subparsers.add_parser("export-report")
     export_report.add_argument("--experiment", required=True)

@@ -61,6 +61,11 @@ Completed in this implementation pass:
 - [x] Read-only readiness check added via `attn-queue doctor`.
 - [x] Queue run-index exports include approval, overwrite, control, and
   mechanism-check fields.
+- [x] Screen artifacts are durable by default.
+- [x] Passed screens enter `PROMOTION_CANDIDATE` instead of executable `FULL`.
+- [x] Screen promotion reports are generated under `reports/.../promotion/`.
+- [x] `attn-queue approve` is promotion-report-gated.
+- [x] Watchdog full-run readiness requires clean promotion evidence.
 - [x] E001 hypothesis templates added without approving any run.
 - [x] End-to-end fake queue dry-run test added without launching training.
 - [x] No full training runs executed by this implementation pass.
@@ -255,13 +260,21 @@ ablation_logit_delta
 mechanism_active
 full_run_approved
 allow_overwrite_existing_run_dir
+promotion_report_path
+promotion_recommendation
+promotion_approved_at
+approval_reason
+screen_run_dir
+screen_config_path
 notes
 ```
 
 Required stages:
 
 ```text
+SANITY
 SCREEN
+PROMOTION_CANDIDATE
 FULL
 ```
 
@@ -349,7 +362,7 @@ or have inactive mechanisms.
 
 Screen behavior:
 
-- [ ] Create temporary screen run dir under `runs/screen/<config_name>_<id>/`.
+- [ ] Create durable screen run dir under `runs/screen/<config_name>_<id>/`.
 - [ ] Run existing `train.py` with overrides:
   - [ ] `max_steps=150`
   - [ ] `val_every=50`
@@ -359,7 +372,9 @@ Screen behavior:
 - [ ] Capture stdout/stderr.
 - [ ] Apply kill criteria in order.
 - [ ] Write verdict to ledger.
-- [ ] Delete screen run directory unless `--keep-screens` is set.
+- [ ] Preserve `screen_config.yaml`, `metrics.jsonl`, diagnostics, logs, and screen
+  checkpoints when emitted.
+- [ ] Write a promotion report under `reports/.../promotion/`.
 
 Kill criteria in order:
 
@@ -373,7 +388,8 @@ Kill criteria in order:
 - [ ] `FLAT_LOSS`: step-150 val loss is greater than step-10 val loss times `0.97`.
 - [ ] `DEAD_GRAD`: mechanism-active check fails.
 - [ ] `SLOW`: median tokens/sec below `baseline_tokens_per_sec * 0.30`.
-- [ ] Otherwise mark `PASSED` and promote to `FULL`.
+- [ ] Otherwise mark `PROMOTION_CANDIDATE`; do not make the row executable as
+  `FULL` until `attn-queue approve` validates the promotion report.
 
 Mechanism-active check:
 
@@ -387,6 +403,7 @@ Mechanism-active check:
 - [ ] Mark `mechanism_active=null` when diagnostics are missing.
 - [ ] Block non-standard FULL promotion on missing diagnostics unless
   `queue.allow_missing_diagnostics: true` is explicit.
+- [ ] Record any missing-diagnostics exception in the promotion report.
 
 Baseline calibration:
 
@@ -406,7 +423,8 @@ TDD checks:
 - [ ] CP diagnostics with zero gradients mark dead grad.
 - [ ] QKV-track diagnostics with positive track activity mark mechanism active.
 - [ ] Missing diagnostics blocks non-standard FULL promotion by default.
-- [ ] `--keep-screens` preserves screen run dir.
+- [ ] Screen run dirs are preserved by default.
+- [ ] Promotion reports point to existing screen artifacts.
 
 ## Phase 05 - Full Run Executor
 
@@ -484,6 +502,7 @@ Checklist:
 - [ ] Do not run two experiments concurrently.
 - [ ] Do not skip screening for inbox configs.
 - [ ] Do not execute FULL rows until `full_run_approved=1`.
+- [ ] Do not execute FULL rows without a clean promotion report.
 - [ ] Do not execute non-standard FULL rows without a passed `queue.requires_run`
   control unless `queue.skip_control_check: true` is explicit and warned.
 - [ ] Do not promote missing-hypothesis full runs unless explicitly overridden.
@@ -494,6 +513,8 @@ TDD checks:
 
 - [ ] Watchdog calls screeners before full runner.
 - [ ] Watchdog blocks unapproved FULL rows.
+- [ ] Watchdog blocks FULL rows missing promotion reports.
+- [ ] Watchdog blocks FULL rows with promotion blockers.
 - [ ] Watchdog blocks non-standard FULL rows missing controls.
 - [ ] Watchdog picks oldest pending full row.
 - [ ] Watchdog sleeps when no work exists.
@@ -536,13 +557,15 @@ Command checklist:
   - [ ] Launches `scripts/queue_daemon.sh`.
 - [ ] `attn-queue stop`
   - [ ] Sends SIGTERM to PID in `data/queue.pid`.
-- [ ] `attn-queue leaderboard [--min-stage SCREEN|FULL] [--sort loss|ppl|speed]`
+- [ ] `attn-queue leaderboard [--min-stage SCREEN|PROMOTION_CANDIDATE|FULL] [--sort loss|ppl|speed]`
   - [ ] Prints filtered/sorted leaderboard.
+- [ ] `attn-queue promotion-report <run_id_or_name>`
+  - [ ] Regenerates a promotion report from preserved screen artifacts.
 - [ ] `attn-queue doctor --experiment <EXPERIMENT_ID>`
   - [ ] Prints read-only `OK`, `WARN`, and `FAIL` readiness checks.
   - [ ] Exits nonzero only on `FAIL`.
 - [ ] `attn-queue approve <run_id_or_name>`
-  - [ ] Allows an otherwise ready FULL run to execute.
+  - [ ] Validates the promotion report before allowing a FULL run to execute.
 - [ ] `attn-queue unapprove <run_id_or_name>`
   - [ ] Blocks a FULL run from executing.
 - [ ] `attn-queue export-report --experiment <EXPERIMENT_ID>`
@@ -558,7 +581,9 @@ TDD checks:
 - [ ] `show` handles missing log gracefully.
 - [ ] `kill` rejects unknown rows.
 - [ ] `requeue` rejects passed rows.
-- [ ] `approve` and `unapprove` update the ledger approval flag.
+- [ ] `approve` fails without a clean promotion report.
+- [ ] `approve` records approval timestamp and reason metadata when supported.
+- [ ] `unapprove` clears the ledger approval flag.
 - [ ] `export-report` filters rows by experiment.
 - [ ] `morning-note` rejects empty fields.
 
@@ -794,7 +819,11 @@ NEXT: <one run that would most change interpretation>
 
 Promotion checklist:
 
-- [ ] `mechanism_active = 1`.
+- [ ] Promotion report exists and validates.
+- [ ] `promotion_recommendation = promote`.
+- [ ] `promotion_blockers` is empty.
+- [ ] `mechanism_active = 1` for non-standard mechanisms unless an explicit
+  diagnostics exception is recorded.
 - [ ] Loss improves over nearest control, not just standard baseline.
 - [ ] At least one boring explanation is ruled out by a completed control.
 - [ ] If all three are not true, next run is a control or ablation, not scale-up.

@@ -8,7 +8,7 @@ from typing import Any
 
 from attention_lab.training.config import load_config
 
-STAGES = {"SCREEN", "FULL"}
+STAGES = {"SANITY", "SCREEN", "PROMOTION_CANDIDATE", "FULL"}
 STATUSES = {"PENDING", "RUNNING", "PASSED", "FAILED", "KILLED"}
 FAILURE_CLASSES = {
     "NAN",
@@ -69,6 +69,12 @@ class QueueLedger:
                 mechanism_active INTEGER,
                 full_run_approved INTEGER NOT NULL DEFAULT 0,
                 allow_overwrite_existing_run_dir INTEGER NOT NULL DEFAULT 0,
+                promotion_report_path TEXT,
+                promotion_recommendation TEXT,
+                promotion_approved_at TEXT,
+                approval_reason TEXT,
+                screen_run_dir TEXT,
+                screen_config_path TEXT,
                 notes TEXT
             )
             """
@@ -83,10 +89,21 @@ class QueueLedger:
             "allow_overwrite_existing_run_dir": (
                 "ALTER TABLE runs ADD COLUMN allow_overwrite_existing_run_dir INTEGER NOT NULL DEFAULT 0"
             ),
+            "promotion_report_path": "ALTER TABLE runs ADD COLUMN promotion_report_path TEXT",
+            "promotion_recommendation": "ALTER TABLE runs ADD COLUMN promotion_recommendation TEXT",
+            "promotion_approved_at": "ALTER TABLE runs ADD COLUMN promotion_approved_at TEXT",
+            "approval_reason": "ALTER TABLE runs ADD COLUMN approval_reason TEXT",
+            "screen_run_dir": "ALTER TABLE runs ADD COLUMN screen_run_dir TEXT",
+            "screen_config_path": "ALTER TABLE runs ADD COLUMN screen_config_path TEXT",
         }
         for column, statement in migrations.items():
             if column not in columns:
-                self.conn.execute(statement)
+                try:
+                    self.conn.execute(statement)
+                except sqlite3.OperationalError as exc:
+                    if "duplicate column name" not in str(exc).lower():
+                        raise
+                columns.add(column)
 
     def enqueue_config(self, config_path: str | Path, config: dict[str, Any], content: bytes) -> str:
         run_id = hash_config_bytes(content)
@@ -193,6 +210,93 @@ class QueueLedger:
             )
         self.conn.commit()
 
+    def mark_promotion_candidate(self, run_id: str, *, notes: str | None = None) -> None:
+        if notes is None:
+            self.conn.execute(
+                """
+                UPDATE runs
+                SET stage = 'PROMOTION_CANDIDATE',
+                    status = 'PENDING',
+                    failure_class = NULL,
+                    finished_at = ?,
+                    full_run_approved = 0
+                WHERE id = ?
+                """,
+                (utc_now(), run_id),
+            )
+        else:
+            self.conn.execute(
+                """
+                UPDATE runs
+                SET stage = 'PROMOTION_CANDIDATE',
+                    status = 'PENDING',
+                    failure_class = NULL,
+                    finished_at = ?,
+                    full_run_approved = 0,
+                    notes = ?
+                WHERE id = ?
+                """,
+                (utc_now(), notes, run_id),
+            )
+        self.conn.commit()
+
+    def record_promotion_report(
+        self,
+        run_id_or_name: str,
+        report_path: str | Path,
+        report: dict[str, Any],
+    ) -> None:
+        row = self.get_run(run_id_or_name)
+        if row is None:
+            raise KeyError(f"Unknown queue run: {run_id_or_name}")
+        self.conn.execute(
+            """
+            UPDATE runs
+            SET promotion_report_path = ?,
+                promotion_recommendation = ?,
+                screen_run_dir = COALESCE(?, screen_run_dir),
+                screen_config_path = COALESCE(?, screen_config_path),
+                step_reached = COALESCE(?, step_reached),
+                final_val_loss = COALESCE(?, final_val_loss),
+                median_tokens_per_sec = COALESCE(?, median_tokens_per_sec),
+                peak_vram_allocated_mb = COALESCE(?, peak_vram_allocated_mb),
+                mechanism_active = COALESCE(?, mechanism_active)
+            WHERE id = ?
+            """,
+            (
+                str(report_path),
+                report.get("promotion_recommendation"),
+                report.get("screen_run_dir"),
+                report.get("screen_config_path"),
+                report.get("max_step_reached"),
+                report.get("final_screen_val_loss"),
+                report.get("median_tokens_per_sec"),
+                report.get("peak_vram_allocated_mb"),
+                None if report.get("mechanism_active") is None else int(bool(report.get("mechanism_active"))),
+                row["id"],
+            ),
+        )
+        self.conn.commit()
+
+    def approve_full_run(self, run_id_or_name: str, *, reason: str | None = None) -> None:
+        row = self.get_run(run_id_or_name)
+        if row is None:
+            raise KeyError(f"Unknown queue run: {run_id_or_name}")
+        self.conn.execute(
+            """
+            UPDATE runs
+            SET stage = 'FULL',
+                status = 'PENDING',
+                full_run_approved = 1,
+                promotion_approved_at = ?,
+                approval_reason = COALESCE(?, approval_reason),
+                failure_class = NULL
+            WHERE id = ?
+            """,
+            (utc_now(), reason, row["id"]),
+        )
+        self.conn.commit()
+
     def mark_passed(
         self,
         run_id: str,
@@ -294,7 +398,16 @@ class QueueLedger:
         row = self.get_run(run_id_or_name)
         if row is None:
             raise KeyError(f"Unknown queue run: {run_id_or_name}")
-        self.conn.execute("UPDATE runs SET full_run_approved = ? WHERE id = ?", (int(approved), row["id"]))
+        if approved:
+            self.conn.execute(
+                "UPDATE runs SET full_run_approved = ?, promotion_approved_at = COALESCE(promotion_approved_at, ?) WHERE id = ?",
+                (1, utc_now(), row["id"]),
+            )
+        else:
+            self.conn.execute(
+                "UPDATE runs SET full_run_approved = 0, promotion_approved_at = NULL, approval_reason = NULL WHERE id = ?",
+                (row["id"],),
+            )
         self.conn.commit()
 
     def append_notes(self, run_id_or_name: str, notes: str) -> None:

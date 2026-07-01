@@ -93,6 +93,8 @@ def render_leaderboard(
 def _filter_rows(rows: list[dict[str, Any]], *, min_stage: str | None) -> list[dict[str, Any]]:
     if min_stage is None or min_stage == "SCREEN":
         return list(rows)
+    if min_stage == "PROMOTION_CANDIDATE":
+        return [row for row in rows if row.get("stage") in {"PROMOTION_CANDIDATE", "FULL"}]
     if min_stage == "FULL":
         return [row for row in rows if row.get("stage") == "FULL"]
     return list(rows)

@@ -7,6 +7,7 @@ from typing import Any
 from attention_lab.queue.discipline import default_hypothesis_path, validate_hypothesis_doc
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.paths import ensure_queue_dirs
+from attention_lab.queue.promotion import approval_blockers, load_promotion_report
 from attention_lab.training.config import (
     EXPERIMENTAL_UNIMPLEMENTED_STATUS,
     MECHANISM_CHECKS,
@@ -63,6 +64,7 @@ def run_doctor(
     _check_run_dirs(configs, messages)
     _check_configs(configs, messages)
     _check_ledger_approval(configs, ledger, messages)
+    _check_promotion_state(ledger, messages)
     _check_approved_hypotheses(configs, ledger, messages)
 
     ensure_queue_dirs(root)
@@ -167,6 +169,43 @@ def _check_ledger_approval(
             _ok(messages, f"ledger-approved full run: {config.get('run', {}).get('name')}")
         elif not config.get("queue", {}).get("full_run_approved", False):
             _ok(messages, f"full_run_approved defaults false: {config_path}")
+
+
+def _check_promotion_state(ledger: QueueLedger, messages: list[DoctorMessage]) -> None:
+    for row in ledger.list_runs():
+        stage = row.get("stage")
+        status = row.get("status")
+        report_path = row.get("promotion_report_path")
+        if stage == "PROMOTION_CANDIDATE" or (stage == "SCREEN" and status == "PASSED"):
+            if not report_path:
+                _warn(messages, f"screen passed but promotion report missing: {row.get('config_name')}")
+                continue
+            report, blockers = _load_report_and_blockers(report_path)
+            if report is None:
+                _warn(messages, f"promotion report unreadable: {report_path}: {'; '.join(blockers)}")
+            elif blockers:
+                _warn(messages, f"promotion candidate has blockers: {row.get('config_name')}: {'; '.join(blockers)}")
+            else:
+                _ok(messages, f"promotion report exists: {report_path}")
+        if stage == "FULL" and row.get("full_run_approved"):
+            if not report_path:
+                _fail(messages, f"full-approved row lacks promotion report: {row.get('config_name')}")
+                continue
+            report, blockers = _load_report_and_blockers(report_path)
+            if report is None:
+                _fail(messages, f"full-approved row has unreadable promotion report: {report_path}: {'; '.join(blockers)}")
+            elif blockers:
+                _fail(messages, f"full-approved row has promotion blockers: {row.get('config_name')}: {'; '.join(blockers)}")
+            else:
+                _ok(messages, f"full-approved row has promotion evidence: {row.get('config_name')}")
+
+
+def _load_report_and_blockers(report_path: str | Path) -> tuple[dict[str, Any] | None, list[str]]:
+    try:
+        report = load_promotion_report(report_path)
+    except Exception as exc:  # noqa: BLE001 - doctor reports all promotion issues
+        return None, [str(exc)]
+    return report, approval_blockers(report)
 
 
 def _check_approved_hypotheses(

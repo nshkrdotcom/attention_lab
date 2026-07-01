@@ -136,9 +136,6 @@ def test_cli_ls_note_requeue_and_status(tmp_path, tiny_config, capsys):
     assert "SHOWS: failed with NAN" in capsys.readouterr().out
 
     queue_main(["--db", str(db_path), "requeue", run_id])
-    queue_main(["--db", str(db_path), "approve", run_id])
-    queue_main(["--db", str(db_path), "show", run_id])
-    assert "full_run_approved: 1" in capsys.readouterr().out
     queue_main(["--db", str(db_path), "unapprove", run_id])
     queue_main(["--db", str(db_path), "status"])
     output = capsys.readouterr().out
@@ -163,7 +160,10 @@ def test_watchdog_screens_before_full_and_skips_missing_hypothesis(tmp_path, tin
 
     def screen_runner(row, ledger_obj):
         events.append(("screen", row["id"]))
-        ledger_obj.promote_to_full(row["id"])
+        report_path = tmp_path / "promotion.json"
+        _write_clean_promotion_report(report_path, row, config)
+        ledger_obj.record_promotion_report(row["id"], report_path, json.loads(report_path.read_text(encoding="utf-8")))
+        ledger_obj.mark_promotion_candidate(row["id"])
         return {"ok": True}
 
     def full_runner(row, ledger_obj):
@@ -175,15 +175,15 @@ def test_watchdog_screens_before_full_and_skips_missing_hypothesis(tmp_path, tin
     watchdog.run_once()
     assert events == [("screen", run_id)]
 
-    # The promoted run has no hypothesis doc, so the full runner is skipped and annotated.
+    # Promotion candidates do not become full work until explicitly approved.
     watchdog.run_once()
     assert events == [("screen", run_id)]
-    assert "full_run_approved" in (ledger.get_run(run_id)["notes"] or "")
+    assert ledger.get_run(run_id)["stage"] == "PROMOTION_CANDIDATE"
 
     hypothesis_path = default_hypothesis_path(config_path, config)
     write_hypothesis(hypothesis_path)
     try:
-        ledger.set_full_run_approved(run_id, True)
+        ledger.approve_full_run(run_id)
         watchdog.run_once()
         assert events == [("screen", run_id), ("full", run_id)]
     finally:
@@ -265,7 +265,10 @@ def test_watchdog_requires_control_dependency_for_nonstandard_full(tmp_path, tin
     config_path.write_bytes(content)
     run_id = ledger.enqueue_config(config_path, config, content)
     ledger.promote_to_full(run_id)
-    ledger.set_full_run_approved(run_id, True)
+    report_path = tmp_path / "candidate_promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
+    ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
+    ledger.approve_full_run(run_id)
 
     events = []
 
@@ -284,6 +287,65 @@ def test_watchdog_requires_control_dependency_for_nonstandard_full(tmp_path, tin
     watchdog.run_once()
     assert events == [("full", run_id)]
     assert "control dependency explicitly skipped" in (ledger.get_run(run_id)["notes"] or "")
+
+
+def test_watchdog_blocks_full_rows_without_promotion_report(tmp_path, tiny_config):
+    ledger, run_id, _config, _config_path = _full_row(tmp_path, tiny_config)
+    ledger.set_full_run_approved(run_id, True)
+    events = []
+    watchdog = Watchdog(
+        ledger,
+        screen_runner=lambda row, ledger_obj: {"ok": True},
+        full_runner=lambda row, ledger_obj: events.append(row["id"]) or {"ok": True},
+        sleep_seconds=0,
+    )
+
+    watchdog.run_once()
+
+    assert events == []
+    assert "promotion report" in (ledger.get_run(run_id)["notes"] or "")
+
+
+def test_watchdog_blocks_full_rows_with_blocked_promotion_report(tmp_path, tiny_config):
+    ledger, run_id, config, _config_path = _full_row(tmp_path, tiny_config)
+    report_path = tmp_path / "blocked_promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["promotion_blockers"] = ["needs review"]
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    ledger.record_promotion_report(run_id, report_path, report)
+    ledger.approve_full_run(run_id)
+    events = []
+    watchdog = Watchdog(
+        ledger,
+        screen_runner=lambda row, ledger_obj: {"ok": True},
+        full_runner=lambda row, ledger_obj: events.append(row["id"]) or {"ok": True},
+        sleep_seconds=0,
+    )
+
+    watchdog.run_once()
+
+    assert events == []
+    assert "promotion report blocked" in (ledger.get_run(run_id)["notes"] or "")
+
+
+def test_watchdog_blocks_full_rows_without_full_approval(tmp_path, tiny_config):
+    ledger, run_id, config, _config_path = _full_row(tmp_path, tiny_config)
+    report_path = tmp_path / "promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
+    ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
+    events = []
+    watchdog = Watchdog(
+        ledger,
+        screen_runner=lambda row, ledger_obj: {"ok": True},
+        full_runner=lambda row, ledger_obj: events.append(row["id"]) or {"ok": True},
+        sleep_seconds=0,
+    )
+
+    watchdog.run_once()
+
+    assert events == []
+    assert "full_run_approved" in (ledger.get_run(run_id)["notes"] or "")
 
 
 def test_watchdog_waits_for_required_run_to_pass(tmp_path, tiny_config):
@@ -314,7 +376,10 @@ def test_watchdog_waits_for_required_run_to_pass(tmp_path, tiny_config):
     ledger.promote_to_full(standard_id)
     ledger.mark_failed(standard_id, failure_class="UNKNOWN")
     ledger.promote_to_full(candidate_id)
-    ledger.set_full_run_approved(candidate_id, True)
+    report_path = tmp_path / "candidate_promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(candidate_id), candidate)
+    ledger.record_promotion_report(candidate_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
+    ledger.approve_full_run(candidate_id)
 
     events = []
 
@@ -331,3 +396,61 @@ def test_watchdog_waits_for_required_run_to_pass(tmp_path, tiny_config):
     ledger.mark_passed(standard_id)
     watchdog.run_once()
     assert events == ["candidate"]
+
+
+def _full_row(tmp_path: Path, tiny_config):
+    db_path = tmp_path / "queue.db"
+    ledger = QueueLedger(db_path)
+    ledger.initialize()
+    config = tiny_config(tmp_path, tmp_path / "data")
+    config_path = tmp_path / "candidate.yaml"
+    import yaml
+
+    content = yaml.safe_dump(config).encode()
+    config_path.write_bytes(content)
+    run_id = ledger.enqueue_config(config_path, config, content)
+    ledger.promote_to_full(run_id)
+    return ledger, run_id, config, config_path
+
+
+def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "experiment_id": None,
+                "run_id": row["id"],
+                "run_name": config["run"]["name"],
+                "config_path": str(row["config_path"]),
+                "screen_config_path": str(path.parent / "screen_config.yaml"),
+                "screen_run_dir": str(path.parent),
+                "attention_type": config["model"].get("attention_type", "standard"),
+                "stage": "SCREEN",
+                "max_step_reached": 150,
+                "expected_screen_steps": 150,
+                "loss_descended": True,
+                "nan_or_inf_seen": False,
+                "final_screen_train_loss": 4.0,
+                "final_screen_val_loss": 4.0,
+                "first_val_loss": 5.0,
+                "final_val_loss": 4.0,
+                "median_tokens_per_sec": 100.0,
+                "peak_vram_mb": None,
+                "peak_vram_allocated_mb": None,
+                "diagnostics_present": config["model"].get("attention_type", "standard") != "standard",
+                "diagnostics_non_degenerate": config["model"].get("attention_type", "standard") != "standard",
+                "mechanism_check_name": None,
+                "mechanism_active": None if config["model"].get("attention_type", "standard") == "standard" else True,
+                "mechanism_activity_summary": {},
+                "destructive_test_present": False,
+                "destructive_test_effect_summary": None,
+                "promotion_recommendation": "promote",
+                "promotion_blockers": [],
+                "promotion_reason": "test report",
+                "created_at": "2026-07-01T00:00:00+00:00",
+                "source_git_commit": None,
+                "source_dirty": False,
+            }
+        ),
+        encoding="utf-8",
+    )

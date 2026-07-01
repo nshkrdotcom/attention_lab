@@ -9,6 +9,7 @@ from typing import Callable
 from attention_lab.queue.discipline import default_hypothesis_path, validate_hypothesis_doc
 from attention_lab.queue.ledger import QueueLedger
 from attention_lab.queue.paths import default_pid_path
+from attention_lab.queue.promotion import approval_blockers, load_promotion_report
 from attention_lab.queue.runner import run_full
 from attention_lab.queue.screener import run_screen
 from attention_lab.training.config import load_config
@@ -85,6 +86,17 @@ class Watchdog:
 
         if not bool(row.get("full_run_approved")):
             return False, "waiting for queue.full_run_approved: true"
+
+        report_path = row.get("promotion_report_path")
+        if not report_path:
+            return False, "waiting for promotion report"
+        try:
+            report = load_promotion_report(report_path)
+        except Exception as exc:  # noqa: BLE001 - watchdog records readable state and waits
+            return False, f"promotion report unreadable: {exc}"
+        blockers = approval_blockers(report)
+        if blockers:
+            return False, f"promotion report blocked: {'; '.join(blockers)}"
 
         requires_run = queue_config.get("requires_run")
         attention_type = config["model"].get("attention_type", "standard")

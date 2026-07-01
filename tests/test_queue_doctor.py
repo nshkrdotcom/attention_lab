@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 from attention_lab.queue.cli import main as queue_main
 from attention_lab.queue.doctor import run_doctor
@@ -66,7 +67,10 @@ def test_doctor_warns_missing_hypothesis_only_for_approved_full_rows(tmp_path, t
     ledger.initialize()
     run_id = ledger.enqueue_config(config_path, config, config_path.read_bytes())
     ledger.promote_to_full(run_id)
-    ledger.set_full_run_approved(run_id, True)
+    report_path = tmp_path / "promotion.json"
+    _write_clean_promotion_report(report_path, ledger.get_run(run_id), config)
+    ledger.record_promotion_report(run_id, report_path, json.loads(report_path.read_text(encoding="utf-8")))
+    ledger.approve_full_run(run_id)
 
     report = run_doctor(experiment_id="E999", ledger=ledger, root=Path.cwd())
     assert report.ok is True
@@ -92,3 +96,46 @@ def _fake_experiment(tmp_path: Path) -> dict:
         "accurate_baseline_alias": "configs/baseline_30m_fineweb100m.yaml",
         "dataset_manifest": str(tmp_path / "data" / "manifest.json"),
     }
+
+
+def _write_clean_promotion_report(path: Path, row: dict, config: dict) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "experiment_id": None,
+                "run_id": row["id"],
+                "run_name": config["run"]["name"],
+                "config_path": str(row["config_path"]),
+                "screen_config_path": str(path.parent / "screen_config.yaml"),
+                "screen_run_dir": str(path.parent),
+                "attention_type": config["model"].get("attention_type", "standard"),
+                "stage": "SCREEN",
+                "max_step_reached": 150,
+                "expected_screen_steps": 150,
+                "loss_descended": True,
+                "nan_or_inf_seen": False,
+                "final_screen_train_loss": 4.0,
+                "final_screen_val_loss": 4.0,
+                "first_val_loss": 5.0,
+                "final_val_loss": 4.0,
+                "median_tokens_per_sec": 100.0,
+                "peak_vram_mb": None,
+                "peak_vram_allocated_mb": None,
+                "diagnostics_present": False,
+                "diagnostics_non_degenerate": False,
+                "mechanism_check_name": None,
+                "mechanism_active": None,
+                "mechanism_activity_summary": {},
+                "destructive_test_present": False,
+                "destructive_test_effect_summary": None,
+                "promotion_recommendation": "promote",
+                "promotion_blockers": [],
+                "promotion_reason": "test report",
+                "created_at": "2026-07-01T00:00:00+00:00",
+                "source_git_commit": None,
+                "source_dirty": False,
+            }
+        ),
+        encoding="utf-8",
+    )

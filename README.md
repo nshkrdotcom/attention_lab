@@ -1,6 +1,6 @@
 # Attention Lab
 
-Attention Lab is a local GPT pretraining harness for controlled attention-architecture experiments. It is designed for one main workflow: train small causal language models from scratch on a fixed tokenized dataset, change one attention mechanism at a time, and compare every candidate against a manifest-checked standard-attention control.
+Attention Lab is a local GPT pretraining harness for controlled attention-architecture experiments. It is screen-first for architecture exploration: run cheap screens, inspect stability and mechanism activity, and promote only selected candidates to manifest-checked full runs against standard-attention controls.
 
 The repository is intentionally not a chat fine-tuning stack, API evaluation framework, or general distributed pretraining platform. Its purpose is local architecture research with reproducible data, configs, checkpoints, evaluation artifacts, and reports.
 
@@ -9,7 +9,8 @@ The repository is intentionally not a chat fine-tuning stack, API evaluation fra
 - Prepare a FineWeb-Edu token dataset for local pretraining.
 - Train standard GPT-style causal language model baselines from scratch.
 - Swap attention implementations through config rather than rewriting the trainer.
-- Run fixed-budget architecture experiments against matched controls.
+- Screen architecture candidates before spending full-run GPU time.
+- Run fixed-budget promoted architecture experiments against matched controls.
 - Resume and verify checkpoints.
 - Evaluate validation loss, perplexity, generation samples, bounded HellaSwag, throughput, and VRAM.
 - Record experiment outputs under reproducible run and report directories.
@@ -22,6 +23,10 @@ See [`EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`](EXPERIMENT_STATUS_AND_TECHNICAL
 ## Evidence boundary
 
 README.md explains how to use the harness. It is not the source of truth for live experiment state. If README.md, generated reports, queue indexes, and local run directories disagree, reconcile them in [`EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`](EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md), then regenerate the reports.
+
+Attention Lab is screen-first for architecture exploration. Most variants should die in short screens. Full 3000-step runs are promotion artifacts, not default exploration. Queue readiness is not scientific evidence. A run script existing is not approval to run it.
+
+A screen report is not a scientific result. A full run is not evidence until train, eval, summarize, and final verify pass on actual artifacts.
 
 ## Repository map
 
@@ -395,7 +400,7 @@ uv run scripts/inspect_model_config.py \
   --baseline-config configs/experiments/E001_cp_trilinear_attention/standard_30m_seed1.yaml
 ```
 
-Manual full-run scripts:
+Manual promotion-stage full-run scripts:
 
 ```bash
 scripts/experiments/E001_cp_trilinear_attention/run_full_standard_30m.sh
@@ -404,10 +409,16 @@ scripts/experiments/E001_cp_trilinear_attention/run_full_cp_trilinear_r8_30m.sh
 scripts/experiments/E001_cp_trilinear_attention/run_full_cp_trilinear_r8_lambda0_30m.sh
 ```
 
-Or run the ordered set:
+These scripts are for frozen, promoted full runs only. They are not the default exploration path. The all-full matrix launcher refuses to run by design; use the queue screen-first workflow and approve selected full runs from promotion reports.
+
+Screen the active CP path first:
 
 ```bash
-scripts/experiments/E001_cp_trilinear_attention/run_all_full.sh
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/standard_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1.yaml
+uv run attn-queue start
+uv run attn-queue promotion-report cp_trilinear_r8_30m_seed1
 ```
 
 Compare after the required summaries exist:
@@ -457,7 +468,7 @@ Validate:
 uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
 ```
 
-Manual full-run scripts:
+Manual promotion-stage full-run scripts:
 
 ```bash
 scripts/experiments/E002_multitrack_qkv_shift_register/run_full_standard_refactor_control.sh
@@ -466,6 +477,8 @@ scripts/experiments/E002_multitrack_qkv_shift_register/run_full_train_rotation_g
 scripts/experiments/E002_multitrack_qkv_shift_register/run_full_position_rotation_global.sh
 scripts/experiments/E002_multitrack_qkv_shift_register/compare_initial_full_runs.sh
 ```
+
+These are for approved full runs after promotion. The default E002 path is to screen the standard refactor control and the static/train/position Multi-QKV variants, generate promotion reports, approve at most selected full runs, and compare only after verified full-run plus destructive-test artifacts exist.
 
 Multi-QKV diagnostics are written to:
 
@@ -485,9 +498,40 @@ uv run scripts/qkv_track_destructive_test.py \
 
 Old E002 skeleton configs with `status: experimental_unimplemented` are placeholders for future work, not first-build evidence.
 
+## Screen-first experiment workflow
+
+1. Verify CUDA and data.
+2. Validate experiment configs.
+3. Add candidate configs to the queue.
+4. Run screens.
+5. Generate and review promotion reports.
+6. Approve at most selected full runs.
+7. Run promoted full runs.
+8. Verify full artifacts.
+9. Compare only verified full runs.
+
+Concrete E002 example:
+
+```bash
+uv run scripts/verify_cuda.py
+uv run scripts/verify_data.py --data_root data/fineweb_edu_100m --manifest data/fineweb_edu_100m/manifest.json --verify_hashes
+uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
+
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_static_3track_global_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_3track_global_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml
+uv run attn-queue start
+uv run attn-queue status
+uv run attn-queue promotion-report multi_qkv_static_3track_global_30m_seed1
+uv run attn-queue approve multi_qkv_static_3track_global_30m_seed1
+```
+
+The approver checks the promotion report before setting a row executable as `FULL`. Non-standard candidates need non-degenerate diagnostics unless an explicit config exception records why diagnostics are absent. Multi-QKV reports include screen destructive-test evidence when feasible, or a recorded screen-level infeasibility reason.
+
 ## Experiment queue
 
-The queue layer is a serial, single-GPU operator tool. It does not decide what is scientifically worth running. It screens candidate configs, records state in SQLite, blocks unsafe full runs, executes approved runs, and exports run indexes.
+The queue layer is a serial, single-GPU operator tool. It does not decide what is scientifically worth running. It screens candidate configs, writes promotion reports, records state in SQLite, blocks unsafe full runs, executes approved runs, and exports run indexes.
 
 Add configs and inspect queue state:
 
@@ -499,9 +543,10 @@ uv run attn-queue show standard_30m_seed1
 uv run attn-queue note standard_30m_seed1 "SHOWS: pending screen"
 ```
 
-Approve or block full runs:
+Generate promotion reports and approve or block full runs:
 
 ```bash
+uv run attn-queue promotion-report standard_30m_seed1
 uv run attn-queue approve standard_30m_seed1
 uv run attn-queue unapprove standard_30m_seed1
 ```
@@ -528,11 +573,12 @@ uv run attn-queue morning-note --experiment E001_cp_trilinear_attention \
 
 Queue safety rules:
 
-- Full runs require explicit ledger approval.
+- Full runs require a clean promotion report and explicit approval.
 - Existing run directories are protected unless `queue.allow_overwrite_existing_run_dir: true` is explicit.
 - Non-standard full runs require a passed control through `queue.requires_run` unless an explicit skip is documented.
 - Non-standard screen promotion requires mechanism diagnostics unless explicitly allowed.
 - The 150-step screener lowers or injects `diagnostics.attention_diagnostics_every: 50` for non-standard attention so mechanism diagnostics can exist during screening.
+- Screen length is configurable through `queue.screen_steps`, `queue.screen_val_every`, `queue.screen_save_every`, and `queue.screen_diagnostics_every`.
 - Supported mechanism checks include `cp_gradient_norm` and `qkv_track_activity`.
 
 Read the detailed queue guide before using the queue for real full runs:

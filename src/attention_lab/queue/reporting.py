@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 
 from attention_lab.queue.ledger import QueueLedger
+from attention_lab.queue.promotion import load_promotion_report
 from attention_lab.training.experiments import get_experiment
 
 
@@ -28,6 +29,12 @@ RUN_INDEX_FIELDS = (
     "hellaswag_acc",
     "mechanism_active",
     "full_run_approved",
+    "promotion_report_path",
+    "promotion_recommendation",
+    "promotion_approved_at",
+    "approval_reason",
+    "screen_run_dir",
+    "screen_config_path",
     "allow_overwrite_existing_run_dir",
     "queue_requires_run",
     "queue_mechanism_check",
@@ -99,6 +106,7 @@ def _select_fields(row: dict[str, Any], experiment: dict[str, Any]) -> dict[str,
     selected["queue_requires_run"] = queue.get("requires_run")
     selected["queue_mechanism_check"] = queue.get("mechanism_check")
     selected["config_classification"] = _config_classification(row.get("config_path"), experiment)
+    selected.update(_promotion_fields(row.get("promotion_report_path")))
     return selected
 
 
@@ -127,6 +135,16 @@ def _config_rows(config_dir: Path, experiment: dict[str, Any]) -> list[dict[str,
                 "hellaswag_acc": None,
                 "mechanism_active": None,
                 "full_run_approved": bool(queue.get("full_run_approved", False)),
+                "promotion_report_path": None,
+                "promotion_recommendation": None,
+                "promotion_blockers": None,
+                "promotion_approved_at": None,
+                "approval_reason": None,
+                "screen_run_dir": None,
+                "screen_config_path": None,
+                "screen_final_val_loss": None,
+                "screen_mechanism_active": None,
+                "screen_diagnostics_non_degenerate": None,
                 "allow_overwrite_existing_run_dir": bool(queue.get("allow_overwrite_existing_run_dir", False)),
                 "queue_requires_run": queue.get("requires_run"),
                 "queue_mechanism_check": queue.get("mechanism_check"),
@@ -156,8 +174,8 @@ def _render_run_index_markdown(experiment_id: str, rows: list[dict[str, Any]]) -
         "",
         "This file is exported from the queue ledger. It is an operational index, not a scientific interpretation.",
         "",
-        "| run | attention | stage | status | approved | overwrite | requires | mechanism_check | failure | step | final loss | best loss | ppl | tok/s | vram MB | hs | active | classification | notes |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+        "| run | attention | stage | status | promotion | approved | report | blockers | screen loss | screen active | screen diag | overwrite | requires | mechanism_check | failure | step | final loss | best loss | ppl | tok/s | vram MB | hs | active | classification | notes |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for row in rows:
         lines.append(
@@ -168,7 +186,13 @@ def _render_run_index_markdown(experiment_id: str, rows: list[dict[str, Any]]) -
                     _md(row.get("attention_type")),
                     _md(row.get("stage")),
                     _md(row.get("status")),
+                    _md(row.get("promotion_recommendation")),
                     _bool_md(row.get("full_run_approved")),
+                    _md(row.get("promotion_report_path")),
+                    _md(row.get("promotion_blockers")),
+                    _md(row.get("screen_final_val_loss")),
+                    _md(row.get("screen_mechanism_active")),
+                    _md(row.get("screen_diagnostics_non_degenerate")),
                     _bool_md(row.get("allow_overwrite_existing_run_dir")),
                     _md(row.get("queue_requires_run")),
                     _md(row.get("queue_mechanism_check")),
@@ -211,3 +235,27 @@ def _load_config_if_present(path: Any) -> dict[str, Any] | None:
     with config_path.open("r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     return config if isinstance(config, dict) else None
+
+
+def _promotion_fields(path: Any) -> dict[str, Any]:
+    fields = {
+        "promotion_blockers": None,
+        "screen_final_val_loss": None,
+        "screen_mechanism_active": None,
+        "screen_diagnostics_non_degenerate": None,
+    }
+    if not path:
+        return fields
+    report_path = Path(path)
+    if not report_path.exists():
+        return fields
+    try:
+        report = load_promotion_report(report_path)
+    except Exception:  # noqa: BLE001 - run indexes should export even if one report is corrupt
+        fields["promotion_blockers"] = ["promotion report unreadable"]
+        return fields
+    fields["promotion_blockers"] = report.get("promotion_blockers")
+    fields["screen_final_val_loss"] = report.get("final_screen_val_loss")
+    fields["screen_mechanism_active"] = report.get("mechanism_active")
+    fields["screen_diagnostics_non_degenerate"] = report.get("diagnostics_non_degenerate")
+    return fields

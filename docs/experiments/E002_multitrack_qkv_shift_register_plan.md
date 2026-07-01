@@ -36,14 +36,14 @@ layer-local bank ablations
 
 Existing old skeleton configs remain `status: experimental_unimplemented` future variants.
 
-## Canonical Initial Run Matrix
+## Canonical Initial Screen Matrix
 
 | Run | Attention Type | Role |
 | --- | --- | --- |
-| `standard_refactor_control_30m_seed1` | `standard` | Shared-path standard control |
-| `multi_qkv_static_3track_global_30m_seed1` | `multi_qkv_static_3track_global` | A: static global 3-track cycle |
-| `multi_qkv_train_rotation_3track_global_30m_seed1` | `multi_qkv_train_rotation_3track_global` | B: train-time rotation, eval freeze |
-| `multi_qkv_position_rotation_3track_global_30m_seed1` | `multi_qkv_position_rotation_3track_global` | C: position-clock routing at train/eval/generate |
+| `standard_refactor_control_30m_seed1` | `standard` | Screen first; shared-path standard control |
+| `multi_qkv_static_3track_global_30m_seed1` | `multi_qkv_static_3track_global` | Screen first; A static global 3-track cycle |
+| `multi_qkv_train_rotation_3track_global_30m_seed1` | `multi_qkv_train_rotation_3track_global` | Screen first; B train-time rotation, eval freeze |
+| `multi_qkv_position_rotation_3track_global_30m_seed1` | `multi_qkv_position_rotation_3track_global` | Screen first; C position-clock routing |
 
 B and C are primarily interpreted relative to A/static-global, not merely standard attention.
 
@@ -215,6 +215,27 @@ killed
 Validation loss is not interpretable without mechanism diagnostics and destructive-test output. A Multi-QKV run with missing
 or degenerate diagnostics is `insufficient_evidence` even if loss appears improved.
 
+## Screen-First Operator Path
+
+Default exploration path:
+
+```bash
+uv run scripts/verify_cuda.py
+uv run scripts/verify_data.py --data_root data/fineweb_edu_100m --manifest data/fineweb_edu_100m/manifest.json --verify_hashes
+uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
+
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_static_3track_global_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_3track_global_30m_seed1.yaml
+uv run attn-queue add configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml
+uv run attn-queue start
+uv run attn-queue promotion-report multi_qkv_static_3track_global_30m_seed1
+uv run attn-queue approve multi_qkv_static_3track_global_30m_seed1
+```
+
+Screen reports are evidence only for short-run stability, early loss descent, throughput/VRAM roughness, diagnostic
+existence, mechanism activity, and screen destructive-test sensitivity where feasible. They are not scientific results.
+
 ## Manual Full-Run Boundary
 
 Implementation QC does not include full 3000-step E002 runs. Full runs are manual/operator work from a frozen source state.
@@ -233,7 +254,7 @@ qkv_track_activity
 qkv_track_destructive_test.py
 ```
 
-## Manual Command Sequence
+## Manual Promotion-Stage Command Sequence
 
 Run from codebase root:
 
@@ -270,6 +291,10 @@ uv run scripts/qkv_track_destructive_test.py \
 
 scripts/experiments/E002_multitrack_qkv_shift_register/compare_initial_full_runs.sh
 ```
+
+The all-full launcher refuses by design. Individual full-run scripts are manual promotion-stage scripts only. Full A/B/C
+comparison is valid only after the selected runs were promoted, approved, completed, verified, and paired with
+`qkv_track_destructive_test.py` artifacts.
 
 ## Comparison Requirements
 

@@ -43,7 +43,7 @@ docs/implementation/0901_multiqkv_shift_register/
 
 ## Repository boundaries
 
-Use the existing harness. Do not replace it with a new trainer, a new config system, or a new experiment framework unless explicitly asked.
+Use the existing harness. Do not rewrite the trainer, replace it with a new trainer, introduce a new config system, or create a new experiment framework unless explicitly asked.
 
 Important directories:
 
@@ -313,11 +313,16 @@ docs/guides/experiment_queue_discipline_checklist.md
 
 Queue safety requirements:
 
-- Full runs require explicit approval through the ledger, normally via `uv run attn-queue approve <run>`.
+- Full runs require a clean promotion report plus explicit approval through `uv run attn-queue approve <run>`.
+- Do not convert screen candidates into full runs without promotion reports.
+- Do not approve full runs by setting `full_run_approved` directly.
+- Do not recommend `run_all_full.sh` or `run_all_full_initial.sh` for exploration.
 - Existing run directories are protected by default.
 - Do not set `queue.allow_overwrite_existing_run_dir: true` casually.
 - Non-standard full runs require a passed `queue.requires_run` control unless `queue.skip_control_check: true` is explicitly documented.
 - Non-standard screen promotion requires mechanism diagnostics unless `queue.allow_missing_diagnostics: true` is explicitly documented.
+- Do not interpret validation loss without required diagnostics.
+- Do not treat queue readiness or script existence as evidence.
 - The queue daemon is single-GPU and serial. Do not make it concurrent without a new design and tests.
 - The queue doctor is a readiness check; it does not launch training.
 
@@ -327,6 +332,7 @@ Useful commands:
 uv run attn-queue status
 uv run attn-queue ls
 uv run attn-queue show <run_id_or_name>
+uv run attn-queue promotion-report <run_id_or_name>
 uv run attn-queue approve <run_id_or_name>
 uv run attn-queue unapprove <run_id_or_name>
 uv run attn-queue doctor --experiment <EXPERIMENT_ID>

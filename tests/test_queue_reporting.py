@@ -63,6 +63,8 @@ def test_export_queue_report_writes_json_and_markdown(tmp_path, tiny_config, mon
     assert [row["config_name"] for row in payload["runs"]] == ["standard"]
     row = payload["runs"][0]
     assert row["full_run_approved"] == 1
+    assert "promotion_report_path" in row
+    assert "promotion_blockers" in row
     assert row["allow_overwrite_existing_run_dir"] == 0
     assert row["queue_requires_run"] == "control"
     assert row["queue_mechanism_check"] == "cp_gradient_norm"
@@ -97,12 +99,14 @@ def test_export_queue_report_uses_config_backed_rows_with_queue_fields(tmp_path,
     row = payload["runs"][0]
     assert row["status"] == "NOT_QUEUED"
     assert row["full_run_approved"] is False
+    assert row["promotion_report_path"] is None
     assert row["allow_overwrite_existing_run_dir"] is True
     assert row["queue_requires_run"] == "standard"
     assert row["queue_mechanism_check"] == "qkv_track_activity"
     markdown = Path(result["markdown_path"]).read_text(encoding="utf-8")
     assert "| candidate |" in markdown
-    assert "| no | yes | standard | qkv_track_activity |" in markdown
+    assert "qkv_track_activity" in markdown
+    assert "screen diag" in markdown
 
 
 def test_morning_note_creates_and_appends(tmp_path, monkeypatch):

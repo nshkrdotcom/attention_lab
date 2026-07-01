@@ -64,6 +64,10 @@ QUEUE_KEYS = {
     "mechanism_check",
     "allow_missing_diagnostics",
     "skip_control_check",
+    "screen_steps",
+    "screen_val_every",
+    "screen_save_every",
+    "screen_diagnostics_every",
 }
 
 
@@ -214,6 +218,9 @@ def validate_config(
     ):
         if key in queue and not isinstance(queue[key], bool):
             raise ValueError(f"queue.{key} must be a boolean")
+    for key in ("screen_steps", "screen_val_every", "screen_save_every", "screen_diagnostics_every"):
+        if key in queue:
+            _require_positive_int(queue, key, f"queue.{key}")
     if "mechanism_check" in queue:
         if queue["mechanism_check"] not in MECHANISM_CHECKS:
             raise ValueError(f"queue.mechanism_check must be one of {sorted(MECHANISM_CHECKS)}")
