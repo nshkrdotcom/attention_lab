@@ -39,6 +39,12 @@ def mechanism_check_name(attention_type: str, queue_config: dict[str, Any] | Non
         return "differential_qkv_activity"
     if attention_type == "scope_gated_qkv":
         return "scope_gated_qkv_activity"
+    if attention_type == "operator_valued_attention":
+        return "operator_valued_activity"
+    if attention_type == "q3k3v3_role_routed_attention":
+        return "q3k3v3_role_activity"
+    if attention_type == "dynamic_value_query_conditioned_attention":
+        return "dynamic_value_activity"
     if attention_type.startswith(QKV_FAMILY_PREFIXES):
         return "qkv_track_activity"
     return None
@@ -73,6 +79,8 @@ def evaluate_mechanism_activity(
     if not rows:
         if queue_config.get("allow_missing_diagnostics", False):
             return MechanismCheckResult(None, "missing diagnostics allowed by queue.allow_missing_diagnostics")
+        if check_name in {"operator_valued_activity", "q3k3v3_role_activity", "dynamic_value_activity"}:
+            return MechanismCheckResult(False, f"missing diagnostics for mechanism_check={check_name}")
         return MechanismCheckResult(None, f"missing diagnostics for mechanism_check={check_name}")
 
     if check_name == "cp_gradient_norm":
@@ -81,6 +89,12 @@ def evaluate_mechanism_activity(
         return _check_differential_qkv_activity(rows, threshold)
     if check_name == "scope_gated_qkv_activity":
         return _check_scope_gated_qkv_activity(rows, threshold)
+    if check_name == "operator_valued_activity":
+        return _check_operator_valued_activity(rows, threshold)
+    if check_name == "q3k3v3_role_activity":
+        return _check_q3k3v3_role_activity(rows, threshold)
+    if check_name == "dynamic_value_activity":
+        return _check_dynamic_value_activity(rows, threshold)
     if check_name == "qkv_track_activity":
         return _check_qkv_track_activity(rows, threshold, attention_type=attention_type)
     return MechanismCheckResult(None, f"unknown mechanism_check={check_name}")
@@ -204,6 +218,179 @@ def _check_qkv_track_activity(
     if failure is not None:
         return MechanismCheckResult(False, failure, details)
     return MechanismCheckResult(True, "qkv_track_activity passed", details)
+
+
+def _check_operator_valued_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
+    op_rows = [row for row in rows if row.get("attention_type") == "operator_valued_attention"]
+    if not op_rows:
+        return MechanismCheckResult(False, "diagnostics did not contain operator_valued_attention rows", {"rows_seen": len(rows)})
+
+    prob_keys = [
+        "operator_prob_add_mean",
+        "operator_prob_suppress_mean",
+        "operator_prob_gate_mean",
+        "operator_prob_transform_mean",
+        "operator_prob_bind_mean",
+    ]
+    norm_keys = [
+        "operator_add_output_norm",
+        "operator_suppress_output_norm",
+        "operator_gate_output_norm",
+        "operator_transform_output_norm",
+        "operator_bind_output_norm",
+    ]
+    argmax_keys = [
+        "operator_argmax_add_frac",
+        "operator_argmax_suppress_frac",
+        "operator_argmax_gate_frac",
+        "operator_argmax_transform_frac",
+        "operator_argmax_bind_frac",
+    ]
+    required = [
+        *prob_keys,
+        *norm_keys,
+        *argmax_keys,
+        "operator_prob_entropy_mean",
+        "operator_combined_output_norm",
+        "operator_suppress_scale",
+    ]
+    failure = _malformed_or_nonfinite(op_rows, required)
+    details = {
+        "rows_seen": len(op_rows),
+        "threshold": threshold,
+        **_summary(op_rows, required),
+    }
+    if failure is not None:
+        return MechanismCheckResult(False, failure, details)
+
+    failures = []
+    combined_values = _finite_values(op_rows, "operator_combined_output_norm")
+    if not any(value > threshold for value in combined_values):
+        failures.append("combined output norm never exceeded threshold")
+    active_operator_norms = [
+        key for key in norm_keys if any(value > threshold for value in _finite_values(op_rows, key))
+    ]
+    if len(active_operator_norms) < 2:
+        failures.append("fewer than two operator output norms exceeded threshold")
+    non_add_norms = [
+        key for key in norm_keys if key != "operator_add_output_norm" and any(value > threshold for value in _finite_values(op_rows, key))
+    ]
+    if not non_add_norms:
+        failures.append("all non-add operator output norms were zero")
+    entropy_values = _finite_values(op_rows, "operator_prob_entropy_mean")
+    if not any(value > 1e-3 for value in entropy_values):
+        failures.append("operator entropy never exceeded minimum entropy threshold")
+    suppress_scales = _finite_values(op_rows, "operator_suppress_scale")
+    if not all(value > 0.0 for value in suppress_scales):
+        failures.append("suppress scale was nonpositive or nonfinite")
+    max_argmax = max(max(_finite_values([row], key) or [0.0]) for row in op_rows for key in argmax_keys)
+    if max_argmax >= 1.0:
+        failures.append("operator router collapsed entirely to one operator in at least one row")
+    max_prob = max(max(_finite_values([row], key) or [0.0]) for row in op_rows for key in prob_keys)
+    if max_prob >= 1.0:
+        failures.append("all operator probability mass went to one operator in at least one row")
+
+    if failures:
+        return MechanismCheckResult(False, "; ".join(failures), details)
+    return MechanismCheckResult(True, "operator_valued_activity passed", details)
+
+
+def _check_q3k3v3_role_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
+    q3_rows = [row for row in rows if row.get("attention_type") == "q3k3v3_role_routed_attention"]
+    if not q3_rows:
+        return MechanismCheckResult(False, "diagnostics did not contain q3k3v3_role_routed_attention rows", {"rows_seen": len(rows)})
+
+    role_keys = [
+        "q3_content_output_norm",
+        "q3_operator_output_norm",
+        "q3_binding_output_norm",
+    ]
+    interaction_keys = [
+        "q3_content_operator_interaction_norm",
+        "q3_content_binding_interaction_norm",
+        "q3_operator_binding_interaction_norm",
+    ]
+    ratio_keys = [
+        "q3_content_to_total_norm_ratio",
+        "q3_operator_to_total_norm_ratio",
+        "q3_binding_to_total_norm_ratio",
+    ]
+    failure = _malformed_or_nonfinite(q3_rows, role_keys + interaction_keys + ratio_keys)
+    details = {
+        "rows_seen": len(q3_rows),
+        "threshold": threshold,
+        **_summary(q3_rows, role_keys + interaction_keys + ratio_keys),
+    }
+    if failure is not None:
+        return MechanismCheckResult(False, failure, details)
+
+    failures = []
+    labels = {
+        "q3_content_output_norm": "content output norm never exceeded threshold",
+        "q3_operator_output_norm": "operator output norm never exceeded threshold",
+        "q3_binding_output_norm": "binding output norm never exceeded threshold",
+    }
+    for key in role_keys:
+        if not any(value > threshold for value in _finite_values(q3_rows, key)):
+            failures.append(labels[key])
+    pair_products_enabled = any(bool(row.get("q3_pair_products_enabled")) for row in q3_rows)
+    if pair_products_enabled and not any(
+        value > threshold for key in interaction_keys for value in _finite_values(q3_rows, key)
+    ):
+        failures.append("pair interactions were all zero while pair products were enabled")
+    if not pair_products_enabled:
+        details["pair_products_enabled"] = False
+    for key in ratio_keys:
+        values = _finite_values(q3_rows, key)
+        if not values:
+            failures.append(f"{key} was missing or non-finite")
+
+    if failures:
+        return MechanismCheckResult(False, "; ".join(failures), details)
+    return MechanismCheckResult(True, "q3k3v3_role_activity passed", details)
+
+
+def _check_dynamic_value_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
+    dyn_rows = [row for row in rows if row.get("attention_type") == "dynamic_value_query_conditioned_attention"]
+    if not dyn_rows:
+        return MechanismCheckResult(False, "diagnostics did not contain dynamic_value_query_conditioned_attention rows", {"rows_seen": len(rows)})
+
+    required = [
+        "dynamic_value_gate_mean",
+        "dynamic_value_gate_std",
+        "dynamic_value_gate_min",
+        "dynamic_value_gate_max",
+        "dynamic_value_static_content_norm",
+        "dynamic_value_gated_content_norm",
+        "dynamic_value_delta_norm",
+        "dynamic_value_delta_to_static_ratio",
+    ]
+    failure = _malformed_or_nonfinite(dyn_rows, required)
+    details = {
+        "rows_seen": len(dyn_rows),
+        "threshold": threshold,
+        **_summary(dyn_rows, required),
+    }
+    if failure is not None:
+        return MechanismCheckResult(False, failure, details)
+
+    failures = []
+    if not any(value > threshold for value in _finite_values(dyn_rows, "dynamic_value_static_content_norm")):
+        failures.append("static content norm never exceeded threshold")
+    if not any(value > threshold for value in _finite_values(dyn_rows, "dynamic_value_gated_content_norm")):
+        failures.append("gated content norm never exceeded threshold")
+    if not any(value > threshold for value in _finite_values(dyn_rows, "dynamic_value_delta_norm")):
+        failures.append("delta norm never exceeded threshold")
+    if not any(value > 1e-6 for value in _finite_values(dyn_rows, "dynamic_value_gate_std")):
+        failures.append("gate std never exceeded minimum threshold")
+    gate_mins = _finite_values(dyn_rows, "dynamic_value_gate_min")
+    gate_maxes = _finite_values(dyn_rows, "dynamic_value_gate_max")
+    if any(value <= 0.0 for value in gate_mins) or any(value >= 1.0 for value in gate_maxes):
+        failures.append("gate saturated exactly at 0 or 1")
+
+    if failures:
+        return MechanismCheckResult(False, "; ".join(failures), details)
+    return MechanismCheckResult(True, "dynamic_value_activity passed", details)
 
 
 def _check_legacy_qkv_activity(rows: list[dict[str, Any]], threshold: float) -> MechanismCheckResult:
@@ -387,6 +574,35 @@ def _finite_values(rows: list[dict[str, Any]], key: str) -> list[float]:
         if math.isfinite(parsed):
             values.append(parsed)
     return values
+
+
+def _malformed_or_nonfinite(rows: list[dict[str, Any]], keys: list[str]) -> str | None:
+    for index, row in enumerate(rows):
+        for key in keys:
+            if key not in row:
+                return f"malformed diagnostics row {index}: missing {key}"
+            try:
+                value = float(row[key])
+            except (TypeError, ValueError):
+                return f"malformed diagnostics row {index}: {key} is not numeric"
+            if not math.isfinite(value):
+                return f"non-finite diagnostic value in row {index}: {key}"
+    return None
+
+
+def _summary(rows: list[dict[str, Any]], keys: list[str]) -> dict[str, float | None]:
+    details: dict[str, float | None] = {}
+    for key in keys:
+        values = _finite_values(rows, key)
+        if not values:
+            details[key] = None
+            details[f"{key}_min"] = None
+            details[f"{key}_max"] = None
+            continue
+        details[key] = sum(values) / len(values)
+        details[f"{key}_min"] = min(values)
+        details[f"{key}_max"] = max(values)
+    return details
 
 
 def _max_nested_float(value: Any) -> float | None:

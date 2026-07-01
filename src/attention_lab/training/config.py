@@ -23,8 +23,23 @@ QKV_ATTENTION_TYPES = {
     "differential_qkv_anti_value",
     "scope_gated_qkv",
 }
-IMPLEMENTED_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear"} | MULTI_QKV_ATTENTION_TYPES | QKV_ATTENTION_TYPES
-KNOWN_ATTENTION_TYPES = {"standard", "cp_bilinear", "cp_trilinear", "trilinear_cp"} | MULTI_QKV_ATTENTION_TYPES | QKV_ATTENTION_TYPES
+E004_ATTENTION_TYPES = {
+    "operator_valued_attention",
+    "q3k3v3_role_routed_attention",
+    "dynamic_value_query_conditioned_attention",
+}
+IMPLEMENTED_ATTENTION_TYPES = (
+    {"standard", "cp_bilinear", "cp_trilinear"}
+    | MULTI_QKV_ATTENTION_TYPES
+    | QKV_ATTENTION_TYPES
+    | E004_ATTENTION_TYPES
+)
+KNOWN_ATTENTION_TYPES = (
+    {"standard", "cp_bilinear", "cp_trilinear", "trilinear_cp"}
+    | MULTI_QKV_ATTENTION_TYPES
+    | QKV_ATTENTION_TYPES
+    | E004_ATTENTION_TYPES
+)
 DTYPES = {"bfloat16", "float16", "float32"}
 EXPERIMENTAL_UNIMPLEMENTED_STATUS = "experimental_unimplemented"
 RUN_KEYS = {"name", "out_dir", "seed"}
@@ -63,6 +78,9 @@ MECHANISM_CHECKS = {
     "qkv_track_activity",
     "differential_qkv_activity",
     "scope_gated_qkv_activity",
+    "operator_valued_activity",
+    "q3k3v3_role_activity",
+    "dynamic_value_activity",
 }
 QUEUE_KEYS = {
     "requires_run",
@@ -210,6 +228,31 @@ def validate_config(
             value = model.get(key, GPTConfig.__dataclass_fields__[key].default)
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
                 raise ValueError(f"model.{key} must be finite numeric")
+    if attention_type == "operator_valued_attention":
+        for key in ("operator_router_hidden_mult", "operator_suppress_scale_init"):
+            value = model.get(key, GPTConfig.__dataclass_fields__[key].default)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+                raise ValueError(f"model.{key} must be finite numeric")
+            if float(value) <= 0.0:
+                raise ValueError(f"model.{key} must be positive")
+        for key in ("operator_include_bind", "operator_include_transform"):
+            if not isinstance(model.get(key, GPTConfig.__dataclass_fields__[key].default), bool):
+                raise ValueError(f"model.{key} must be a boolean")
+    if attention_type == "q3k3v3_role_routed_attention":
+        if model.get("q3k3v3_role_dim_mode", GPTConfig.q3k3v3_role_dim_mode) != "equal":
+            raise ValueError("model.q3k3v3_role_dim_mode must be 'equal'")
+        for key in ("q3k3v3_cross_role_grid", "q3k3v3_include_pair_products"):
+            if not isinstance(model.get(key, GPTConfig.__dataclass_fields__[key].default), bool):
+                raise ValueError(f"model.{key} must be a boolean")
+    if attention_type == "dynamic_value_query_conditioned_attention":
+        value = model.get("dynamic_value_gate_bias_init", GPTConfig.dynamic_value_gate_bias_init)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+            raise ValueError("model.dynamic_value_gate_bias_init must be finite numeric")
+        gate_from = model.get("dynamic_value_gate_from", GPTConfig.dynamic_value_gate_from)
+        if gate_from not in {"x", "q", "xq"}:
+            raise ValueError("model.dynamic_value_gate_from must be one of ['q', 'x', 'xq']")
+        if not isinstance(model.get("dynamic_value_pairwise_gate", GPTConfig.dynamic_value_pairwise_gate), bool):
+            raise ValueError("model.dynamic_value_pairwise_gate must be a boolean")
 
     block_size = _require_positive_int(model, "block_size", "model.block_size")
     n_layer = _require_positive_int(model, "n_layer", "model.n_layer")

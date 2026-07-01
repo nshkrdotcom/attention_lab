@@ -150,7 +150,7 @@ def score_promotion_report(
         blockers.append(f"VRAM ratio vs control {vram_ratio:.4f} exceeds {policy.max_vram_ratio_vs_control:.4f}")
 
     status = "pass" if not blockers else _blocked_status(recommendation, blockers)
-    return {
+    decision = {
         "candidate": report.get("run_name"),
         "rung": _rung_from_run_name(str(report.get("run_name") or "")),
         "attention_type": attention_type,
@@ -169,6 +169,8 @@ def score_promotion_report(
         "diagnostics_non_degenerate": report.get("diagnostics_non_degenerate"),
         "next_action": "advance_to_next_rung" if status == "pass" else status,
     }
+    decision.update(_variant_diagnostic_summary(report))
+    return decision
 
 
 def write_gauntlet_report(
@@ -439,6 +441,42 @@ def _metric(report: dict[str, Any] | None, *keys: str) -> float | None:
         if math.isfinite(parsed):
             return parsed
     return None
+
+
+def _variant_diagnostic_summary(report: dict[str, Any]) -> dict[str, Any]:
+    attention_type = str(report.get("attention_type") or "")
+    summary = report.get("mechanism_activity_summary") or {}
+    if not isinstance(summary, dict):
+        return {}
+    if attention_type == "operator_valued_attention":
+        keys = [
+            "operator_prob_entropy_mean",
+            "operator_prob_add_mean",
+            "operator_prob_suppress_mean",
+            "operator_prob_gate_mean",
+            "operator_prob_transform_mean",
+            "operator_prob_bind_mean",
+            "operator_combined_output_norm_max",
+        ]
+    elif attention_type == "q3k3v3_role_routed_attention":
+        keys = [
+            "q3_content_output_norm_max",
+            "q3_operator_output_norm_max",
+            "q3_binding_output_norm_max",
+            "q3_content_operator_interaction_norm_max",
+            "q3_content_binding_interaction_norm_max",
+            "q3_operator_binding_interaction_norm_max",
+        ]
+    elif attention_type == "dynamic_value_query_conditioned_attention":
+        keys = [
+            "dynamic_value_gate_mean",
+            "dynamic_value_gate_std",
+            "dynamic_value_delta_norm_max",
+            "dynamic_value_delta_to_static_ratio_max",
+        ]
+    else:
+        return {}
+    return {key: summary.get(key) for key in keys if key in summary}
 
 
 def _ratio(value: float | None, control: float | None) -> float | None:

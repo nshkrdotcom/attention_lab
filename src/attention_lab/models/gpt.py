@@ -37,6 +37,16 @@ class GPTConfig:
     diff_qkv_share_value: bool = False
     scope_gate_bias_init: float = 0.0
     scope_stream_scale_init: float = 1.0
+    operator_router_hidden_mult: float = 1.0
+    operator_suppress_scale_init: float = 0.5
+    operator_include_bind: bool = True
+    operator_include_transform: bool = True
+    q3k3v3_role_dim_mode: str = "equal"
+    q3k3v3_cross_role_grid: bool = False
+    q3k3v3_include_pair_products: bool = True
+    dynamic_value_gate_bias_init: float = 0.0
+    dynamic_value_gate_from: str = "x"
+    dynamic_value_pairwise_gate: bool = False
 
 
 def config_from_dict(model_config: dict[str, Any], data_config: dict[str, Any] | None = None) -> GPTConfig:

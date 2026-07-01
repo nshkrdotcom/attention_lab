@@ -76,6 +76,11 @@ def _non_run_config_names(experiment: dict[str, Any]) -> list[str]:
     return names
 
 
+def _is_generated_rung_config(path: Path) -> bool:
+    stem = path.stem
+    return "_rung" in stem and stem.rsplit("_", 1)[-1].startswith("rung")
+
+
 def validate_experiment(experiment_id: str) -> dict[str, Any]:
     experiment = get_experiment(experiment_id)
     validate_experiment_entry(experiment)
@@ -95,7 +100,11 @@ def validate_experiment(experiment_id: str) -> dict[str, Any]:
             raise ExperimentValidationError(f"Missing {label}: {path}")
 
     non_run_config_names = _non_run_config_names(experiment)
-    config_paths = sorted(path for path in config_dir.glob("*.yaml") if path.name not in set(non_run_config_names))
+    config_paths = sorted(
+        path
+        for path in config_dir.glob("*.yaml")
+        if path.name not in set(non_run_config_names) and not _is_generated_rung_config(path)
+    )
     if not config_paths:
         raise ExperimentValidationError(f"No YAML configs found in {config_dir}")
     for name in non_run_config_names:

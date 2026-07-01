@@ -919,6 +919,12 @@ config:
 configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml
 ```
 
+E004 follows the same generic policy-file pattern:
+
+```text
+configs/experiments/E004_operator_binding_qkv_gauntlet/gauntlet_policy.yaml
+```
+
 Rung configs are generated from base configs and are executed as `SCREEN` jobs. Do
 not commit generated run artifacts. Do not treat `ready_for_manual_full_promotion`
 as full-run approval.

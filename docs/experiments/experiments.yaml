@@ -42,3 +42,20 @@ experiments:
       - scope_gated_qkv_30m_seed1.yaml
     policy_configs:
       - gauntlet_policy.yaml
+  - id: E004_operator_binding_qkv_gauntlet
+    status: planned
+    plan: docs/experiments/E004_operator_binding_qkv_gauntlet_plan.md
+    config_dir: configs/experiments/E004_operator_binding_qkv_gauntlet
+    run_dir: runs/experiments/E004_operator_binding_qkv_gauntlet
+    report_dir: reports/experiments/E004_operator_binding_qkv_gauntlet
+    baseline_config: configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2.yaml
+    baseline_reference_run: runs/baseline_15m_fineweb100m_seed1
+    accurate_baseline_alias: configs/baseline_30m_fineweb100m.yaml
+    dataset_manifest: data/fineweb_edu_100m/manifest.json
+    canonical_first_build_configs:
+      - standard_refactor_control_30m_seed2.yaml
+      - operator_valued_attention_30m_seed2.yaml
+      - q3k3v3_role_routed_attention_30m_seed2.yaml
+      - dynamic_value_query_conditioned_attention_30m_seed2.yaml
+    policy_configs:
+      - gauntlet_policy.yaml

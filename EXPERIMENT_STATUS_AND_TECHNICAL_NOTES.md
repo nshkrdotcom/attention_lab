@@ -190,6 +190,32 @@ implemented_not_run
 
 No E003 screen or full training result is claimed in this status note. A gauntlet report is advancement metadata only until backed by actual screen artifacts. A full-run claim requires the same train/eval/summarize/verify boundary as E001/E002.
 
+## E004 Status
+
+E004 has been added as:
+
+```text
+E004_operator_binding_qkv_gauntlet
+```
+
+Current implementation status:
+
+- `operator_valued_attention` is implemented and registered.
+- `q3k3v3_role_routed_attention` is implemented and registered.
+- `dynamic_value_query_conditioned_attention` is implemented and registered.
+- All three variants emit attention diagnostics.
+- Queue mechanism checks exist for `operator_valued_activity`, `q3k3v3_role_activity`, and `dynamic_value_activity`.
+- Base configs and gauntlet policy exist under `configs/experiments/E004_operator_binding_qkv_gauntlet/`.
+- The E004 gauntlet uses the existing `attn-queue gauntlet-*` commands and writes reports under `reports/experiments/E004_operator_binding_qkv_gauntlet/`.
+
+Evidence status:
+
+```text
+implemented_not_run
+```
+
+No E004 screen or full training result is claimed in this status note. Generated rung configs, queue readiness, and report templates are not evidence. A full-run claim requires the same train/eval/summarize/verify boundary and queue full-run approval model as earlier experiments.
+
 ## What To Do Next
 
 1. Regenerate E001 comparison artifacts from actual run directories.
@@ -200,7 +226,7 @@ No E003 screen or full training result is claimed in this status note. A gauntle
 4. Update E001 results and run index after verification.
 5. Only then decide whether E001 merits replication seeds or a tighter diagnostic follow-up.
 6. Do not proceed to E002 scientific interpretation until E002 has complete run summaries, diagnostics, destructive tests, and verifier passes.
-7. For E003, run the gauntlet only after CUDA, data verification, and experiment validation pass.
+7. For E003 and E004, run gauntlets only after CUDA, data verification, and experiment validation pass.
 
 ## Suggested Report Regeneration Command
 

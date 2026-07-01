@@ -320,6 +320,8 @@ uv run scripts/list_experiments.py
 uv run scripts/list_experiments.py --id E001_cp_trilinear_attention
 uv run scripts/validate_experiment.py --id E001_cp_trilinear_attention
 uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
+uv run scripts/validate_experiment.py --id E003_qkv_architecture_gauntlet
+uv run scripts/validate_experiment.py --id E004_operator_binding_qkv_gauntlet
 ```
 
 ## Attention implementations
@@ -348,6 +350,9 @@ multi_qkv_train_rotation_3track_global
 multi_qkv_position_rotation_3track_global
 differential_qkv_anti_value
 scope_gated_qkv
+operator_valued_attention
+q3k3v3_role_routed_attention
+dynamic_value_query_conditioned_attention
 ```
 
 The historical `trilinear_cp` placeholder is intentionally unimplemented. Use `cp_trilinear` for E001.
@@ -549,6 +554,62 @@ uv run attn-queue gauntlet-plan \
   --policy configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml
 ```
 
+## E004: Operator-Binding QKV Gauntlet
+
+Experiment ID:
+
+```text
+E004_operator_binding_qkv_gauntlet
+```
+
+Plan:
+
+```text
+docs/experiments/E004_operator_binding_qkv_gauntlet_plan.md
+```
+
+E004 builds on the E003 gauntlet infrastructure. It is not an efficiency experiment and not a model-improvement claim. It asks whether higher-risk QKV decompositions can survive early pretraining while producing nondegenerate, inspectable mechanisms.
+
+Implemented variants:
+
+```text
+operator_valued_attention                    routed add/suppress/gate/transform/bind write modes
+q3k3v3_role_routed_attention                 content/operator/binding role streams
+dynamic_value_query_conditioned_attention    receiver-conditioned value read-mode gate
+```
+
+The gauntlet generates explicit rung configs and executes real `SCREEN` jobs:
+
+```text
+rung020 -> rung150 -> rung500
+```
+
+Machine decisions come from reports, metrics, checkpoints, and mechanism diagnostics. Passing a rung does not mean the architecture is better. Full 3000-step runs are not automatic and still require promotion reports plus queue approval.
+
+Validate and run:
+
+```bash
+uv run scripts/verify_cuda.py
+uv run scripts/verify_data.py --data_root data/fineweb_edu_100m --manifest data/fineweb_edu_100m/manifest.json --verify_hashes
+uv run scripts/validate_experiment.py --id E004_operator_binding_qkv_gauntlet
+scripts/experiments/E004_operator_binding_qkv_gauntlet/run_gauntlet.sh
+uv run attn-queue gauntlet-report --experiment E004_operator_binding_qkv_gauntlet
+```
+
+Inspect the plan without launching training:
+
+```bash
+uv run attn-queue gauntlet-plan \
+  --experiment E004_operator_binding_qkv_gauntlet \
+  --policy configs/experiments/E004_operator_binding_qkv_gauntlet/gauntlet_policy.yaml
+```
+
+Reports are written under:
+
+```text
+reports/experiments/E004_operator_binding_qkv_gauntlet/
+```
+
 ## Screen-first experiment workflow
 
 1. Verify CUDA and data.
@@ -632,6 +693,9 @@ uv run attn-queue morning-note --experiment E001_cp_trilinear_attention \
 uv run attn-queue gauntlet-plan --experiment E003_qkv_architecture_gauntlet --policy configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml
 uv run attn-queue gauntlet-run --experiment E003_qkv_architecture_gauntlet --policy configs/experiments/E003_qkv_architecture_gauntlet/gauntlet_policy.yaml --once
 uv run attn-queue gauntlet-report --experiment E003_qkv_architecture_gauntlet
+uv run attn-queue gauntlet-plan --experiment E004_operator_binding_qkv_gauntlet --policy configs/experiments/E004_operator_binding_qkv_gauntlet/gauntlet_policy.yaml
+uv run attn-queue gauntlet-run --experiment E004_operator_binding_qkv_gauntlet --policy configs/experiments/E004_operator_binding_qkv_gauntlet/gauntlet_policy.yaml --once
+uv run attn-queue gauntlet-report --experiment E004_operator_binding_qkv_gauntlet
 ```
 
 Queue safety rules:
@@ -644,9 +708,11 @@ Queue safety rules:
 - The 150-step screener lowers or injects `diagnostics.attention_diagnostics_every: 50` for non-standard attention so mechanism diagnostics can exist during screening.
 - Screen length is configurable through `queue.screen_steps`, `queue.screen_val_every`, `queue.screen_save_every`, and `queue.screen_diagnostics_every`.
 - Supported mechanism checks include `cp_gradient_norm`, `qkv_track_activity`,
-  `differential_qkv_activity`, and `scope_gated_qkv_activity`.
-- E003 adds `gauntlet-plan`, `gauntlet-run`, and `gauntlet-report` commands for
-  policy-based staged screening.
+  `differential_qkv_activity`, `scope_gated_qkv_activity`,
+  `operator_valued_activity`, `q3k3v3_role_activity`, and
+  `dynamic_value_activity`.
+- E003 and E004 use `gauntlet-plan`, `gauntlet-run`, and `gauntlet-report`
+  commands for policy-based staged screening.
 
 Read the detailed queue guide before using the queue for real full runs:
 
@@ -681,6 +747,7 @@ uv run ruff check .
 uv run scripts/validate_experiment.py --id E001_cp_trilinear_attention
 uv run scripts/validate_experiment.py --id E002_multitrack_qkv_shift_register
 uv run scripts/validate_experiment.py --id E003_qkv_architecture_gauntlet
+uv run scripts/validate_experiment.py --id E004_operator_binding_qkv_gauntlet
 uv run scripts/verify_data.py \
   --data_root data/fineweb_edu_100m \
   --manifest data/fineweb_edu_100m/manifest.json \
@@ -688,6 +755,7 @@ uv run scripts/verify_data.py \
 uv run attn-queue doctor --experiment E001_cp_trilinear_attention
 uv run attn-queue doctor --experiment E002_multitrack_qkv_shift_register
 uv run attn-queue doctor --experiment E003_qkv_architecture_gauntlet
+uv run attn-queue doctor --experiment E004_operator_binding_qkv_gauntlet
 ```
 
 Use targeted tests while developing, but do not treat targeted tests as a substitute for the full QC set before committing.
@@ -714,6 +782,7 @@ A run is not evidence until the relevant train, eval, summarize, and final verif
 
 - Full 3000-step E001 and E002 runs may be prepared without being executed locally; do not claim results unless verified artifacts exist.
 - E003 gauntlet screen reports are advancement evidence only; they are not full-run scientific results.
+- E004 gauntlet configs and reports are not full-run scientific results; full runs still require promotion reports and approval.
 - The historical `trilinear_cp` attention type remains unimplemented; use `cp_trilinear`.
 - E002 softmix, warmup routing, LoRA deltas, learned routing, stochastic routing, coprime clocks, and typed streams remain unimplemented future work.
 - `torch.compile` is intentionally unsupported for baseline QC.
