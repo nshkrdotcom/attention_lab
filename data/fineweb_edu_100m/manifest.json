@@ -1,0 +1,30 @@
+{
+  "data_root": "data/fineweb_edu_100m",
+  "created_at": "2026-06-30T00:18:50+00:00",
+  "tokenizer": "gpt2",
+  "dataset": "HuggingFaceFW/fineweb-edu",
+  "dataset_config": "sample-10BT",
+  "split": "train",
+  "shards": [
+    {
+      "path": "edufineweb_val_000000.npy",
+      "split": "val",
+      "num_tokens": 4000000,
+      "dtype": "uint16",
+      "min_token": 0,
+      "max_token": 50256,
+      "sha256": "efb01e4b8dad9ce4aa906ca8afbb36bd0329d4135e00741556eb4a70689f784c"
+    },
+    {
+      "path": "edufineweb_train_000001.npy",
+      "split": "train",
+      "num_tokens": 100000000,
+      "dtype": "uint16",
+      "min_token": 0,
+      "max_token": 50256,
+      "sha256": "7bc89b5e75a6eba3e471c5434b03e98dd3be6aaa8ce043a9aae564bf51e25893"
+    }
+  ],
+  "total_train_tokens": 100000000,
+  "total_val_tokens": 4000000
+}

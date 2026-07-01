@@ -1,0 +1,75 @@
+[project]
+name = "attention-lab"
+version = "0.1.0"
+description = "A modular GPT attention architecture harness based on build-nanogpt."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "accelerate>=1.8.1",
+    "datasets>=3.6.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.2.0",
+    "pandas>=2.3.0",
+    "psutil>=7.0.0",
+    "pyyaml>=6.0.2",
+    "requests>=2.32.0",
+    "rich>=14.0.0",
+    "tiktoken>=0.9.0",
+    "torch>=2.7.0",
+    "torchaudio>=2.7.0",
+    "torchvision>=0.22.0",
+    "tqdm>=4.67.0",
+    "transformers>=4.52.0",
+    "wandb>=0.20.0",
+]
+
+[project.scripts]
+attention-lab-train = "attention_lab.training.train:main"
+attention-lab-eval-loss = "attention_lab.evals.loss_eval:main"
+attention-lab-eval-generate = "attention_lab.evals.generation_eval:main"
+attention-lab-eval-hellaswag = "attention_lab.evals.hellaswag_eval:main"
+attention-lab-verify-run = "attention_lab.training.verify_run:main"
+attention-lab-summarize-run = "attention_lab.training.summarize_run:main"
+attention-lab-queue = "attention_lab.queue.cli:main"
+attn-queue = "attention_lab.queue.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/attention_lab"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+torchvision = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+torchaudio = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "ruff>=0.12.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [
+    "fineweb.py",
+    "hellaswag.py",
+    "train_gpt2.py",
+]

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Attention Lab Run Summary",
+  "type": "object",
+  "required": [
+    "run_dir",
+    "run_name",
+    "max_step",
+    "train_event_count",
+    "val_event_count",
+    "initial_val_loss",
+    "final_val_loss",
+    "best_val_loss",
+    "initial_val_perplexity",
+    "final_val_perplexity",
+    "median_tokens_per_sec",
+    "checkpoint_count"
+  ],
+  "properties": {
+    "run_dir": { "type": "string" },
+    "run_name": { "type": "string" },
+    "max_step": { "type": ["integer", "null"] },
+    "train_event_count": { "type": "integer" },
+    "val_event_count": { "type": "integer" },
+    "initial_val_loss": { "type": ["number", "null"] },
+    "final_val_loss": { "type": ["number", "null"] },
+    "best_val_loss": { "type": ["number", "null"] },
+    "initial_val_perplexity": { "type": ["number", "null"] },
+    "final_val_perplexity": { "type": ["number", "null"] },
+    "median_tokens_per_sec": { "type": ["number", "null"] },
+    "peak_vram_mb": { "type": ["number", "null"] },
+    "peak_vram_allocated_mb": { "type": ["number", "null"] },
+    "peak_vram_reserved_mb": { "type": ["number", "null"] },
+    "nvidia_smi_memory_mb": { "type": ["number", "null"] },
+    "checkpoint_count": { "type": "integer" }
+  },
+  "additionalProperties": true
+}

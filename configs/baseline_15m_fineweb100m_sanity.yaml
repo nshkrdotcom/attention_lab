@@ -1,0 +1,49 @@
+run:
+  name: baseline_15m_fineweb100m_sanity_seed1
+  out_dir: runs/baseline_15m_fineweb100m_sanity_seed1
+  seed: 1337
+
+data:
+  data_root: data/fineweb_edu_100m
+  tokenizer: gpt2
+  vocab_size: 50304
+  train_tokens: 100000000
+  val_tokens: 4000000
+
+model:
+  attention_type: standard
+  block_size: 1024
+  n_layer: 6
+  n_head: 6
+  n_embd: 384
+  dropout: 0.0
+  bias: false
+
+train:
+  device: cuda
+  dtype: bfloat16
+  compile: false
+  eval_at_start: true
+  B: 4
+  T: 1024
+  total_batch_size: 262144
+  max_steps: 20
+  grad_clip: 1.0
+  weight_decay: 0.1
+  learning_rate: 0.0006
+  min_lr: 0.00006
+  warmup_steps: 5
+  val_every: 10
+  val_steps: 5
+  save_every: 20
+  log_every: 1
+
+sample:
+  sample_every: 20
+  prompt: "The history of mathematics"
+  num_samples: 2
+  max_new_tokens: 32
+  top_k: 50
+  temperature: 1.0
+  seed: 42
+

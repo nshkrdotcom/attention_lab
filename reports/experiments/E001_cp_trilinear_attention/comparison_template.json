@@ -1,0 +1,14 @@
+{
+  "experiment_id": "E001_cp_trilinear_attention",
+  "status": "template",
+  "baseline": null,
+  "candidate": null,
+  "derived": {
+    "delta_final_val_loss": null,
+    "delta_best_val_loss": null,
+    "delta_final_val_perplexity": null,
+    "tokens_per_sec_ratio": null,
+    "peak_vram_allocated_ratio": null,
+    "peak_vram_reserved_ratio": null
+  }
+}

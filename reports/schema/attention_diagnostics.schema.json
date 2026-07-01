@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Attention Lab Attention Diagnostics Row",
+  "type": "object",
+  "required": [
+    "attention_type",
+    "step"
+  ],
+  "properties": {
+    "schema_version": { "type": ["integer", "null"], "minimum": 1 },
+    "experiment_id": { "type": ["string", "null"] },
+    "run_name": { "type": ["string", "null"] },
+    "attention_type": { "type": "string" },
+    "step": { "type": "integer", "minimum": 0 },
+    "layer": { "type": ["integer", "null"], "minimum": 0 },
+    "lambda_value": { "type": ["number", "null"] },
+    "cp_score_mean": { "type": ["number", "null"] },
+    "cp_score_std": { "type": ["number", "null"] },
+    "standard_score_mean": { "type": ["number", "null"] },
+    "standard_score_std": { "type": ["number", "null"] },
+    "cp_to_standard_score_std_ratio": { "type": ["number", "null"] },
+    "attention_entropy_mean": { "type": ["number", "null"] },
+    "attention_entropy_std": { "type": ["number", "null"] },
+    "cp_parameter_norm": { "type": ["number", "null"] },
+    "cp_gradient_norm": { "type": ["number", "null"] },
+    "active_track_index": { "type": ["integer", "null"], "minimum": 0 },
+    "active_track_counts": {
+      "type": ["array", "object", "null"],
+      "items": { "type": "integer", "minimum": 0 },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "per_track_gradient_norm": {
+      "type": ["array", "object", "null"],
+      "items": { "type": ["number", "null"] },
+      "additionalProperties": { "type": ["number", "null"] }
+    },
+    "per_track_qkv_weight_norm": {
+      "type": ["array", "object", "null"],
+      "items": { "type": ["number", "null"] },
+      "additionalProperties": { "type": ["number", "null"] }
+    },
+    "per_track_output_norm": {
+      "type": ["array", "object", "null"],
+      "items": { "type": ["number", "null"] },
+      "additionalProperties": { "type": ["number", "null"] }
+    },
+    "track_entropy": { "type": ["number", "null"] },
+    "track_gradient_norm": { "type": ["number", "null"] },
+    "route_formula": { "type": ["string", "null"] },
+    "uses_global_bank": { "type": ["boolean", "null"] },
+    "track_count": { "type": ["integer", "null"], "minimum": 1 },
+    "last_forward_step": { "type": ["integer", "null"], "minimum": 0 },
+    "schedule_mode": { "type": ["string", "null"], "enum": ["train", "eval", "generate", null] },
+    "layer_idx": { "type": ["integer", "null"], "minimum": 0 },
+    "position_routing_enabled": { "type": ["boolean", "null"] },
+    "eval_freeze_mode": { "type": ["boolean", "null"] },
+    "track_output_delta": { "type": ["number", "null"] }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,82 @@
+{
+  "status": "template_only",
+  "note": "Do not fill metrics by hand. Replace this only with generated comparison artifacts.",
+  "experiment_id": "E002_multitrack_qkv_shift_register",
+  "comparisons": [
+    {
+      "name": "static_global_vs_standard_refactor",
+      "baseline": "standard_refactor_control_30m_seed1",
+      "candidate": "multi_qkv_static_3track_global_30m_seed1",
+      "required_artifacts": [
+        "evals/run_summary.json",
+        "evals/val_loss.json",
+        "evals/hellaswag.json",
+        "evals/attention_diagnostics.jsonl",
+        "evals/qkv_track_destructive_test.json"
+      ],
+      "expected_fields": [
+        "final_val_loss",
+        "best_val_loss",
+        "final_val_perplexity",
+        "median_tokens_per_sec",
+        "peak_vram_allocated_mb",
+        "parameters_including_positional",
+        "global_qkv_bank_parameters",
+        "hellaswag_acc",
+        "mechanism_check_passed",
+        "destructive_test_passed",
+        "evidence_level"
+      ]
+    },
+    {
+      "name": "train_rotation_global_vs_static_global",
+      "baseline": "multi_qkv_static_3track_global_30m_seed1",
+      "candidate": "multi_qkv_train_rotation_3track_global_30m_seed1",
+      "required_artifacts": [
+        "evals/run_summary.json",
+        "evals/val_loss.json",
+        "evals/hellaswag.json",
+        "evals/attention_diagnostics.jsonl",
+        "evals/qkv_track_destructive_test.json"
+      ],
+      "expected_fields": [
+        "final_val_loss",
+        "best_val_loss",
+        "final_val_perplexity",
+        "median_tokens_per_sec",
+        "peak_vram_allocated_mb",
+        "parameters_including_positional",
+        "global_qkv_bank_parameters",
+        "hellaswag_acc",
+        "mechanism_check_passed",
+        "destructive_test_passed",
+        "evidence_level"
+      ]
+    },
+    {
+      "name": "position_rotation_global_vs_static_global",
+      "baseline": "multi_qkv_static_3track_global_30m_seed1",
+      "candidate": "multi_qkv_position_rotation_3track_global_30m_seed1",
+      "required_artifacts": [
+        "evals/run_summary.json",
+        "evals/val_loss.json",
+        "evals/hellaswag.json",
+        "evals/attention_diagnostics.jsonl",
+        "evals/qkv_track_destructive_test.json"
+      ],
+      "expected_fields": [
+        "final_val_loss",
+        "best_val_loss",
+        "final_val_perplexity",
+        "median_tokens_per_sec",
+        "peak_vram_allocated_mb",
+        "parameters_including_positional",
+        "global_qkv_bank_parameters",
+        "hellaswag_acc",
+        "mechanism_check_passed",
+        "destructive_test_passed",
+        "evidence_level"
+      ]
+    }
+  ]
+}

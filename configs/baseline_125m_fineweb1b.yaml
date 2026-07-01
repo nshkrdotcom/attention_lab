@@ -1,0 +1,50 @@
+# Canonical 125M-ish standard-attention config. Prepare data/fineweb_edu_1b and
+# write its manifest before running.
+run:
+  name: baseline_125m_fineweb1b_seed1
+  out_dir: runs/baseline_125m_fineweb1b_seed1
+  seed: 1337
+
+data:
+  data_root: data/fineweb_edu_1b
+  tokenizer: gpt2
+  vocab_size: 50304
+  train_tokens: 1000000000
+  val_tokens: 4000000
+
+model:
+  attention_type: standard
+  block_size: 1024
+  n_layer: 12
+  n_head: 12
+  n_embd: 768
+  dropout: 0.0
+  bias: false
+
+train:
+  device: cuda
+  dtype: bfloat16
+  compile: false
+  eval_at_start: true
+  B: 2
+  T: 1024
+  total_batch_size: 262144
+  max_steps: 12000
+  grad_clip: 1.0
+  weight_decay: 0.1
+  learning_rate: 0.0006
+  min_lr: 0.00006
+  warmup_steps: 300
+  val_every: 500
+  val_steps: 20
+  save_every: 1000
+  log_every: 10
+
+sample:
+  sample_every: 1000
+  prompt: "The history of mathematics"
+  num_samples: 4
+  max_new_tokens: 96
+  top_k: 50
+  temperature: 1.0
+  seed: 42
