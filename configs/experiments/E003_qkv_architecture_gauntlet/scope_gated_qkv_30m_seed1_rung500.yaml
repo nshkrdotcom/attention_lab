@@ -1,0 +1,60 @@
+run:
+  name: scope_gated_qkv_30m_seed1_rung500
+  out_dir: runs/experiments/E003_qkv_architecture_gauntlet/scope_gated_qkv_30m_seed1_rung500
+  seed: 1337
+data:
+  data_root: data/fineweb_edu_100m
+  tokenizer: gpt2
+  vocab_size: 50304
+  train_tokens: 100000000
+  val_tokens: 4000000
+model:
+  attention_type: scope_gated_qkv
+  scope_gate_bias_init: 0.0
+  scope_stream_scale_init: 1.0
+  block_size: 1024
+  n_layer: 6
+  n_head: 6
+  n_embd: 384
+  dropout: 0.0
+  bias: false
+train:
+  device: cuda
+  dtype: bfloat16
+  compile: false
+  eval_at_start: true
+  B: 4
+  T: 1024
+  total_batch_size: 262144
+  max_steps: 500
+  grad_clip: 1.0
+  weight_decay: 0.1
+  learning_rate: 0.0006
+  min_lr: 6.0e-05
+  warmup_steps: 100
+  val_every: 100
+  val_steps: 20
+  save_every: 500
+  log_every: 10
+sample:
+  sample_every: 1000
+  prompt: The history of mathematics
+  num_samples: 4
+  max_new_tokens: 96
+  top_k: 50
+  temperature: 1.0
+  seed: 42
+diagnostics:
+  attention_diagnostics_every: 100
+queue:
+  family: qkv_gauntlet
+  hypothesis_doc: docs/experiments/E003_qkv_architecture_gauntlet/hypothesis_scope_gated_qkv_30m_seed1.md
+  full_run_approved: false
+  allow_overwrite_existing_run_dir: false
+  requires_run: standard_refactor_control_30m_seed1
+  mechanism_check: scope_gated_qkv_activity
+  allow_missing_diagnostics: false
+  screen_steps: 500
+  screen_val_every: 100
+  screen_save_every: 500
+  screen_diagnostics_every: 100
