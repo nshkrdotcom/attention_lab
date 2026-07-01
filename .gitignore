@@ -216,8 +216,36 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
 
-# Database and large datasets
-*.db
-*.npy
-hellaswag/*.jsonl
+data/**/*.npy
+data/**/*.npz
+data/**/cache/
+data/queue.db
+data/queue.db-*
+data/queue.pid
+hellaswag/
+
+queue/active/
+queue/full_pending/
+queue/done/
+queue/failed/
+
+runs/*
+!runs/.gitkeep
+reports/*
+!reports/.gitkeep
+!reports/baseline_harness_verification.md
+!reports/baseline_15m_fineweb100m_summary.md
+!reports/baseline_30m_fineweb100m_summary.md
+!reports/schema/
+!reports/schema/run_summary.schema.json
+!reports/schema/attention_diagnostics.schema.json
+!reports/experiments/
+!reports/experiments/**
+
+wandb/
