@@ -75,8 +75,8 @@ An exploratory signal is not a passed confirmatory claim gate.
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `1.0`
-- probe_direction_cosine_to_control: `0.04804803235408741`
+- mediation_fraction: `1.0000002699649644`
+- probe_direction_cosine_to_control: `0.048047945607904964`
 - alignment_available: `True`
 
 ### `neg_out[0]|family=negation_scope`
@@ -104,8 +104,8 @@ An exploratory signal is not a passed confirmatory claim gate.
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.6229482253794657`
-- probe_direction_cosine_to_control: `0.04078536320381496`
+- mediation_fraction: `0.6225063870527899`
+- probe_direction_cosine_to_control: `0.040785393314477836`
 - alignment_available: `True`
 
 ### `pos_out[0]|family=negation_scope`
@@ -133,8 +133,8 @@ An exploratory signal is not a passed confirmatory claim gate.
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.19156360037893605`
-- probe_direction_cosine_to_control: `0.04965362034878834`
+- mediation_fraction: `0.19220024302372488`
+- probe_direction_cosine_to_control: `0.04965359890192786`
 - alignment_available: `True`
 
 ## Limitations
