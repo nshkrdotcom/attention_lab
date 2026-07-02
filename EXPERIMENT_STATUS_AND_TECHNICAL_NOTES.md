@@ -16,8 +16,8 @@ The important current status is:
 | --- | --- | --- | --- | --- |
 | E001 CP trilinear attention | Completed local full runs for standard, CP-bilinear, and CP-trilinear; lambda-zero and standard-refactor remain incomplete/unavailable. | Three local full-run checkpoints exist under runs/experiments/E001_cp_trilinear_attention. | Quick probes exist for standard, CP-bilinear, and CP-trilinear. | Local single-seed training result only; not a broad architecture claim. |
 | E002 Multi-QKV shift/register | Standard refactor checkpoint is present locally; earlier local notes described candidate checkpoints, but those candidate checkpoint files are absent in this working copy. | Only `standard_refactor_control_30m_seed1` is checkpoint-available after current backfill regeneration. | Historical quick-probe report folders may remain, but candidate recomputation is unavailable until checkpoints are restored. | Route-index semantics remain important; do not claim current local route-specialization evidence from missing checkpoints. |
-| E003 QKV architecture gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; local rung checkpoints are absent in this working copy. | Current backfill marks E003 rung checkpoint paths unavailable. | Tier-1 differential exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current local recomputation is blocked until the rung checkpoints are restored. |
-| E004 operator/binding QKV gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; local rung checkpoints are absent in this working copy. | Current backfill marks E004 rung checkpoint paths unavailable. | Tier-1 operator-valued exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current local recomputation is blocked until the rung checkpoints are restored. |
+| E003 QKV architecture gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 differential exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
+| E004 operator/binding QKV gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 operator-valued exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
 
 ## Current Checkpoint Inventory
 
@@ -304,7 +304,7 @@ scope_gated_qkv_30m_seed1_rung500
 Interpretation boundary:
 
 ```text
-E003 has committed rung/probe/Tier-1 report artifacts, but the current working copy lacks the rung checkpoint files needed for local checkpoint recomputation.
+E003 has committed rung/probe/Tier-1 report artifacts, and the selected Tier-1 rung500 checkpoint files are present for local recomputation.
 This supports follow-up planning, not a fresh local mechanism claim from the current filesystem.
 It does not establish that differential or scope-gated streams form semantically clean mechanisms.
 ```
@@ -380,7 +380,7 @@ reports/mechanisms/probes/E004_operator_valued_rung500/
 Interpretation boundary:
 
 ```text
-E004 operator-valued has committed rung/probe/Tier-1 report artifacts, but the current working copy lacks the rung checkpoint files needed for local checkpoint recomputation.
+E004 operator-valued has committed rung/probe/Tier-1 report artifacts, and the selected Tier-1 rung500 checkpoint files are present for local recomputation.
 This supports follow-up planning, not a fresh local operator-mode mechanism claim from the current filesystem.
 It does not prove operator probabilities or operator-specific outputs are semantically clean mechanisms.
 ```
@@ -446,7 +446,7 @@ The current evidence is enough to say:
 ```text
 E001, E002, E003, and E004 now have filesystem-grounded checkpoint inventories for the checkpoints actually present in this working copy.
 
-E003/E004 rung checkpoint paths are currently unavailable in this working copy.
+E003/E004 selected Tier-1 rung500 checkpoint paths are currently available in this working copy.
 
 Mechanism backfill reports are grounded in existing checkpoint paths.
 

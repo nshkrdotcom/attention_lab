@@ -734,7 +734,7 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 rung checkpoint paths are absent, so backfill marks them checkpoint-unavailable until restored.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 Tier-1 rung500 candidate/control checkpoints are present and verifier-backed; older/non-selected rung paths may still require restoration before local recomputation.
 
 ```text
 differential_qkv_anti_value_30m_seed1_rung020       restore checkpoint before local recomputation
@@ -833,7 +833,7 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 rung checkpoint paths are absent, so backfill marks them checkpoint-unavailable until restored.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 Tier-1 rung500 candidate/control checkpoints are present and verifier-backed; older/non-selected rung paths may still require restoration before local recomputation.
 
 ```text
 operator_valued_attention_30m_seed2_rung020                    restore checkpoint before local recomputation
