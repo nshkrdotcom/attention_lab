@@ -4,8 +4,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.048047945607904964,
-        "probe_direction_cosine_to_control": 0.048047945607904964,
+        "probe_direction_alignment_abs": 0.04804803235408741,
+        "probe_direction_cosine_to_control": 0.04804803235408741,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -29,10 +29,10 @@
       },
       "matched_control_auc": 1.0,
       "mediation_fraction": {
-        "component_patch_restoration": -0.3901878139901105,
+        "component_patch_restoration": -0.38943763847358626,
         "formula": "component_patch_restoration / full_layer_patch_restoration",
-        "full_layer_patch_restoration": -0.3901877086530996,
-        "mediation_fraction": 1.0000002699649644,
+        "full_layer_patch_restoration": -0.38943763847358626,
+        "mediation_fraction": 1.0,
         "reason": null,
         "valid": true
       },
@@ -40,11 +40,11 @@
         "alignment_modes": [
           "explicit_patch_indices"
         ],
-        "component_patch_restoration": -0.3901878139901105,
+        "component_patch_restoration": -0.38943763847358626,
         "component_site": "branch_delta",
         "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
         "full_layer_comparator": "attn_out",
-        "full_layer_patch_restoration": -0.3901877086530996,
+        "full_layer_patch_restoration": -0.38943763847358626,
         "restoration_alignment_valid": true,
         "valid": true,
         "valid_pairs": 50
@@ -120,14 +120,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 5.669763413607143e-05
+      "train_loss": 5.669765596394427e-05
     },
     "neg_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.040785393314477836,
-        "probe_direction_cosine_to_control": 0.040785393314477836,
+        "probe_direction_alignment_abs": 0.04078536320381496,
+        "probe_direction_cosine_to_control": 0.04078536320381496,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -151,10 +151,10 @@
       },
       "matched_control_auc": 1.0,
       "mediation_fraction": {
-        "component_patch_restoration": -0.24289434078604766,
+        "component_patch_restoration": -0.2425994857830905,
         "formula": "component_patch_restoration / full_layer_patch_restoration",
-        "full_layer_patch_restoration": -0.3901877086530996,
-        "mediation_fraction": 0.6225063870527899,
+        "full_layer_patch_restoration": -0.38943763847358626,
+        "mediation_fraction": 0.6229482253794657,
         "reason": null,
         "valid": true
       },
@@ -162,11 +162,11 @@
         "alignment_modes": [
           "explicit_patch_indices"
         ],
-        "component_patch_restoration": -0.24289434078604766,
+        "component_patch_restoration": -0.2425994857830905,
         "component_site": "neg_out",
         "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
         "full_layer_comparator": "attn_out",
-        "full_layer_patch_restoration": -0.3901877086530996,
+        "full_layer_patch_restoration": -0.38943763847358626,
         "restoration_alignment_valid": true,
         "valid": true,
         "valid_pairs": 50
@@ -248,8 +248,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.04965359890192786,
-        "probe_direction_cosine_to_control": 0.04965359890192786,
+        "probe_direction_alignment_abs": 0.04965362034878834,
+        "probe_direction_cosine_to_control": 0.04965362034878834,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -273,10 +273,10 @@
       },
       "matched_control_auc": 1.0,
       "mediation_fraction": {
-        "component_patch_restoration": -0.0749941724279961,
+        "component_patch_restoration": -0.07460207614907065,
         "formula": "component_patch_restoration / full_layer_patch_restoration",
-        "full_layer_patch_restoration": -0.3901877086530996,
-        "mediation_fraction": 0.19220024302372488,
+        "full_layer_patch_restoration": -0.38943763847358626,
+        "mediation_fraction": 0.19156360037893605,
         "reason": null,
         "valid": true
       },
@@ -284,11 +284,11 @@
         "alignment_modes": [
           "explicit_patch_indices"
         ],
-        "component_patch_restoration": -0.0749941724279961,
+        "component_patch_restoration": -0.07460207614907065,
         "component_site": "pos_out",
         "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
         "full_layer_comparator": "attn_out",
-        "full_layer_patch_restoration": -0.3901877086530996,
+        "full_layer_patch_restoration": -0.38943763847358626,
         "restoration_alignment_valid": true,
         "valid": true,
         "valid_pairs": 50
@@ -364,7 +364,7 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 6.451541412388906e-05
+      "train_loss": 6.451547233154997e-05
     }
   },
   "control": {
@@ -401,7 +401,7 @@
         "rejected": true
       },
       "branch_delta[0]|family=negation_scope|metric=component_patch_restoration": {
-        "p_value": 0.5114885114885115,
+        "p_value": 0.5104895104895105,
         "q_value": 0.8519480519480519,
         "rejected": false
       },
@@ -481,7 +481,7 @@
         "rejected": true
       },
       "pos_out[0]|family=negation_scope|metric=component_patch_restoration": {
-        "p_value": 0.5044955044955045,
+        "p_value": 0.5034965034965035,
         "q_value": 0.8519480519480519,
         "rejected": false
       },
@@ -641,6 +641,64 @@
       "required": true,
       "valid": true
     },
+    "random_site_null_pool": {
+      "scope": "complete preset-declared Tier-1 random-site null family",
+      "selection_policy": "same-layer non-candidate sites declared in the preset; selection still requires actual captured feature dimensionality and compatible tensor kind",
+      "sites": [
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "key": "attn_out[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "attn_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "resid_mid",
+          "full_layer_site": "attn_out",
+          "key": "resid_mid[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "resid_mid",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "mlp_out",
+          "full_layer_site": "attn_out",
+          "key": "mlp_out[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "mlp_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "resid_post",
+          "full_layer_site": "attn_out",
+          "key": "resid_post[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "resid_post",
+          "tensor_kind": "activation"
+        }
+      ]
+    },
     "selected_site_validation": {
       "sites": [
         {
@@ -648,7 +706,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "branch_delta[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "branch_delta",
           "tensor_kind": "activation"
@@ -658,7 +719,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "pos_out[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "pos_out",
           "tensor_kind": "activation"
@@ -668,7 +732,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "neg_out[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "neg_out",
           "tensor_kind": "activation"
@@ -678,6 +745,8 @@
     },
     "task_suite_validation": {
       "confirmatory_floor_met": true,
+      "deterministic_fingerprint_reason": null,
+      "deterministic_fingerprint_valid": true,
       "deterministic_provenance": true,
       "errors": [],
       "restoration_token_metadata_valid": true,
@@ -704,9 +773,12 @@
   ],
   "task_suite": {
     "confirmatory_floor_met": true,
+    "deterministic_fingerprint_reason": null,
+    "deterministic_fingerprint_valid": true,
     "deterministic_provenance": true,
     "metadata": {
       "candidate": "e003_differential",
+      "content_sha256": "82f0167d4b758bab941e5d253c8a2c7fdb800cff536934f0c626ef3748f3aed1",
       "created_at": "2026-07-01T00:00:00Z",
       "filler_set": "negation_scope_fillers_v1",
       "generation_seed": 1,

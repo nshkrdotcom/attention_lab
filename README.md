@@ -608,13 +608,13 @@ configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_
 configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, backfill currently marks only the E002 standard-refactor control checkpoint as locally available; earlier notes may refer to candidate checkpoints that are not present in every clone.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the canonical E002 standard/candidate checkpoints are present locally.
 
 ```text
 standard_refactor_control_30m_seed1                  checkpoint available in this working copy
-multi_qkv_static_3track_global_30m_seed1             restore checkpoint before local recomputation
-multi_qkv_train_rotation_3track_global_30m_seed1     restore checkpoint before local recomputation
-multi_qkv_position_rotation_3track_global_30m_seed1  restore checkpoint before local recomputation
+multi_qkv_static_3track_global_30m_seed1             checkpoint available in this working copy
+multi_qkv_train_rotation_3track_global_30m_seed1     checkpoint available in this working copy
+multi_qkv_position_rotation_3track_global_30m_seed1  checkpoint available in this working copy
 ```
 
 Validate:
@@ -734,20 +734,20 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 Tier-1 rung500 candidate/control checkpoints are present and verifier-backed; older/non-selected rung paths may still require restoration before local recomputation.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 screen checkpoints listed here are present locally. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
 
 ```text
-differential_qkv_anti_value_30m_seed1_rung020       restore checkpoint before local recomputation
-differential_qkv_anti_value_30m_seed1_rung150       restore checkpoint before local recomputation
-differential_qkv_anti_value_30m_seed1_rung500       restore checkpoint before local recomputation
+differential_qkv_anti_value_30m_seed1_rung020       checkpoint available in this working copy
+differential_qkv_anti_value_30m_seed1_rung150       checkpoint available in this working copy
+differential_qkv_anti_value_30m_seed1_rung500       checkpoint available in this working copy
 
-scope_gated_qkv_30m_seed1_rung020                   restore checkpoint before local recomputation
-scope_gated_qkv_30m_seed1_rung150                   restore checkpoint before local recomputation
-scope_gated_qkv_30m_seed1_rung500                   restore checkpoint before local recomputation
+scope_gated_qkv_30m_seed1_rung020                   checkpoint available in this working copy
+scope_gated_qkv_30m_seed1_rung150                   checkpoint available in this working copy
+scope_gated_qkv_30m_seed1_rung500                   checkpoint available in this working copy
 
-standard_refactor_control_30m_seed1_rung020         restore checkpoint before local recomputation
-standard_refactor_control_30m_seed1_rung150         restore checkpoint before local recomputation
-standard_refactor_control_30m_seed1_rung500         restore checkpoint before local recomputation
+standard_refactor_control_30m_seed1_rung020         checkpoint available in this working copy
+standard_refactor_control_30m_seed1_rung150         checkpoint available in this working copy
+standard_refactor_control_30m_seed1_rung500         checkpoint available in this working copy
 ```
 
 Canonical current post-hoc probes:
@@ -833,22 +833,22 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 Tier-1 rung500 candidate/control checkpoints are present and verifier-backed; older/non-selected rung paths may still require restoration before local recomputation.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 screen checkpoints listed here are present locally. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
 
 ```text
-operator_valued_attention_30m_seed2_rung020                    restore checkpoint before local recomputation
-operator_valued_attention_30m_seed2_rung150                    restore checkpoint before local recomputation
-operator_valued_attention_30m_seed2_rung500                    restore checkpoint before local recomputation
+operator_valued_attention_30m_seed2_rung020                    checkpoint available in this working copy
+operator_valued_attention_30m_seed2_rung150                    checkpoint available in this working copy
+operator_valued_attention_30m_seed2_rung500                    checkpoint available in this working copy
 
-dynamic_value_query_conditioned_attention_30m_seed2_rung020    restore checkpoint before local recomputation
-dynamic_value_query_conditioned_attention_30m_seed2_rung150    restore checkpoint before local recomputation
-dynamic_value_query_conditioned_attention_30m_seed2_rung500    restore checkpoint before local recomputation
+dynamic_value_query_conditioned_attention_30m_seed2_rung020    checkpoint available in this working copy
+dynamic_value_query_conditioned_attention_30m_seed2_rung150    checkpoint available in this working copy
+dynamic_value_query_conditioned_attention_30m_seed2_rung500    checkpoint available in this working copy
 
-q3k3v3_role_routed_attention_30m_seed2_rung020                 restore checkpoint before local recomputation
+q3k3v3_role_routed_attention_30m_seed2_rung020                 checkpoint available in this working copy
 
-standard_refactor_control_30m_seed2_rung020                    restore checkpoint before local recomputation
-standard_refactor_control_30m_seed2_rung150                    restore checkpoint before local recomputation
-standard_refactor_control_30m_seed2_rung500                    restore checkpoint before local recomputation
+standard_refactor_control_30m_seed2_rung020                    checkpoint available in this working copy
+standard_refactor_control_30m_seed2_rung150                    checkpoint available in this working copy
+standard_refactor_control_30m_seed2_rung500                    checkpoint available in this working copy
 ```
 
 Canonical current E004 operator-valued probe:
@@ -1355,6 +1355,7 @@ configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
 ```
 
 Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`. The committed suites include GPT-2 single-token target/foil metadata plus clean/corrupt answer positions and explicit patch-token alignment for restoration.
+They also include `metadata.content_sha256`; validate-only checks the fingerprint and, for the built-in Tier-1 generator, regenerates from metadata to reject tampered suites.
 
 Executable Tier-1 presets:
 
@@ -1460,8 +1461,11 @@ uv run scripts/verify_tier1_mechanism_probe_suite.py --preflight-only
 ```
 
 `candidate_mechanism_evidence` is mechanism-probe scoped and means single-seed, checkpoint-backed, statistically controlled evidence. It is not replication and not a global experiment status.
+`exploratory_probe_signal` is a capped exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records `claim_gate_passed` and `status_kind` for each cell.
 
 Confirmatory runs use strict preset site resolution. Unknown confirmatory `--sites` values fail before model execution; exploratory unknown sites require explicit `--site-spec-file` metadata and remain noncanonical. E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides and missing-control diagnostic runs are recorded but cap claims below evidence statuses.
+For patch/restoration, E004 `operator_probs` is capture/probe-only until a validated probability-site intervention exists; full-width operator output sites remain continuous patch candidates.
+The random-site null pool is the complete preset-declared Tier-1 null family and is recorded in `metrics.json` preflight metadata; actual selection still requires matched dimensionality and compatible tensor kind from captured tensors.
 
 ### Strict capture mode
 
@@ -1569,10 +1573,8 @@ Use targeted tests while developing, but do not treat targeted tests as a substi
 Latest recorded QC in the dynamic status note:
 
 ```text
-ruff: passed
-pytest: 452 passed, 1 skipped
-targeted tests: passed
-Tier-1 verifier: blocked because local E003/E004 rung checkpoints are absent
+See EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md for the latest reconciled QC record.
+Do not reuse older "Tier-1 verifier blocked by missing checkpoint" notes without rechecking `runs/screen`.
 ```
 
 ## Known limitations

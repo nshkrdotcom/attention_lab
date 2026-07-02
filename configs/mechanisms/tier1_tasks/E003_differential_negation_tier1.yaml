@@ -8,6 +8,7 @@ metadata:
   created_at: '2026-07-01T00:00:00Z'
   candidate: e003_differential
   restoration_token_metadata: gpt2_single_token_true_false_v1
+  content_sha256: 82f0167d4b758bab941e5d253c8a2c7fdb800cff536934f0c626ef3748f3aed1
 records:
 - pair_id: e003_differential_negation_scope_pair_0000
   template_id: negation_scope_template_000

@@ -10,6 +10,7 @@ import yaml
 
 from attention_lab.mechanisms.hypotheses import validate_hypothesis_doc
 from attention_lab.mechanisms.task_generation import gpt2_single_token_id
+from attention_lab.mechanisms.task_schema import attach_suite_content_sha256
 from attention_lab.mechanisms.task_schema import load_task_suite, validate_task_suite
 from attention_lab.models.gpt import GPT, config_from_dict
 
@@ -126,8 +127,11 @@ def _write_task_file(
             "generation_seed": 1,
             "created_at": "1970-01-01T00:00:00Z",
         }
+    payload = {"schema_version": 1, "metadata": suite_metadata, "records": records}
+    if provenance:
+        payload = attach_suite_content_sha256(payload)
     path.write_text(
-        yaml.safe_dump({"schema_version": 1, "metadata": suite_metadata, "records": records}, sort_keys=False),
+        yaml.safe_dump(payload, sort_keys=False),
         encoding="utf-8",
     )
 
@@ -776,6 +780,67 @@ def test_diagnostic_missing_control_run_cannot_reach_controlled_probe_signal(tmp
     assert metrics["control"]["available"] is False
     assert gates["overall_status"] == "insufficient_evidence"
     assert all(cell["status"] == "insufficient_evidence" for cell in gates["cells"].values())
+
+
+def test_suite_artifacts_emit_declared_random_site_null_pool_scope(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    output_dir = tmp_path / "suite_random_pool_scope"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
+    _write_task_file(task_file)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--output-dir",
+            str(output_dir),
+            "--exploratory",
+            "--probe-only",
+            "--sites",
+            "branch_delta",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
+            "--min-n",
+            "2",
+            "--bootstrap-samples",
+            "5",
+            "--seed",
+            "10",
+            "--batch-size",
+            "4",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    pool = metrics["preflight"]["random_site_null_pool"]
+    assert pool["scope"] == "complete preset-declared Tier-1 random-site null family"
+    assert {site["key"] for site in pool["sites"]} >= {"attn_out[0]", "resid_mid[0]", "mlp_out[0]"}
 
 
 def test_fdr_scope_includes_all_computed_site_family_metric_cells(tmp_path):

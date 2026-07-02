@@ -111,7 +111,19 @@ E004_OPERATOR_PRESET = MechanismProbePreset(
     ),
     matched_control=E004_CONTROL_SEED2,
     target_sites=(
-        SitePreset("operator_probs", 0, "probability", None),
+        SitePreset(
+            "operator_probs",
+            0,
+            "probability",
+            None,
+            continuous=False,
+            full_layer_site=None,
+            no_control_reason="standard matched control has no operator probability site",
+            no_full_layer_comparator_reason=(
+                "low-dimensional operator probability site is capture/probe-only; no validated continuous "
+                "patch/restoration intervention exists"
+            ),
+        ),
         SitePreset("operator_add_out", 0, "activation", "attn_out"),
         SitePreset("operator_suppress_out", 0, "activation", "attn_out"),
         SitePreset("operator_gate_out", 0, "activation", "attn_out"),

@@ -1,6 +1,7 @@
 # Tier-1 Mechanism Probe Suite Summary
 
 This report uses a mechanism-probe-specific claim ladder, distinct from the repository-wide experiment status vocabulary.
+An exploratory signal is not a passed confirmatory claim gate.
 
 ## Run
 - experiment_id: `E003_qkv_architecture_gauntlet`
@@ -12,6 +13,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
 - overall_mechanism_probe_status: `insufficient_evidence`
+- overall_claim_gate_passed: `False`
 
 ## Control
 - expected_control_checkpoint: `runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt`
@@ -23,6 +25,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 
 ## Task Suite
 - deterministic_provenance: `True`
+- deterministic_fingerprint_valid: `True`
+- deterministic_fingerprint_reason: none
 - confirmatory_floor_met: `True`
 - restoration_token_metadata_valid: `True`
 - pair_counts_by_family: `{'negation_scope': 50}`
@@ -35,9 +39,16 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - tested_cells: `['branch_delta[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'branch_delta[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'branch_delta[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'branch_delta[0]|family=negation_scope|metric=component_patch_restoration', 'branch_delta[0]|family=negation_scope|metric=full_layer_patch_restoration', 'branch_delta[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'branch_delta[0]|family=negation_scope|metric=mediation_fraction', 'branch_delta[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'neg_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'neg_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'neg_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'neg_out[0]|family=negation_scope|metric=component_patch_restoration', 'neg_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'neg_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'neg_out[0]|family=negation_scope|metric=mediation_fraction', 'neg_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'pos_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'pos_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'pos_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'pos_out[0]|family=negation_scope|metric=component_patch_restoration', 'pos_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'pos_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'pos_out[0]|family=negation_scope|metric=mediation_fraction', 'pos_out[0]|family=negation_scope|metric=target_vs_decoy_specificity']`
 - invalid_or_unavailable_cells: `[]`
 
+## Random-Site Null Pool
+- scope: `complete preset-declared Tier-1 random-site null family`
+- selection_policy: same-layer non-candidate sites declared in the preset; selection still requires actual captured feature dimensionality and compatible tensor kind
+- declared_sites: `['attn_out[0]', 'resid_mid[0]', 'mlp_out[0]', 'resid_post[0]']`
+
 ## Site Results
 ### `branch_delta[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -54,12 +65,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `1.0000002699649644`
-- probe_direction_cosine_to_control: `0.048047945607904964`
+- mediation_fraction: `1.0`
+- probe_direction_cosine_to_control: `0.04804803235408741`
 - alignment_available: `True`
 
 ### `neg_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -76,12 +89,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.6225063870527899`
-- probe_direction_cosine_to_control: `0.040785393314477836`
+- mediation_fraction: `0.6229482253794657`
+- probe_direction_cosine_to_control: `0.04078536320381496`
 - alignment_available: `True`
 
 ### `pos_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -98,8 +113,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.19220024302372488`
-- probe_direction_cosine_to_control: `0.04965359890192786`
+- mediation_fraction: `0.19156360037893605`
+- probe_direction_cosine_to_control: `0.04965362034878834`
 - alignment_available: `True`
 
 ## Limitations

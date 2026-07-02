@@ -4,7 +4,7 @@ This document is the current dynamic status page for Attention Lab experiments. 
 
 Last reconciled with the current local filesystem: 2026-07-02 UTC.
 
-Latest incremental update: the Tier-1 E003/E004 mechanism-probe framework, deterministic task suites, hypothesis docs, and committed suite report artifacts are present. The current working copy does not contain the E003/E004 `runs/screen` checkpoints or the E002 Multi-QKV candidate checkpoints, so backfill inventories were regenerated to mark those checkpoint paths unavailable in this filesystem. The committed Tier-1 suite reports remain historical/generated artifacts and do not imply current local checkpoint recomputation. Current QC passed with ruff, targeted mechanism tests, full pytest, E001-E004 experiment validation, FineWeb-Edu data verification, and E001-E004 queue doctors. The Tier-1 verifier refused execution because the local E003/E004 checkpoint files are absent.
+Latest incremental update: Tier-1 remediation tightened deterministic task-suite validation with `content_sha256`, records `claim_gate_passed`/`status_kind` so exploratory signals are not passed confirmatory claim gates, marks E004 `operator_probs` capture/probe-only for patch/restoration, and records the complete preset-declared random-site null pool in suite preflight metadata. The current working copy contains the E002 canonical candidate checkpoints and E003/E004 `runs/screen` rung checkpoints listed below. The committed E003/E004 Tier-1 suite report artifacts were regenerated from current local checkpoints with this source state and remain `insufficient_evidence`, not `candidate_mechanism_evidence`.
 
 ## Current Bottom Line
 
@@ -15,9 +15,9 @@ The important current status is:
 | Experiment | Current status | Checkpoint evidence | Mechanism probe status | Interpretation boundary |
 | --- | --- | --- | --- | --- |
 | E001 CP trilinear attention | Completed local full runs for standard, CP-bilinear, and CP-trilinear; lambda-zero and standard-refactor remain incomplete/unavailable. | Three local full-run checkpoints exist under runs/experiments/E001_cp_trilinear_attention. | Quick probes exist for standard, CP-bilinear, and CP-trilinear. | Local single-seed training result only; not a broad architecture claim. |
-| E002 Multi-QKV shift/register | Standard refactor checkpoint is present locally; earlier local notes described candidate checkpoints, but those candidate checkpoint files are absent in this working copy. | Only `standard_refactor_control_30m_seed1` is checkpoint-available after current backfill regeneration. | Historical quick-probe report folders may remain, but candidate recomputation is unavailable until checkpoints are restored. | Route-index semantics remain important; do not claim current local route-specialization evidence from missing checkpoints. |
-| E003 QKV architecture gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 differential exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
-| E004 operator/binding QKV gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 operator-valued exploratory and confirmatory suite artifacts are committed historical/generated reports; confirmatory status is `insufficient_evidence`. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
+| E002 Multi-QKV shift/register | Canonical first-build standard/candidate checkpoints are present locally. | Four local full-run checkpoints exist under runs/experiments/E002_multitrack_qkv_shift_register. | Quick-probe report folders exist for standard, static, train rotation, position rotation, and position-rotation capture-only. | Route-index semantics remain important; local checkpoints make follow-up possible but do not prove route specialization. |
+| E003 QKV architecture gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 differential exploratory and confirmatory suite artifacts were regenerated with this remediation; confirmatory status remains `insufficient_evidence`. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
+| E004 operator/binding QKV gauntlet | Configs, reports, task suites, and Tier-1 report artifacts exist; Tier-1 rung500 candidate/control checkpoints are present in this working copy. | Current backfill is regenerated from restored local checkpoints. | Tier-1 operator-valued exploratory and confirmatory suite artifacts were regenerated with this remediation; confirmatory status remains `insufficient_evidence`; `operator_probs` patch/restoration is invalid by policy. | Current Tier-1 local recomputation is verifier-backed for the selected rung500 candidate/control checkpoints. |
 
 ## Current Checkpoint Inventory
 
@@ -28,10 +28,18 @@ runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1/checkpoint
 runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1/checkpoints/ckpt_last.pt
 runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1/checkpoints/ckpt_last.pt
 
+runs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1/checkpoints/ckpt_last.pt
+runs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_static_3track_global_30m_seed1/checkpoints/ckpt_last.pt
+runs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_3track_global_30m_seed1/checkpoints/ckpt_last.pt
 runs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1/checkpoints/ckpt_last.pt
+
+runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt
+runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt
+runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt
+runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt
 ```
 
-The key clarification for this working copy is that the E003/E004 `runs/screen/...` checkpoints are absent. Backfill now marks those checkpoint paths unavailable. Restoring those checkpoint files is required before running new E003/E004 checkpoint-backed probes locally.
+Additional E003/E004 rung020/rung150 and auxiliary candidate screen checkpoints also exist under `runs/screen/`. Use the verification commands near the end of this file for the exact current list before making evidence claims.
 
 ## Mechanism Backfill Status
 
@@ -267,7 +275,7 @@ scope_gated_qkv
 standard_refactor_control
 ```
 
-Rung checkpoint paths referenced by historical reports, but absent in this working copy:
+Rung checkpoint paths referenced by historical reports and present in this working copy include:
 
 ```text
 differential_qkv_anti_value_30m_seed1_rung020
@@ -283,7 +291,7 @@ standard_refactor_control_30m_seed1_rung150
 standard_refactor_control_30m_seed1_rung500
 ```
 
-Post-hoc mechanism probe report folders exist for standard control, differential, and scope-gated rung500, but current local recomputation is blocked until the rung checkpoints are restored.
+Post-hoc mechanism probe report folders exist for standard control, differential, and scope-gated rung500. Current local recomputation is possible for checkpoint paths that exist on disk, subject to normal device/runtime constraints.
 
 Tier-1 differential suite artifacts now exist:
 
@@ -292,7 +300,7 @@ reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path/
 reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path/
 ```
 
-The committed confirmatory Tier-1 report used the canonical seed1 matched control, deterministic 50-pair negation task suite, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: random-site comparisons, matched-control comparisons, target-vs-decoy specificity, and/or corrected restoration gates did not clear the full claim ladder. This is not `candidate_mechanism_evidence`. The report is retained as a generated artifact; rerunning it locally requires restoring the E003 candidate and control checkpoints.
+The regenerated confirmatory Tier-1 report used the canonical seed1 matched control, deterministic 50-pair negation task suite with `content_sha256`, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: random-site comparisons, matched-control comparisons, target-vs-decoy specificity, and/or corrected restoration gates did not clear the full claim ladder. This is not `candidate_mechanism_evidence`. The regenerated artifacts record `claim_gate_passed`/`status_kind` and random-site null pool metadata.
 
 Current best E003 candidates:
 
@@ -328,7 +336,7 @@ q3k3v3_role_routed_attention
 standard_refactor_control
 ```
 
-Rung checkpoint paths referenced by historical reports, but absent in this working copy:
+Rung checkpoint paths referenced by historical reports and present in this working copy include:
 
 ```text
 operator_valued_attention_30m_seed2_rung020
@@ -365,7 +373,7 @@ reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path/
 reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path/
 ```
 
-The committed confirmatory Tier-1 report used the canonical seed2 matched control, deterministic 50-pair negation task suite, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: full-width operator output sites did not clear the full probe/null/control/specificity/restoration gate family, and `operator_probs` had the expected low-dimensional random-site feasibility cap plus no matched-control site. This is not `candidate_mechanism_evidence`. The report is retained as a generated artifact; rerunning it locally requires restoring the E004 candidate and control checkpoints.
+The regenerated confirmatory Tier-1 report used the canonical seed2 matched control, deterministic 50-pair negation task suite with `content_sha256`, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: full-width operator output sites did not clear the full probe/null/control/specificity/restoration gate family, and `operator_probs` had the expected low-dimensional random-site feasibility cap plus no matched-control site. This is not `candidate_mechanism_evidence`. E004 `operator_probs` is now explicitly capture/probe-only for patch/restoration until a validated probability-site intervention exists, and the regenerated report marks patching/mediation invalid for that site.
 
 Historical partial probe artifact:
 
@@ -373,9 +381,9 @@ Historical partial probe artifact:
 reports/mechanisms/probes/E004_operator_valued_rung500/
 ```
 
-`dynamic_value_query_conditioned_attention_30m_seed2_rung500` is classified as diagnostic rescue from historical artifact summaries. Its checkpoint is absent in this working copy, so local recomputation is unavailable until restored.
+`dynamic_value_query_conditioned_attention_30m_seed2_rung500` is classified as diagnostic rescue from historical artifact summaries. Its checkpoint is present in this working copy, so local recomputation is possible, but diagnostic-rescue status is not promotion evidence.
 
-`q3k3v3_role_routed_attention_30m_seed2_rung020` is classified as profiling redesign from historical artifact summaries. Its checkpoint is absent in this working copy, so the next local step is restoring artifacts before profiling or redesign evidence can be recomputed.
+`q3k3v3_role_routed_attention_30m_seed2_rung020` is classified as profiling redesign from historical artifact summaries. Its checkpoint is present in this working copy, so profiling can be recomputed locally, but redesign/promotion claims still require fresh artifacts.
 
 Interpretation boundary:
 
@@ -393,47 +401,39 @@ Do operator_probs, add/suppress/gate/transform/bind outputs, and combined operat
 
 ## QC Status
 
-The latest pasted local QC output shows:
+The latest local QC for this remediation pass shows:
 
 ```text
+uv sync
+Resolved 106 packages; audited 100 packages.
+
 uv run ruff check .
 All checks passed.
 
 uv run pytest
-452 passed, 1 skipped in 44.18s
+455 passed, 1 skipped in 52.82s
 ```
 
-Targeted mechanism tests, E001-E004 `validate_experiment`, FineWeb-Edu hash verification,
-and E001-E004 `attn-queue doctor` also passed in this reconciliation pass.
-
-The extra Tier-1 verifier did not pass because the local E003/E004 rung checkpoints are absent:
+Targeted mechanism tests passed:
 
 ```text
-uv run scripts/verify_tier1_mechanism_probe_suite.py
-checkpoint unavailable, execution skipped; no fake artifacts were created
+uv run pytest tests/test_mechanism_claim_gates.py tests/test_mechanism_controls.py \
+  tests/test_mechanism_task_generation_cli.py tests/test_mechanism_probe_suite_cli.py \
+  tests/test_mechanism_probe_summary.py
+52 passed
 ```
 
-```text
-uv run pytest tests/test_mechanism_backfill.py
-4 passed
+Tier-1 preflight passed with E003/E004 candidate and matched-control checkpoints present. All four regenerated Tier-1 suite report directories validated with `scripts/summarize_mechanism_probe_suite.py --validate`. The regenerated reports still do not establish `candidate_mechanism_evidence`.
 
-uv run pytest tests/test_mechanism_probe_cli.py
-8 passed
+E001-E004 `validate_experiment`, FineWeb-Edu hash verification, E001-E004 `attn-queue doctor`, and the backfill checkpoint-path consistency check also passed in this reconciliation pass. Broader mechanism and queue tests were covered by the full `uv run pytest` pass above.
 
-uv run pytest tests/test_mechanism_capture_multi_qkv.py
-6 passed
-
-uv run pytest tests/test_attention_multi_qkv_global.py
-33 passed
-```
-
-Latest committed status anchor:
+Previous committed status anchor before this remediation:
 
 ```text
 8aa6add8b77a2c376c2194801a46d7e572dbd0ce
 ```
 
-Commit message:
+Previous anchor commit message:
 
 ```text
 Update mechanism backfill inventory commit hashes
@@ -450,7 +450,7 @@ E003/E004 selected Tier-1 rung500 checkpoint paths are currently available in th
 
 Mechanism backfill reports are grounded in existing checkpoint paths.
 
-Committed post-hoc mechanism probe and Tier-1 suite report artifacts exist for selected E001/E002/E003/E004 candidates, but current local recomputation for missing-checkpoint candidates is blocked until checkpoints are restored.
+Committed post-hoc mechanism probe and Tier-1 suite report artifacts exist for selected E001/E002/E003/E004 candidates. Current local recomputation is possible for checkpoint paths that exist on disk; generated reports should be regenerated before using them as current artifacts after source-behavior changes.
 
 The route-index intervention bug for E002 position rotation has been fixed and covered by tests.
 ```
@@ -478,14 +478,14 @@ The project is now in the correct phase for mechanism-first investigation.
 The right claim shape is:
 
 ```text
-Attention Lab is using deliberately nonstandard attention architectures as interpretability instruments. The current repository has local checkpoints for the subset listed above, plus committed reports and post-hoc probe artifacts from broader E001-E004 work. The next step is not to claim architecture superiority, but to restore any missing checkpoints needed for recomputation and test whether these architectures produce more separable, more local, and more causally controllable mechanisms than matched standard controls.
+Attention Lab is using deliberately nonstandard attention architectures as interpretability instruments. The current repository has local checkpoints for the subset listed above, plus committed reports and post-hoc probe artifacts from broader E001-E004 work. The next step is not to claim architecture superiority, but to rerun or regenerate the specific mechanism artifacts needed under the current source state and test whether these architectures produce more separable, more local, and more causally controllable mechanisms than matched standard controls.
 ```
 
 ## What To Do Next
 
 The E001-E004 backfill / quick-probe artifact phase is complete. Do not rerun broad quick-probe backfill just to refresh status docs.
 
-The Tier-1 E003/E004 mechanism-probe workflow now exists and committed suite report artifacts are present. The current confirmatory outcome in those reports is `insufficient_evidence`, not `candidate_mechanism_evidence`. In this working copy, rerunning or verifying those suites is blocked until the E003/E004 rung checkpoints are restored.
+The Tier-1 E003/E004 mechanism-probe workflow now exists and regenerated suite report artifacts are present. The current confirmatory outcome remains `insufficient_evidence`, not `candidate_mechanism_evidence`. Future source-behavior changes should regenerate these reports again before treating them as current artifacts.
 
 Follow-up work remains useful for scope_gated_qkv_30m_seed1_rung500, E001 CP diagnostics, E002 route specialization, dynamic-value rescue, and q3k3v3 profiling. For E003/E004 Tier-1, the next scientific investment should be improving or broadening pre-registered task contrasts only if the new task design is justified before running, then adding cross-seed replication if a future Tier-1 run clears gates.
 

@@ -121,6 +121,16 @@ def test_missing_random_site_null_reports_feasibility_limit_for_low_dim_probabil
     assert np.isfinite(selected.candidate_feature_dim)
 
 
+def test_e004_operator_probs_is_capture_probe_only_not_continuous_patch_site():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_probs = next(site for site in preset.target_sites if site.site == "operator_probs")
+
+    assert operator_probs.tensor_kind == "probability"
+    assert not operator_probs.continuous
+    assert operator_probs.full_layer_site is None
+    assert "capture/probe-only" in (operator_probs.no_full_layer_comparator_reason or "")
+
+
 def test_random_site_null_rejects_same_site_and_incompatible_tensor_kind():
     preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
     operator_probs = preset.target_sites[0]

@@ -7,6 +7,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -38,6 +39,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_bind_out[0]|family=negation_scope": {
@@ -47,6 +49,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -78,6 +81,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_combined_out[0]|family=negation_scope": {
@@ -87,6 +91,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -118,6 +123,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_gate_out[0]|family=negation_scope": {
@@ -126,6 +132,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -157,6 +164,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_probs[0]|family=negation_scope": {
@@ -168,6 +176,7 @@
       "caps": [
         "missing random-site null caps only this site-layer cell"
       ],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -181,11 +190,11 @@
         "matched_control_available": true,
         "matched_control_passed": false,
         "mediation_fdr_passed": false,
-        "mediation_valid": true,
+        "mediation_valid": false,
         "min_n_passed": true,
         "noncanonical_control": false,
         "patching_fdr_passed": false,
-        "patching_valid": true,
+        "patching_valid": false,
         "primary_ci_passed": true,
         "primary_fdr_passed": true,
         "probe_only": false,
@@ -199,6 +208,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_suppress_out[0]|family=negation_scope": {
@@ -208,6 +218,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -239,6 +250,7 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "operator_transform_out[0]|family=negation_scope": {
@@ -248,6 +260,7 @@
         "target-vs-decoy specificity gate failed"
       ],
       "caps": [],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -279,9 +292,11 @@
         "task_aligned_pooling": true
       },
       "status": "insufficient_evidence",
+      "status_kind": "insufficient_evidence",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     }
   },
+  "overall_claim_gate_passed": false,
   "overall_status": "insufficient_evidence",
   "status_vocabulary": [
     "insufficient_evidence",

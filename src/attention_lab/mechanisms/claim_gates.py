@@ -54,6 +54,8 @@ class CellGateResult:
     status: str
     blockers: tuple[str, ...]
     caps: tuple[str, ...]
+    claim_gate_passed: bool
+    status_kind: str
     inputs: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -61,6 +63,8 @@ class CellGateResult:
             "status": self.status,
             "blockers": list(self.blockers),
             "caps": list(self.caps),
+            "claim_gate_passed": self.claim_gate_passed,
+            "status_kind": self.status_kind,
             "inputs": self.inputs,
             "status_vocabulary_scope": (
                 "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
@@ -142,9 +146,15 @@ def overall_status(cell_results: list[CellGateResult]) -> str:
 
 
 def _result(status: str, blockers: list[str], caps: list[str], inputs: CellGateInputs) -> CellGateResult:
+    claim_gate_passed = status in {CONTROLLED_PROBE_SIGNAL, CANDIDATE_MECHANISM_EVIDENCE}
+    status_kind = "confirmatory_claim" if claim_gate_passed else "exploratory_signal"
+    if status == INSUFFICIENT_EVIDENCE:
+        status_kind = "insufficient_evidence"
     return CellGateResult(
         status=status,
         blockers=tuple(dict.fromkeys(blockers)),
         caps=tuple(dict.fromkeys(caps)),
+        claim_gate_passed=claim_gate_passed,
+        status_kind=status_kind,
         inputs=inputs.__dict__,
     )

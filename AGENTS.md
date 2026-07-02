@@ -447,6 +447,8 @@ Regenerate or validate them with:
 scripts/generate_tier1_mechanism_tasks.py
 ```
 
+Confirmatory Tier-1 task suites must carry deterministic provenance plus `metadata.content_sha256`. The validate-only path for the built-in Tier-1 generator regenerates from metadata and rejects files whose records do not match deterministic generator output.
+
 Executable Tier-1 presets are:
 
 ```text
@@ -466,6 +468,8 @@ candidate_mechanism_evidence
 ```
 
 Do not confuse `candidate_mechanism_evidence` with the broader project status vocabulary. It means single-seed, checkpoint-backed, statistically controlled mechanism evidence, not replication.
+
+`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. Machine-readable outputs include `claim_gate_passed` and `status_kind`; only confirmatory `controlled_probe_signal` and `candidate_mechanism_evidence` may have `claim_gate_passed=true`.
 
 Confirmatory Tier-1 runs require:
 
@@ -488,9 +492,13 @@ Non-exploratory `--probe-only` is not confirmatory. Cheap probe-only staging mus
 
 Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
 
+Random-site null pools are the complete preset-declared Tier-1 null family, not an unrestricted hook sweep. The suite must still inspect actual captured shapes and tensor kinds before selecting a random-site null.
+
 Confirmatory `--sites` values must be declared in the Tier-1 preset. Unknown exploratory sites require explicit `--site-spec-file` metadata and remain noncanonical. Do not invent tensor kinds, control sites, or full-layer comparators for unknown sites.
 
 Full-run restoration must patch only validated aligned token positions. Do not patch whole clean sequence caches into corrupted prompts when token lengths differ. Mean-sequence feature pooling is exploratory/diagnostic for Tier-1; confirmatory candidate evidence requires `answer_position` or `patch_positions_mean` pooling.
+
+For E004 Tier-1, `operator_probs` is a low-dimensional probability site and is capture/probe-only for patching until a validated probability-site intervention exists. Do not report continuous patch/restoration or mediation as valid for `operator_probs`; full-width operator output sites remain patchable when their other gates are valid.
 
 Use `scripts/verify_tier1_mechanism_probe_suite.py --preflight-only` to check local checkpoint availability and input validity without fabricating artifacts. Use `scripts/summarize_mechanism_probe_suite.py --validate` to validate produced `metrics.json`, `claim_gates.json`, and `summary.md`.
 

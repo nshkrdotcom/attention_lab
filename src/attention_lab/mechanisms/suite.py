@@ -181,6 +181,8 @@ def run_probe_suite(
         "task_suite": {
             "metadata": suite.metadata,
             "deterministic_provenance": task_validation.deterministic_provenance,
+            "deterministic_fingerprint_valid": task_validation.deterministic_fingerprint_valid,
+            "deterministic_fingerprint_reason": task_validation.deterministic_fingerprint_reason,
             "pair_counts_by_family": task_validation.pair_counts_by_family,
             "confirmatory_floor_met": task_validation.confirmatory_floor_met,
             "restoration_token_metadata_valid": task_validation.restoration_token_metadata_valid,
@@ -340,6 +342,7 @@ def run_probe_suite(
         cell_gate_results[cell_id] = result
     claim_gates = {
         "overall_status": overall_status(list(cell_gate_results.values())),
+        "overall_claim_gate_passed": any(result.claim_gate_passed for result in cell_gate_results.values()),
         "cells": {cell_id: result.to_dict() for cell_id, result in sorted(cell_gate_results.items())},
         "status_vocabulary": [
             "insufficient_evidence",
@@ -1151,19 +1154,7 @@ def _preflight_report(
     allow_diagnostic_with_missing_control: bool,
 ) -> dict[str, Any]:
     expected = control.expected_control
-    site_rows = [
-        {
-            "site": site.site,
-            "layer": site.layer,
-            "tensor_kind": site.tensor_kind,
-            "continuous": site.continuous,
-            "canonical": site.canonical,
-            "control_site": site.control_site,
-            "full_layer_site": site.full_layer_site,
-            "noncanonical_reason": site.noncanonical_reason,
-        }
-        for site in selected_sites
-    ]
+    site_rows = [_site_metadata_row(site) for site in selected_sites]
     return {
         "candidate_config_path": str(candidate_config),
         "candidate_config_exists": candidate_config.exists(),
@@ -1184,11 +1175,21 @@ def _preflight_report(
             "errors": list(task_validation.errors),
             "warnings": list(task_validation.warnings),
             "deterministic_provenance": task_validation.deterministic_provenance,
+            "deterministic_fingerprint_valid": task_validation.deterministic_fingerprint_valid,
+            "deterministic_fingerprint_reason": task_validation.deterministic_fingerprint_reason,
             "confirmatory_floor_met": task_validation.confirmatory_floor_met,
             "restoration_token_metadata_valid": task_validation.restoration_token_metadata_valid,
         },
         "hypothesis_doc_validation": {"valid": hypothesis_valid or exploratory},
         "selected_site_validation": {"valid": all(site.canonical or exploratory for site in selected_sites), "sites": site_rows},
+        "random_site_null_pool": {
+            "scope": "complete preset-declared Tier-1 random-site null family",
+            "selection_policy": (
+                "same-layer non-candidate sites declared in the preset; selection still requires actual "
+                "captured feature dimensionality and compatible tensor kind"
+            ),
+            "sites": [_site_metadata_row(site) for site in preset.random_site_pool],
+        },
         "patching_metadata_validation": {
             "required": not exploratory and not probe_only,
             "valid": task_validation.restoration_token_metadata_valid,
@@ -1200,6 +1201,22 @@ def _preflight_report(
                 None if task_aligned_pooling else "candidate_mechanism_evidence requires task-aligned pooling"
             ),
         },
+    }
+
+
+def _site_metadata_row(site: SitePreset) -> dict[str, Any]:
+    return {
+        "site": site.site,
+        "key": site.key,
+        "layer": site.layer,
+        "tensor_kind": site.tensor_kind,
+        "continuous": site.continuous,
+        "canonical": site.canonical,
+        "control_site": site.control_site,
+        "full_layer_site": site.full_layer_site,
+        "noncanonical_reason": site.noncanonical_reason,
+        "no_control_reason": site.no_control_reason,
+        "no_full_layer_comparator_reason": site.no_full_layer_comparator_reason,
     }
 
 

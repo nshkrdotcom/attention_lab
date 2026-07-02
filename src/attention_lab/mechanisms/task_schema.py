@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+import hashlib
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -17,6 +19,7 @@ PROVENANCE_FIELDS = (
     "generation_seed",
     "created_at",
 )
+CONTENT_SHA256_FIELD = "content_sha256"
 CONFIRMATORY_MIN_PAIRS_PER_FAMILY = 50
 RESTORATION_TOKEN_ID_FIELDS = ("target_token_id", "foil_token_id")
 RESTORATION_TOKEN_TEXT_FIELDS = ("target_token_text", "foil_token_text")
@@ -81,6 +84,8 @@ class TaskValidationResult:
     warnings: tuple[str, ...]
     pair_counts_by_family: dict[str, int]
     deterministic_provenance: bool
+    deterministic_fingerprint_valid: bool
+    deterministic_fingerprint_reason: str | None
     confirmatory_floor_met: bool
     restoration_token_metadata_valid: bool = True
 
@@ -171,6 +176,11 @@ def validate_task_suite(
         errors.append("confirmatory task suite lacks deterministic generator provenance")
     if exploratory and not deterministic:
         warnings.append("exploratory task suite lacks deterministic generator provenance; claims are capped")
+    fingerprint_valid, fingerprint_reason = verify_suite_content_sha256(suite)
+    if confirmatory and not exploratory and not fingerprint_valid:
+        errors.append(f"confirmatory task suite failed deterministic content fingerprint validation: {fingerprint_reason}")
+    if exploratory and deterministic and not fingerprint_valid:
+        warnings.append(f"deterministic content fingerprint unavailable or invalid: {fingerprint_reason}")
 
     token_errors = validate_restoration_token_metadata(
         suite,
@@ -186,6 +196,8 @@ def validate_task_suite(
         warnings=tuple(warnings),
         pair_counts_by_family=pair_counts,
         deterministic_provenance=deterministic,
+        deterministic_fingerprint_valid=fingerprint_valid,
+        deterministic_fingerprint_reason=fingerprint_reason,
         confirmatory_floor_met=bool(pair_counts)
         and all(count >= CONFIRMATORY_MIN_PAIRS_PER_FAMILY for count in pair_counts.values()),
         restoration_token_metadata_valid=not token_errors,
@@ -244,6 +256,68 @@ def _string_field(row: dict[str, Any], field_name: str, index: int) -> str:
     if not text:
         raise ValueError(f"task record {index} field {field_name} may not be empty")
     return text
+
+
+def attach_suite_content_sha256(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return a payload copy with a deterministic content fingerprint attached."""
+    result = copy.deepcopy(payload)
+    metadata = result.setdefault("metadata", {})
+    if not isinstance(metadata, dict):
+        raise ValueError("task suite metadata must be a mapping")
+    metadata[CONTENT_SHA256_FIELD] = suite_payload_content_sha256(result)
+    return result
+
+
+def suite_content_sha256(suite: TaskSuite) -> str:
+    payload = {
+        "schema_version": 1,
+        "metadata": dict(suite.metadata),
+        "records": [
+            {
+                "pair_id": record.pair_id,
+                "template_id": record.template_id,
+                "family_id": record.family_id,
+                "x_pos": record.x_pos,
+                "x_neg": record.x_neg,
+                "x_para": record.x_para,
+                "x_decoy": record.x_decoy,
+                "metadata": record.metadata,
+            }
+            for record in suite.records
+        ],
+    }
+    return suite_payload_content_sha256(payload)
+
+
+def suite_payload_content_sha256(payload: dict[str, Any]) -> str:
+    canonical = _canonical_suite_payload(payload)
+    raw = json.dumps(canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def verify_suite_content_sha256(suite: TaskSuite) -> tuple[bool, str | None]:
+    expected = suite.metadata.get(CONTENT_SHA256_FIELD)
+    if not isinstance(expected, str) or not expected:
+        return False, f"missing metadata.{CONTENT_SHA256_FIELD}"
+    actual = suite_content_sha256(suite)
+    if expected != actual:
+        return False, f"metadata.{CONTENT_SHA256_FIELD} mismatch: expected {expected}, actual {actual}"
+    return True, None
+
+
+def _canonical_suite_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    metadata = dict(payload.get("metadata") or {})
+    metadata.pop(CONTENT_SHA256_FIELD, None)
+    records = []
+    for row in payload.get("records") or []:
+        record = dict(row)
+        record["metadata"] = dict(record.get("metadata") or {})
+        records.append(record)
+    return {
+        "schema_version": payload.get("schema_version", 1),
+        "metadata": metadata,
+        "records": records,
+    }
 
 
 def validate_restoration_token_metadata(

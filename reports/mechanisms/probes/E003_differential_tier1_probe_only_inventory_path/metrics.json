@@ -4,8 +4,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.024503581005298206,
-        "probe_direction_cosine_to_control": 0.024503581005298206,
+        "probe_direction_alignment_abs": 0.024503561156061116,
+        "probe_direction_cosine_to_control": 0.024503561156061116,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -113,8 +113,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.0668740404139238,
-        "probe_direction_cosine_to_control": -0.0668740404139238,
+        "probe_direction_alignment_abs": 0.06687405850945626,
+        "probe_direction_cosine_to_control": -0.06687405850945626,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -222,8 +222,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.0023994374263533818,
-        "probe_direction_cosine_to_control": -0.0023994374263533818,
+        "probe_direction_alignment_abs": 0.0023994484502870973,
+        "probe_direction_cosine_to_control": -0.0023994484502870973,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -544,6 +544,64 @@
       "required": false,
       "valid": true
     },
+    "random_site_null_pool": {
+      "scope": "complete preset-declared Tier-1 random-site null family",
+      "selection_policy": "same-layer non-candidate sites declared in the preset; selection still requires actual captured feature dimensionality and compatible tensor kind",
+      "sites": [
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "key": "attn_out[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "attn_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "resid_mid",
+          "full_layer_site": "attn_out",
+          "key": "resid_mid[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "resid_mid",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "mlp_out",
+          "full_layer_site": "attn_out",
+          "key": "mlp_out[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "mlp_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "resid_post",
+          "full_layer_site": "attn_out",
+          "key": "resid_post[0]",
+          "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
+          "noncanonical_reason": null,
+          "site": "resid_post",
+          "tensor_kind": "activation"
+        }
+      ]
+    },
     "selected_site_validation": {
       "sites": [
         {
@@ -551,7 +609,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "branch_delta[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "branch_delta",
           "tensor_kind": "activation"
@@ -561,7 +622,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "pos_out[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "pos_out",
           "tensor_kind": "activation"
@@ -571,7 +635,10 @@
           "continuous": true,
           "control_site": "attn_out",
           "full_layer_site": "attn_out",
+          "key": "neg_out[0]",
           "layer": 0,
+          "no_control_reason": null,
+          "no_full_layer_comparator_reason": null,
           "noncanonical_reason": null,
           "site": "neg_out",
           "tensor_kind": "activation"
@@ -581,6 +648,8 @@
     },
     "task_suite_validation": {
       "confirmatory_floor_met": true,
+      "deterministic_fingerprint_reason": null,
+      "deterministic_fingerprint_valid": true,
       "deterministic_provenance": true,
       "errors": [],
       "restoration_token_metadata_valid": true,
@@ -607,9 +676,12 @@
   ],
   "task_suite": {
     "confirmatory_floor_met": true,
+    "deterministic_fingerprint_reason": null,
+    "deterministic_fingerprint_valid": true,
     "deterministic_provenance": true,
     "metadata": {
       "candidate": "e003_differential",
+      "content_sha256": "82f0167d4b758bab941e5d253c8a2c7fdb800cff536934f0c626ef3748f3aed1",
       "created_at": "2026-07-01T00:00:00Z",
       "filler_set": "negation_scope_fillers_v1",
       "generation_seed": 1,

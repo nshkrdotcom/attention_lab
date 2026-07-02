@@ -67,9 +67,12 @@ template_set
 filler_set
 generation_seed
 created_at
+content_sha256
 ```
 
-`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It uses a local seeded RNG for filler assignment, writes fixed provenance, and validates GPT-2 single-token restoration labels. Committed confirmatory suites live in:
+`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It uses a local seeded RNG for filler assignment, writes fixed provenance, writes a `content_sha256` fingerprint over metadata and records, and validates GPT-2 single-token restoration labels. The built-in Tier-1 validate-only path also regenerates from `candidate`, `generation_seed`, `created_at`, and pair count metadata, then rejects files that do not match deterministic generator output.
+
+Committed confirmatory suites live in:
 
 ```text
 configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
@@ -134,7 +137,7 @@ docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
 docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
 ```
 
-Malformed confirmatory inputs fail before model/checkpoint loading. This includes a missing or invalid hypothesis doc, a task suite below 50 pairs per family, missing deterministic provenance, missing decoys, and invalid restoration token metadata for full runs.
+Malformed confirmatory inputs fail before model/checkpoint loading. This includes a missing or invalid hypothesis doc, a task suite below 50 pairs per family, missing deterministic provenance, missing or mismatched `content_sha256`, missing decoys, and invalid restoration token metadata for full runs.
 
 ## Confirmatory Preflight And Sites
 
@@ -161,6 +164,8 @@ target_vs_decoy_specificity
 Shuffled-label nulls retrain the same probe after shuffling train labels. Random-site nulls retrain the same probe on a randomly selected non-candidate site with matched dimensionality and compatible site kind.
 
 Random-site null selection inspects actual captured feature shapes. It never pads, truncates, projects, or coerces mismatched sites. Missing random-site nulls are feasibility limits for that `(site x layer)` cell, not automatic implementation failures and not run-wide caps.
+
+The random-site null pool is the complete preset-declared Tier-1 null family, emitted under `preflight.random_site_null_pool` in `metrics.json`. It is intentionally not an open-ended hook sweep: the pool contains same-layer non-candidate sites declared by the preset, and each selected null still must match actual captured feature dimensionality and compatible tensor kind.
 
 Low-dimensional E004 `operator_probs` sites are not coerced into d_model-shaped comparisons.
 
@@ -234,6 +239,8 @@ metadata.clean_corrupt_token_alignment
 
 The committed suites use `" true"` and `" false"` as single GPT-2 next-token labels. Multi-token labels are rejected; the suite never silently uses the first subtoken. Clean and corrupted prompts are patched only at validated aligned positions. If token lengths differ, explicit clean/corrupted patch indices are required. The suite does not patch whole sequence tensors across unaligned clean/corrupt prompts. Missing token metadata, invalid patch alignment, or invalid denominators makes restoration invalid and blocks gates depending on it.
 
+E004 `operator_probs` is a low-dimensional probability site. Tier-1 treats it as capture/probe-only for now: linear probes and random-site feasibility checks may run, but continuous patch/restoration is skipped because no validated probability-site intervention exists. Full-width E004 operator output sites such as `operator_add_out` and `operator_combined_out` remain continuous patch/restoration candidates.
+
 Restoration formula:
 
 ```text
@@ -284,6 +291,8 @@ This vocabulary is scoped to mechanism probes and is distinct from the repositor
 No claim gate can pass without minimum N, grouped split discipline, bootstrap CI/statistical correction, matched control evidence, and non-decoy specificity evidence. Confirmatory evidence also requires the 50-pair task-suite floor and a valid hypothesis doc.
 
 Full confirmatory mode is the only path that can reach `candidate_mechanism_evidence`. Non-exploratory `--probe-only` is rejected; cheap scans must use `--exploratory --probe-only`.
+
+`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records `claim_gate_passed` and `status_kind` for every cell. `claim_gate_passed=true` is reserved for confirmatory `controlled_probe_signal` or `candidate_mechanism_evidence` statuses after the controlled probe prerequisites have cleared.
 
 ## Commands
 
@@ -369,7 +378,7 @@ claim_gates.json
 summary.md
 ```
 
-`metrics.json` contains task-suite validation, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
+`metrics.json` contains task-suite validation, content fingerprint validation, declared random-site pool scope, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps, `claim_gate_passed`, `status_kind`, and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
 
 Regenerate a summary from existing suite artifacts:
 

@@ -21,13 +21,17 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
     fdr = metrics.get("fdr_bh", {})
     cells = metrics.get("cells", {})
     pooling = metrics.get("feature_pooling", {})
+    preflight = metrics.get("preflight", {})
     overall = claim_gates.get("overall_status", "insufficient_evidence")
+    overall_claim_gate_passed = bool(claim_gates.get("overall_claim_gate_passed", False))
+    random_pool = preflight.get("random_site_null_pool", {})
 
     lines = [
         "# Tier-1 Mechanism Probe Suite Summary",
         "",
         "This report uses a mechanism-probe-specific claim ladder, distinct from the repository-wide "
         "experiment status vocabulary.",
+        "An exploratory signal is not a passed confirmatory claim gate.",
         "",
         "## Run",
         f"- experiment_id: `{run.get('experiment_id')}`",
@@ -39,6 +43,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         f"- feature_pooling: `{pooling.get('strategy')}`",
         f"- task_aligned_pooling: `{pooling.get('task_aligned')}`",
         f"- overall_mechanism_probe_status: `{overall}`",
+        f"- overall_claim_gate_passed: `{overall_claim_gate_passed}`",
         "",
         "## Control",
         f"- expected_control_checkpoint: `{control.get('expected_control_checkpoint')}`",
@@ -50,6 +55,8 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         "",
         "## Task Suite",
         f"- deterministic_provenance: `{task.get('deterministic_provenance')}`",
+        f"- deterministic_fingerprint_valid: `{task.get('deterministic_fingerprint_valid')}`",
+        f"- deterministic_fingerprint_reason: {task.get('deterministic_fingerprint_reason') or 'none'}",
         f"- confirmatory_floor_met: `{task.get('confirmatory_floor_met')}`",
         f"- restoration_token_metadata_valid: `{task.get('restoration_token_metadata_valid')}`",
         f"- pair_counts_by_family: `{task.get('pair_counts_by_family')}`",
@@ -62,6 +69,11 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         f"- alpha: `{fdr.get('alpha')}`",
         f"- tested_cells: `{fdr.get('tested_cells')}`",
         f"- invalid_or_unavailable_cells: `{fdr.get('invalid_or_unavailable_cells')}`",
+        "",
+        "## Random-Site Null Pool",
+        f"- scope: `{random_pool.get('scope')}`",
+        f"- selection_policy: {random_pool.get('selection_policy') or 'not recorded'}",
+        f"- declared_sites: `{[site.get('key') for site in random_pool.get('sites', [])]}`",
         "",
         "## Site Results",
     ]
@@ -79,6 +91,8 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
             [
                 f"### `{cell_id}`",
                 f"- claim_gate: `{gate.get('status')}`",
+                f"- claim_gate_passed: `{gate.get('claim_gate_passed')}`",
+                f"- status_kind: `{gate.get('status_kind')}`",
                 f"- blockers: `{gate.get('blockers')}`",
                 f"- feature_pooling: `{cell_pooling.get('strategy')}`",
                 f"- task_aligned_pooling: `{cell_pooling.get('task_aligned')}`",

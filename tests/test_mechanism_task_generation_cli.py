@@ -116,6 +116,55 @@ def test_tier1_task_validate_only_rejects_missing_provenance_too_small_and_missi
     assert "lacks restoration token metadata" in result.stderr
 
 
+def test_tier1_task_validate_only_rejects_tampered_generated_suite(tmp_path):
+    task_file = tmp_path / "generated.yaml"
+    generated = subprocess.run(
+        [
+            sys.executable,
+            "scripts/generate_tier1_mechanism_tasks.py",
+            "--output",
+            str(task_file),
+            "--candidate",
+            "e003_differential",
+            "--pairs-per-family",
+            "50",
+            "--seed",
+            "13",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert generated.returncode == 0, generated.stderr
+
+    payload = yaml.safe_load(task_file.read_text(encoding="utf-8"))
+    assert payload["metadata"].get("content_sha256")
+    payload["records"][0]["x_pos"] = payload["records"][0]["x_pos"].replace("not", "definitely not")
+    task_file.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/generate_tier1_mechanism_tasks.py",
+            "--output",
+            str(task_file),
+            "--candidate",
+            "e003_differential",
+            "--pairs-per-family",
+            "50",
+            "--validate-only",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "content_sha256" in result.stderr or "deterministic generator output" in result.stderr
+
+
 def test_committed_tier1_task_suites_validate_with_restoration_alignment_metadata():
     for path in (
         Path("configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml"),
@@ -132,6 +181,7 @@ def test_committed_tier1_task_suites_validate_with_restoration_alignment_metadat
 
         assert result.valid, result.errors
         assert result.deterministic_provenance
+        assert result.deterministic_fingerprint_valid
         assert result.confirmatory_floor_met
         for record in suite.records:
             assert record.x_pos

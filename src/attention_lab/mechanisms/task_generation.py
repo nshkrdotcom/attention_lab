@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,7 @@ import yaml
 
 from attention_lab.mechanisms.task_schema import (
     CONFIRMATORY_MIN_PAIRS_PER_FAMILY,
+    attach_suite_content_sha256,
     load_task_suite,
     validate_task_suite,
 )
@@ -70,7 +72,7 @@ def generate_template_filler_suite(
                     },
                 }
             )
-    return {
+    return attach_suite_content_sha256({
         "schema_version": 1,
         "metadata": {
             "generator_name": GENERATOR_NAME,
@@ -81,7 +83,7 @@ def generate_template_filler_suite(
             "created_at": created_at,
         },
         "records": records,
-    }
+    })
 
 
 def write_template_filler_suite(path: str | Path, suite: dict[str, Any]) -> None:
@@ -150,7 +152,7 @@ def generate_tier1_negation_suite(
             }
         )
 
-    return {
+    return attach_suite_content_sha256({
         "schema_version": 1,
         "metadata": {
             "generator_name": TIER1_GENERATOR_NAME,
@@ -163,7 +165,7 @@ def generate_tier1_negation_suite(
             "restoration_token_metadata": "gpt2_single_token_true_false_v1",
         },
         "records": records,
-    }
+    })
 
 
 def write_tier1_negation_suite(path: str | Path, suite: dict[str, Any]) -> None:
@@ -184,6 +186,7 @@ def validate_tier1_suite_file(path: str | Path, *, min_n: int = CONFIRMATORY_MIN
     )
     if not result.valid:
         raise ValueError("invalid Tier-1 task suite: " + "; ".join(result.errors))
+    _validate_tier1_regenerates_from_metadata(path)
 
 
 def gpt2_single_token_id(token_text: str) -> int:
@@ -194,6 +197,41 @@ def gpt2_single_token_id(token_text: str) -> int:
     if len(encoded) != 1:
         raise ValueError(f"{token_text!r} is not a single GPT-2 token")
     return int(encoded[0])
+
+
+def _validate_tier1_regenerates_from_metadata(path: str | Path) -> None:
+    raw_payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(raw_payload, dict):
+        raise ValueError("invalid Tier-1 task suite: task file must contain a mapping")
+    metadata = raw_payload.get("metadata")
+    if not isinstance(metadata, dict):
+        raise ValueError("invalid Tier-1 task suite: metadata must be a mapping")
+    if metadata.get("generator_name") != TIER1_GENERATOR_NAME:
+        return
+    candidate = metadata.get("candidate")
+    seed = metadata.get("generation_seed")
+    created_at = metadata.get("created_at", DEFAULT_CREATED_AT)
+    if candidate not in TIER1_CANDIDATES:
+        raise ValueError("invalid Tier-1 task suite: metadata.candidate is not a known Tier-1 generator candidate")
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise ValueError("invalid Tier-1 task suite: metadata.generation_seed must be an integer")
+    suite = load_task_suite(path)
+    counts = suite.pair_counts_by_family()
+    if len(counts) != 1:
+        raise ValueError("invalid Tier-1 task suite: built-in Tier-1 generator expects exactly one family")
+    pairs_per_family = next(iter(counts.values()))
+    regenerated = generate_tier1_negation_suite(
+        candidate=candidate,
+        pairs_per_family=pairs_per_family,
+        seed=seed,
+        created_at=str(created_at),
+    )
+    if _canonical_json(raw_payload) != _canonical_json(regenerated):
+        raise ValueError("invalid Tier-1 task suite: file does not match deterministic generator output")
+
+
+def _canonical_json(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
 def _restoration_alignment_metadata(

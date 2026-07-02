@@ -52,8 +52,15 @@ def test_raw_delta_or_missing_stats_cannot_pass_gate():
 
 
 def test_probe_only_and_exploratory_modes_are_capped():
-    assert evaluate_cell_claim_gate(_passing_inputs(probe_only=True)).status == EXPLORATORY_PROBE_SIGNAL
-    assert evaluate_cell_claim_gate(_passing_inputs(exploratory=True)).status == EXPLORATORY_PROBE_SIGNAL
+    probe_only = evaluate_cell_claim_gate(_passing_inputs(probe_only=True))
+    exploratory = evaluate_cell_claim_gate(_passing_inputs(exploratory=True))
+
+    assert probe_only.status == EXPLORATORY_PROBE_SIGNAL
+    assert exploratory.status == EXPLORATORY_PROBE_SIGNAL
+    assert not probe_only.claim_gate_passed
+    assert not exploratory.claim_gate_passed
+    assert probe_only.to_dict()["status_kind"] == "exploratory_signal"
+    assert exploratory.to_dict()["status_kind"] == "exploratory_signal"
 
 
 def test_missing_random_site_null_caps_only_affected_cell():
@@ -82,6 +89,8 @@ def test_valid_controlled_probe_without_patching_stops_below_candidate_evidence(
     result = evaluate_cell_claim_gate(_passing_inputs(patching_valid=False, mediation_valid=False))
 
     assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert result.claim_gate_passed
+    assert result.to_dict()["status_kind"] == "confirmatory_claim"
     assert any("patching" in blocker for blocker in result.blockers)
 
 

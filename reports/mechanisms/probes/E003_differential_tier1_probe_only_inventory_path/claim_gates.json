@@ -5,6 +5,7 @@
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -36,6 +37,7 @@
         "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
+      "status_kind": "exploratory_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "neg_out[0]|family=negation_scope": {
@@ -43,6 +45,7 @@
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -74,6 +77,7 @@
         "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
+      "status_kind": "exploratory_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     },
     "pos_out[0]|family=negation_scope": {
@@ -81,6 +85,7 @@
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
+      "claim_gate_passed": false,
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -112,9 +117,11 @@
         "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
+      "status_kind": "exploratory_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     }
   },
+  "overall_claim_gate_passed": false,
   "overall_status": "exploratory_probe_signal",
   "status_vocabulary": [
     "insufficient_evidence",

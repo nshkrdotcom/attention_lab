@@ -1,6 +1,7 @@
 # Tier-1 Mechanism Probe Suite Summary
 
 This report uses a mechanism-probe-specific claim ladder, distinct from the repository-wide experiment status vocabulary.
+An exploratory signal is not a passed confirmatory claim gate.
 
 ## Run
 - experiment_id: `E003_qkv_architecture_gauntlet`
@@ -12,6 +13,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - feature_pooling: `mean_sequence`
 - task_aligned_pooling: `False`
 - overall_mechanism_probe_status: `exploratory_probe_signal`
+- overall_claim_gate_passed: `False`
 
 ## Control
 - expected_control_checkpoint: `runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt`
@@ -23,6 +25,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 
 ## Task Suite
 - deterministic_provenance: `True`
+- deterministic_fingerprint_valid: `True`
+- deterministic_fingerprint_reason: none
 - confirmatory_floor_met: `True`
 - restoration_token_metadata_valid: `True`
 - pair_counts_by_family: `{'negation_scope': 50}`
@@ -33,11 +37,18 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - comparison_family: every computed `(site x layer x task_family x metric)` cell in this run, including probe, null, matched-control, specificity, restoration, and mediation metrics when present.
 - alpha: `0.05`
 - tested_cells: `['branch_delta[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'branch_delta[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'branch_delta[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'branch_delta[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'branch_delta[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'neg_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'neg_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'neg_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'neg_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'neg_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'pos_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'pos_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'pos_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'pos_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'pos_out[0]|family=negation_scope|metric=target_vs_decoy_specificity']`
-- invalid_or_unavailable_cells: `[{'cell_id': 'branch_delta[0]|family=negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]', 'family_id': 'negation_scope'}, {'cell_id': 'branch_delta[0]|family=negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]', 'family_id': 'negation_scope'}, {'cell_id': 'branch_delta[0]|family=negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]', 'family_id': 'negation_scope'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]', 'family_id': 'negation_scope'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]', 'family_id': 'negation_scope'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]', 'family_id': 'negation_scope'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]', 'family_id': 'negation_scope'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]', 'family_id': 'negation_scope'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]', 'family_id': 'negation_scope'}]`
+- invalid_or_unavailable_cells: `[{'cell_id': 'branch_delta[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]'}, {'cell_id': 'branch_delta[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]'}, {'cell_id': 'branch_delta[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'branch_delta[0]'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]'}, {'cell_id': 'pos_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'pos_out[0]'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'component_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]'}, {'cell_id': 'neg_out[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'mediation_fraction', 'reason': 'probe-only mode skips patching/restoration', 'site': 'neg_out[0]'}]`
+
+## Random-Site Null Pool
+- scope: `complete preset-declared Tier-1 random-site null family`
+- selection_policy: same-layer non-candidate sites declared in the preset; selection still requires actual captured feature dimensionality and compatible tensor kind
+- declared_sites: `['attn_out[0]', 'resid_mid[0]', 'mlp_out[0]', 'resid_post[0]']`
 
 ## Site Results
 ### `branch_delta[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- claim_gate_passed: `False`
+- status_kind: `exploratory_signal`
 - blockers: `[]`
 - feature_pooling: `mean_sequence`
 - task_aligned_pooling: `False`
@@ -55,11 +66,13 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - patching_reason: probe-only mode
 - mediation_fraction_valid: `False`
 - mediation_fraction: `None`
-- probe_direction_cosine_to_control: `0.024503581005298206`
+- probe_direction_cosine_to_control: `0.024503561156061116`
 - alignment_available: `True`
 
 ### `neg_out[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- claim_gate_passed: `False`
+- status_kind: `exploratory_signal`
 - blockers: `[]`
 - feature_pooling: `mean_sequence`
 - task_aligned_pooling: `False`
@@ -77,11 +90,13 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - patching_reason: probe-only mode
 - mediation_fraction_valid: `False`
 - mediation_fraction: `None`
-- probe_direction_cosine_to_control: `-0.0668740404139238`
+- probe_direction_cosine_to_control: `-0.06687405850945626`
 - alignment_available: `True`
 
 ### `pos_out[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- claim_gate_passed: `False`
+- status_kind: `exploratory_signal`
 - blockers: `[]`
 - feature_pooling: `mean_sequence`
 - task_aligned_pooling: `False`
@@ -99,7 +114,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - patching_reason: probe-only mode
 - mediation_fraction_valid: `False`
 - mediation_fraction: `None`
-- probe_direction_cosine_to_control: `-0.0023994374263533818`
+- probe_direction_cosine_to_control: `-0.0023994484502870973`
 - alignment_available: `True`
 
 ## Limitations

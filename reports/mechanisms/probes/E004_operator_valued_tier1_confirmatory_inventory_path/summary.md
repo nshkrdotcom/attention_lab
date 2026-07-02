@@ -1,6 +1,7 @@
 # Tier-1 Mechanism Probe Suite Summary
 
 This report uses a mechanism-probe-specific claim ladder, distinct from the repository-wide experiment status vocabulary.
+An exploratory signal is not a passed confirmatory claim gate.
 
 ## Run
 - experiment_id: `E004_operator_binding_qkv_gauntlet`
@@ -12,6 +13,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
 - overall_mechanism_probe_status: `insufficient_evidence`
+- overall_claim_gate_passed: `False`
 
 ## Control
 - expected_control_checkpoint: `runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt`
@@ -23,6 +25,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 
 ## Task Suite
 - deterministic_provenance: `True`
+- deterministic_fingerprint_valid: `True`
+- deterministic_fingerprint_reason: none
 - confirmatory_floor_met: `True`
 - restoration_token_metadata_valid: `True`
 - pair_counts_by_family: `{'negation_scope': 50}`
@@ -32,12 +36,19 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 ## FDR-BH
 - comparison_family: every computed `(site x layer x task_family x metric)` cell in this run, including probe, null, matched-control, specificity, restoration, and mediation metrics when present.
 - alpha: `0.05`
-- tested_cells: `['operator_add_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_add_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_add_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_add_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_bind_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_bind_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_bind_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_combined_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_combined_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_combined_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_gate_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_gate_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_gate_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_probs[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_probs[0]|family=negation_scope|metric=component_patch_restoration', 'operator_probs[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_probs[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_probs[0]|family=negation_scope|metric=mediation_fraction', 'operator_probs[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_suppress_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_suppress_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_suppress_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_transform_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_transform_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_transform_out[0]|family=negation_scope|metric=target_vs_decoy_specificity']`
-- invalid_or_unavailable_cells: `[{'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'auc_minus_random_site_auc', 'reason': 'no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure', 'site': 'operator_probs[0]', 'family_id': 'negation_scope'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'auc_minus_matched_control_auc', 'reason': 'site has no matched control site metadata', 'site': 'operator_probs[0]', 'family_id': 'negation_scope'}]`
+- tested_cells: `['operator_add_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_add_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_add_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_add_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_bind_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_bind_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_bind_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_combined_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_combined_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_combined_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_gate_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_gate_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_gate_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_probs[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_probs[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_probs[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_suppress_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_suppress_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_suppress_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_transform_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_transform_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_transform_out[0]|family=negation_scope|metric=target_vs_decoy_specificity']`
+- invalid_or_unavailable_cells: `[{'cell_id': 'operator_probs[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'auc_minus_random_site_auc', 'reason': 'no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure', 'site': 'operator_probs[0]'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'auc_minus_matched_control_auc', 'reason': 'standard matched control has no operator probability site', 'site': 'operator_probs[0]'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'component_patch_restoration', 'reason': 'site metadata marks this site as non-continuous', 'site': 'operator_probs[0]'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'full_layer_patch_restoration', 'reason': 'site metadata marks this site as non-continuous', 'site': 'operator_probs[0]'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'mediation_fraction', 'reason': 'site metadata marks this site as non-continuous', 'site': 'operator_probs[0]'}]`
+
+## Random-Site Null Pool
+- scope: `complete preset-declared Tier-1 random-site null family`
+- selection_policy: same-layer non-candidate sites declared in the preset; selection still requires actual captured feature dimensionality and compatible tensor kind
+- declared_sites: `['attn_out[0]', 'resid_mid[0]', 'mlp_out[0]', 'resid_post[0]']`
 
 ## Site Results
 ### `operator_add_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -54,12 +65,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `1.4214727428773515`
-- probe_direction_cosine_to_control: `0.019558533969486494`
+- mediation_fraction: `1.4222322802010974`
+- probe_direction_cosine_to_control: `0.019558419277735852`
 - alignment_available: `True`
 
 ### `operator_bind_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -76,12 +89,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.7149608955194895`
-- probe_direction_cosine_to_control: `-0.024494275685223516`
+- mediation_fraction: `-0.7159401598826826`
+- probe_direction_cosine_to_control: `-0.024494368102682424`
 - alignment_available: `True`
 
 ### `operator_combined_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -99,11 +114,13 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - patching_reason: none
 - mediation_fraction_valid: `True`
 - mediation_fraction: `1.0`
-- probe_direction_cosine_to_control: `-0.024809684484843372`
+- probe_direction_cosine_to_control: `-0.024809704136461358`
 - alignment_available: `True`
 
 ### `operator_gate_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -120,12 +137,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.7403431533931224`
-- probe_direction_cosine_to_control: `-0.04194655459712951`
+- mediation_fraction: `0.7404502353149495`
+- probe_direction_cosine_to_control: `-0.04194660284902627`
 - alignment_available: `True`
 
 ### `operator_probs[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['shuffled-label null comparison failed', 'random-site null unavailable for this site-layer cell', 'matched-control comparison failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -138,16 +157,18 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - random_site_null_available: `False`
 - selected_random_site: `None`
 - random_site_reason: no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure
-- patching_valid: `True`
+- patching_valid: `False`
 - restoration_alignment_valid: `True`
-- patching_reason: none
-- mediation_fraction_valid: `True`
-- mediation_fraction: `-0.5786754180814782`
+- patching_reason: site metadata marks this site as non-continuous
+- mediation_fraction_valid: `False`
+- mediation_fraction: `None`
 - probe_direction_cosine_to_control: `None`
 - alignment_available: `False`
 
 ### `operator_suppress_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -164,12 +185,14 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.06496073402831301`
-- probe_direction_cosine_to_control: `-0.05307981533431828`
+- mediation_fraction: `-0.06503644634708187`
+- probe_direction_cosine_to_control: `-0.05307979500417906`
 - alignment_available: `True`
 
 ### `operator_transform_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- claim_gate_passed: `False`
+- status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
@@ -186,8 +209,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.006860426615086898`
-- probe_direction_cosine_to_control: `-0.05528845848351143`
+- mediation_fraction: `-0.0065979224936523525`
+- probe_direction_cosine_to_control: `-0.05528839685465451`
 - alignment_available: `True`
 
 ## Limitations

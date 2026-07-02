@@ -8,6 +8,7 @@ metadata:
   created_at: '2026-07-01T00:00:00Z'
   candidate: e004_operator_valued
   restoration_token_metadata: gpt2_single_token_true_false_v1
+  content_sha256: 5d9d8c7bba02cb61b824751914a73c034cd2bf0d236a1bfed3a46f1219e5db04
 records:
 - pair_id: e004_operator_valued_negation_scope_pair_0000
   template_id: negation_scope_template_000

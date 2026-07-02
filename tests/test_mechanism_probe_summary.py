@@ -58,7 +58,15 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     }
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
-        "cells": {"branch_delta[0]|family=negation": {"status": "exploratory_probe_signal", "blockers": []}},
+        "overall_claim_gate_passed": False,
+        "cells": {
+            "branch_delta[0]|family=negation": {
+                "status": "exploratory_probe_signal",
+                "blockers": [],
+                "claim_gate_passed": False,
+                "status_kind": "exploratory_signal",
+            }
+        },
     }
 
     summary = render_summary(metrics, claim_gates)
@@ -72,6 +80,7 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     assert "FDR-BH reports both tested metric cells and invalid/unavailable cells" in summary
     assert "Probe-only mode skipped" in summary
     assert "Exploratory mode capped" in summary
+    assert "exploratory signal is not a passed confirmatory claim gate" in summary
 
 
 def test_suite_artifact_validation_checks_required_schema(tmp_path):
@@ -106,9 +115,17 @@ def test_suite_artifact_validation_checks_required_schema(tmp_path):
     }
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
+        "overall_claim_gate_passed": False,
         "status_vocabulary": ["insufficient_evidence", "exploratory_probe_signal"],
         "status_vocabulary_scope": "mechanism-probe scoped",
-        "cells": {"branch_delta[0]|family=negation": {"status": "exploratory_probe_signal", "blockers": []}},
+        "cells": {
+            "branch_delta[0]|family=negation": {
+                "status": "exploratory_probe_signal",
+                "blockers": [],
+                "claim_gate_passed": False,
+                "status_kind": "exploratory_signal",
+            }
+        },
     }
 
     write_suite_artifacts(tmp_path, metrics, claim_gates)
