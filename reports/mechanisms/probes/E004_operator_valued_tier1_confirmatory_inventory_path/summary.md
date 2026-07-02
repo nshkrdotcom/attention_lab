@@ -33,7 +33,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - comparison_family: every computed `(site x layer x task_family x metric)` cell in this run, including probe, null, matched-control, specificity, restoration, and mediation metrics when present.
 - alpha: `0.05`
 - tested_cells: `['operator_add_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_add_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_add_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_add_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_add_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_add_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_bind_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_bind_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_bind_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_bind_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_bind_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_combined_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_combined_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_combined_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_combined_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_combined_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_gate_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_gate_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_gate_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_gate_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_gate_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_probs[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_probs[0]|family=negation_scope|metric=component_patch_restoration', 'operator_probs[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_probs[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_probs[0]|family=negation_scope|metric=mediation_fraction', 'operator_probs[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_suppress_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_suppress_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_suppress_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_suppress_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_suppress_out[0]|family=negation_scope|metric=target_vs_decoy_specificity', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_random_site_auc', 'operator_transform_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc', 'operator_transform_out[0]|family=negation_scope|metric=component_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=full_layer_patch_restoration', 'operator_transform_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5', 'operator_transform_out[0]|family=negation_scope|metric=mediation_fraction', 'operator_transform_out[0]|family=negation_scope|metric=target_vs_decoy_specificity']`
-- invalid_or_unavailable_cells: `[{'cell_id': 'operator_probs[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'auc_minus_random_site_auc', 'reason': 'no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure', 'site': 'operator_probs[0]'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'family_id': 'negation_scope', 'metric': 'auc_minus_matched_control_auc', 'reason': 'site has no matched control site metadata', 'site': 'operator_probs[0]'}]`
+- invalid_or_unavailable_cells: `[{'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'auc_minus_random_site_auc', 'reason': 'no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure', 'site': 'operator_probs[0]', 'family_id': 'negation_scope'}, {'cell_id': 'operator_probs[0]|family=negation_scope', 'metric': 'auc_minus_matched_control_auc', 'reason': 'site has no matched control site metadata', 'site': 'operator_probs[0]', 'family_id': 'negation_scope'}]`
 
 ## Site Results
 ### `operator_add_out[0]|family=negation_scope`
@@ -54,8 +54,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `1.4222322802010974`
-- probe_direction_cosine_to_control: `0.019558419277735852`
+- mediation_fraction: `1.4214727428773515`
+- probe_direction_cosine_to_control: `0.019558533969486494`
 - alignment_available: `True`
 
 ### `operator_bind_out[0]|family=negation_scope`
@@ -76,8 +76,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.7159401598826826`
-- probe_direction_cosine_to_control: `-0.024494368102682424`
+- mediation_fraction: `-0.7149608955194895`
+- probe_direction_cosine_to_control: `-0.024494275685223516`
 - alignment_available: `True`
 
 ### `operator_combined_out[0]|family=negation_scope`
@@ -99,7 +99,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - patching_reason: none
 - mediation_fraction_valid: `True`
 - mediation_fraction: `1.0`
-- probe_direction_cosine_to_control: `-0.024809693713041883`
+- probe_direction_cosine_to_control: `-0.024809684484843372`
 - alignment_available: `True`
 
 ### `operator_gate_out[0]|family=negation_scope`
@@ -120,8 +120,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `0.7404502353149495`
-- probe_direction_cosine_to_control: `-0.04194661307567798`
+- mediation_fraction: `0.7403431533931224`
+- probe_direction_cosine_to_control: `-0.04194655459712951`
 - alignment_available: `True`
 
 ### `operator_probs[0]|family=negation_scope`
@@ -142,7 +142,7 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.5789643900068502`
+- mediation_fraction: `-0.5786754180814782`
 - probe_direction_cosine_to_control: `None`
 - alignment_available: `False`
 
@@ -164,8 +164,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.06503644634708187`
-- probe_direction_cosine_to_control: `-0.05307979500417906`
+- mediation_fraction: `-0.06496073402831301`
+- probe_direction_cosine_to_control: `-0.05307981533431828`
 - alignment_available: `True`
 
 ### `operator_transform_out[0]|family=negation_scope`
@@ -186,8 +186,8 @@ This report uses a mechanism-probe-specific claim ladder, distinct from the repo
 - restoration_alignment_valid: `True`
 - patching_reason: none
 - mediation_fraction_valid: `True`
-- mediation_fraction: `-0.0065979224936523525`
-- probe_direction_cosine_to_control: `-0.05528854573511238`
+- mediation_fraction: `-0.006860426615086898`
+- probe_direction_cosine_to_control: `-0.05528845848351143`
 - alignment_available: `True`
 
 ## Limitations
