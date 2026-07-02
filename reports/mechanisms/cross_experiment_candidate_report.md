@@ -1,7 +1,7 @@
 # Cross-Experiment Mechanism Candidate Report
 
 Generated from structured backfill inventories. It is not a training-result claim.
-Inventory source commits: e2582bb208bf1c795035ab49b9fc553d4ee8ff14.
+Inventory source commits: 21bd5066d9103170646832cb0ceee40c5bb54dcd.
 
 ## Promote Full Mechanism Run (`promote_full_mechanism_run`)
 - `differential_qkv_anti_value_30m_seed1_rung500` (E003_qkv_architecture_gauntlet, `differential_qkv_anti_value`): evidence=checkpoint_recompute; checkpoint=available; next=run matched full mechanism probe from checkpoint before full promotion
