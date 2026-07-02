@@ -1,0 +1,78 @@
+{
+  "capture_sites": [
+    "content_out",
+    "scope_out",
+    "gate",
+    "content_scope_product",
+    "gated_content"
+  ],
+  "intervention_sites": [
+    "content_out",
+    "scope_out",
+    "gate",
+    "content_scope_product",
+    "gated_content"
+  ],
+  "interventions": {
+    "scale": {
+      "applied": [
+        {
+          "kind": "scale",
+          "site": "content_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "scope_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "gate[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "content_scope_product[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "gated_content[0]"
+        }
+      ],
+      "logit_delta_norm": 1462.107666015625,
+      "missing_or_failed": []
+    },
+    "zero": {
+      "applied": [
+        {
+          "kind": "zero",
+          "site": "content_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "scope_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "gate[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "content_scope_product[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "gated_content[0]"
+        }
+      ],
+      "logit_delta_norm": 1462.107666015625,
+      "missing_or_failed": []
+    }
+  },
+  "invalid_interventions": [],
+  "schema_version": 1,
+  "tokenizer": {
+    "block_size": 1024,
+    "pad_token_id": 0,
+    "tokenizer": "gpt2",
+    "vocab_size": 50304
+  }
+}

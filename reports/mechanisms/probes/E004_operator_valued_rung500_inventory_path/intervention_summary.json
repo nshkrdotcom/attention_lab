@@ -1,0 +1,98 @@
+{
+  "capture_sites": [
+    "operator_probs",
+    "operator_add_out",
+    "operator_suppress_out",
+    "operator_gate_out",
+    "operator_transform_out",
+    "operator_bind_out",
+    "operator_combined_out"
+  ],
+  "intervention_sites": [
+    "operator_probs",
+    "operator_add_out",
+    "operator_suppress_out",
+    "operator_gate_out",
+    "operator_transform_out",
+    "operator_bind_out",
+    "operator_combined_out"
+  ],
+  "interventions": {
+    "scale": {
+      "applied": [
+        {
+          "kind": "scale",
+          "site": "operator_probs[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_add_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_suppress_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_gate_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_transform_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_bind_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "operator_combined_out[0]"
+        }
+      ],
+      "logit_delta_norm": 1399.1934814453125,
+      "missing_or_failed": []
+    },
+    "zero": {
+      "applied": [
+        {
+          "kind": "zero",
+          "site": "operator_probs[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_add_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_suppress_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_gate_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_transform_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_bind_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_combined_out[0]"
+        }
+      ],
+      "logit_delta_norm": 1399.1934814453125,
+      "missing_or_failed": []
+    }
+  },
+  "invalid_interventions": [],
+  "schema_version": 1,
+  "tokenizer": {
+    "block_size": 1024,
+    "pad_token_id": 0,
+    "tokenizer": "gpt2",
+    "vocab_size": 50304
+  }
+}

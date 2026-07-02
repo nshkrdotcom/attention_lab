@@ -1,0 +1,128 @@
+{
+  "capture_sites": [
+    "pos_q",
+    "pos_k",
+    "pos_v",
+    "neg_q",
+    "neg_k",
+    "neg_v",
+    "pos_out",
+    "neg_out",
+    "branch_delta",
+    "lambda"
+  ],
+  "intervention_sites": [
+    "pos_q",
+    "pos_k",
+    "pos_v",
+    "neg_q",
+    "neg_k",
+    "neg_v",
+    "pos_out",
+    "neg_out",
+    "branch_delta",
+    "lambda"
+  ],
+  "interventions": {
+    "scale": {
+      "applied": [
+        {
+          "kind": "scale",
+          "site": "pos_q[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "pos_k[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "pos_v[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "neg_q[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "neg_k[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "neg_v[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "lambda[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "pos_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "neg_out[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "branch_delta[0]"
+        }
+      ],
+      "logit_delta_norm": 1266.5626220703125,
+      "missing_or_failed": []
+    },
+    "zero": {
+      "applied": [
+        {
+          "kind": "zero",
+          "site": "pos_q[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "pos_k[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "pos_v[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "neg_q[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "neg_k[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "neg_v[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "lambda[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "pos_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "neg_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "branch_delta[0]"
+        }
+      ],
+      "logit_delta_norm": 1266.5626220703125,
+      "missing_or_failed": []
+    }
+  },
+  "invalid_interventions": [],
+  "schema_version": 1,
+  "tokenizer": {
+    "block_size": 1024,
+    "pad_token_id": 0,
+    "tokenizer": "gpt2",
+    "vocab_size": 50304
+  }
+}
