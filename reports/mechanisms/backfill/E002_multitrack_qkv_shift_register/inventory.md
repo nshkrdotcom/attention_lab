@@ -1,6 +1,6 @@
 # Mechanism Backfill Inventory: E002_multitrack_qkv_shift_register
 
-- generated_from_commit: `a736422deb0f4dcd0e7a17d8a0fdfb2c967fe835`
+- generated_from_commit: `79f203508c0fa0eee48c1379b090e3bb79b335b8`
 - repo_root_relative: `True`
 
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
