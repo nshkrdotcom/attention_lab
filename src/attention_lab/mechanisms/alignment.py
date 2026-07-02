@@ -12,28 +12,39 @@ class AlignmentResult:
     probe_direction_alignment_abs: float | None
     reason: str | None = None
 
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "available": self.available,
+            "probe_direction_cosine_to_control": self.probe_direction_cosine_to_control,
+            "probe_direction_alignment_abs": self.probe_direction_alignment_abs,
+            "reason": self.reason,
+            "interpretation": (
+                "high alignment suggests an already-present or universal feature direction surfaced differently; "
+                "low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself"
+            ),
+        }
 
-def probe_direction_alignment(candidate_weights: np.ndarray, control_weights: np.ndarray) -> AlignmentResult:
-    candidate = np.asarray(candidate_weights, dtype=float)
-    control = np.asarray(control_weights, dtype=float)
+
+def probe_direction_alignment(candidate_weight: np.ndarray, control_weight: np.ndarray) -> AlignmentResult:
+    candidate = np.asarray(candidate_weight, dtype=float).reshape(-1)
+    control = np.asarray(control_weight, dtype=float).reshape(-1)
     if candidate.shape != control.shape:
         return AlignmentResult(
             available=False,
             probe_direction_cosine_to_control=None,
             probe_direction_alignment_abs=None,
-            reason=f"shape mismatch: candidate {candidate.shape} vs control {control.shape}; no projection/coercion applied",
+            reason=f"shape mismatch: candidate={candidate.shape}, control={control.shape}",
         )
     candidate_norm = float(np.linalg.norm(candidate))
     control_norm = float(np.linalg.norm(control))
-    if candidate_norm <= 1e-12 or control_norm <= 1e-12:
+    if candidate_norm <= 0.0 or control_norm <= 0.0:
         return AlignmentResult(
             available=False,
             probe_direction_cosine_to_control=None,
             probe_direction_alignment_abs=None,
-            reason="zero-norm probe direction prevents cosine alignment",
+            reason="zero-norm probe direction",
         )
     cosine = float(np.dot(candidate, control) / (candidate_norm * control_norm))
-    cosine = max(-1.0, min(1.0, cosine))
     return AlignmentResult(
         available=True,
         probe_direction_cosine_to_control=cosine,

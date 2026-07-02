@@ -1,0 +1,1480 @@
+{
+  "cells": {
+    "operator_add_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.019558419277735852,
+        "probe_direction_cosine_to_control": 0.019558419277735852,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.03111111111111109,
+      "auc_minus_shuffled_auc": 0.3733333333333333,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 1.0,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": -2.7684771741164087,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": 1.4222322802010974,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": -2.7684771741164087,
+        "component_site": "operator_add_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 0.9688888888888889,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_add_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "mlp_out[0]"
+      },
+      "shuffled_label_auc": 0.6266666666666667,
+      "site": "operator_add_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.0,
+      "train_loss": 7.784368062857538e-05
+    },
+    "operator_bind_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.024494368102682424,
+        "probe_direction_cosine_to_control": -0.024494368102682424,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.0,
+      "auc_minus_shuffled_auc": 0.768888888888889,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 1.0,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": 1.3936288876724157,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": -0.7159401598826826,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": 1.3936288876724157,
+        "component_site": "operator_bind_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 1.0,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_bind_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "attn_out[0]"
+      },
+      "shuffled_label_auc": 0.2311111111111111,
+      "site": "operator_bind_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.0,
+      "train_loss": 0.0005509757320396602
+    },
+    "operator_combined_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.024809693713041883,
+        "probe_direction_cosine_to_control": -0.024809693713041883,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.03111111111111109,
+      "auc_minus_shuffled_auc": 0.45777777777777773,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 0.9866666666666667,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": -1.9465717468632888,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": 1.0,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": -1.9465717468632888,
+        "component_site": "operator_combined_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 0.9688888888888889,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_combined_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "mlp_out[0]"
+      },
+      "shuffled_label_auc": 0.5422222222222223,
+      "site": "operator_combined_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.013333333333333308,
+      "train_loss": 0.0003074238484259695
+    },
+    "operator_gate_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.04194661307567798,
+        "probe_direction_cosine_to_control": -0.04194661307567798,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.10222222222222221,
+      "auc_minus_shuffled_auc": 0.6266666666666667,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 1.0,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": -1.4413395080223546,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": 0.7404502353149495,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": -1.4413395080223546,
+        "component_site": "operator_gate_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 0.8977777777777778,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_gate_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "resid_mid[0]"
+      },
+      "shuffled_label_auc": 0.37333333333333335,
+      "site": "operator_gate_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.0,
+      "train_loss": 0.00012394199438858777
+    },
+    "operator_probs[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": false,
+        "probe_direction_alignment_abs": null,
+        "probe_direction_cosine_to_control": null,
+        "reason": "matched control probe unavailable"
+      },
+      "auc_minus_matched_control_auc": null,
+      "auc_minus_random_site_auc": null,
+      "auc_minus_shuffled_auc": -0.21777777777777785,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 0.38222222222222224,
+      "family_id": "negation_scope",
+      "feature_dim": 5,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 0.7688888888888888,
+      "matched_control": {
+        "available": false,
+        "reason": "site has no matched control site metadata"
+      },
+      "mediation_fraction": {
+        "component_patch_restoration": 1.1269957240272728,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": -0.5789643900068502,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": 1.1269957240272728,
+        "component_site": "operator_probs",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_null": {
+        "candidate_feature_dim": 5,
+        "candidate_site": "operator_probs[0]",
+        "candidate_tensor_kind": "probability",
+        "considered_sites": [
+          {
+            "accepted": false,
+            "feature_dim": 384,
+            "reason": "feature dimension mismatch: candidate=5, random=384",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": false,
+            "feature_dim": 384,
+            "reason": "feature dimension mismatch: candidate=5, random=384",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": false,
+            "feature_dim": 384,
+            "reason": "feature dimension mismatch: candidate=5, random=384",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": false,
+            "feature_dim": 384,
+            "reason": "feature dimension mismatch: candidate=5, random=384",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": false,
+        "reason": "no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure",
+        "selected_feature_dim": null,
+        "selected_site": null
+      },
+      "shuffled_label_auc": 0.9866666666666667,
+      "site": "operator_probs",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": null,
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "probability"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.3866666666666666,
+      "train_loss": 0.5505022406578064
+    },
+    "operator_suppress_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.05307979500417906,
+        "probe_direction_cosine_to_control": -0.05307979500417906,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.0,
+      "auc_minus_shuffled_auc": 0.6844444444444444,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 1.0,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": 0.1265981089756197,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": -0.06503644634708187,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": 0.1265981089756197,
+        "component_site": "operator_suppress_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 1.0,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_suppress_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "attn_out[0]"
+      },
+      "shuffled_label_auc": 0.31555555555555553,
+      "site": "operator_suppress_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.0,
+      "train_loss": 7.485733658540994e-05
+    },
+    "operator_transform_out[0]|family=negation_scope": {
+      "alignment_to_control": {
+        "available": true,
+        "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
+        "probe_direction_alignment_abs": 0.05528854573511238,
+        "probe_direction_cosine_to_control": -0.05528854573511238,
+        "reason": null
+      },
+      "auc_minus_matched_control_auc": 0.0,
+      "auc_minus_random_site_auc": 0.03555555555555556,
+      "auc_minus_shuffled_auc": 0.15555555555555556,
+      "bootstrap_alpha": 0.05,
+      "bootstrap_samples": 1000,
+      "decoy_auc": 1.0,
+      "family_id": "negation_scope",
+      "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "patch_positions_mean",
+        "task_aligned": true
+      },
+      "layer": 0,
+      "linear_probe_auc": 1.0,
+      "matched_control": {
+        "auc": 1.0,
+        "available": true,
+        "control_site": "attn_out[0]"
+      },
+      "matched_control_auc": 1.0,
+      "mediation_fraction": {
+        "component_patch_restoration": 0.012843329514137447,
+        "formula": "component_patch_restoration / full_layer_patch_restoration",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "mediation_fraction": -0.0065979224936523525,
+        "reason": null,
+        "valid": true
+      },
+      "patching": {
+        "alignment_modes": [
+          "explicit_patch_indices"
+        ],
+        "component_patch_restoration": 0.012843329514137447,
+        "component_site": "operator_transform_out",
+        "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
+        "full_layer_comparator": "attn_out",
+        "full_layer_patch_restoration": -1.9465717468632888,
+        "restoration_alignment_valid": true,
+        "valid": true,
+        "valid_pairs": 50
+      },
+      "random_site_auc": 0.9644444444444444,
+      "random_site_null": {
+        "candidate_feature_dim": 384,
+        "candidate_site": "operator_transform_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
+        "random_site_null_available": true,
+        "reason": null,
+        "selected_feature_dim": 384,
+        "selected_site": "resid_post[0]"
+      },
+      "shuffled_label_auc": 0.8444444444444444,
+      "site": "operator_transform_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
+      "split": {
+        "group_field": "template_id",
+        "grouped_split_discipline": true,
+        "test_groups": [
+          "negation_scope_template_000",
+          "negation_scope_template_002",
+          "negation_scope_template_007"
+        ],
+        "test_size": 30,
+        "train_groups": [
+          "negation_scope_template_001",
+          "negation_scope_template_003",
+          "negation_scope_template_004",
+          "negation_scope_template_005",
+          "negation_scope_template_006",
+          "negation_scope_template_008",
+          "negation_scope_template_009"
+        ],
+        "train_size": 70
+      },
+      "target_vs_decoy_specificity": 0.0,
+      "train_loss": 0.005728172138333321
+    }
+  },
+  "control": {
+    "actual_control_checkpoint": "runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt",
+    "actual_control_config": "configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2_rung500.yaml",
+    "available": true,
+    "canonical": true,
+    "expected_control_checkpoint": "runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt",
+    "expected_control_config": "configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2_rung500.yaml",
+    "expected_control_run": "standard_refactor_control_30m_seed2_rung500",
+    "force_noncanonical": false,
+    "override_used": false,
+    "reason": null,
+    "seed_mismatched": false
+  },
+  "fdr_bh": {
+    "alpha": 0.05,
+    "comparison_family": "every computed (site x layer x task_family x metric) cell in the run",
+    "invalid_or_unavailable_cells": [
+      {
+        "cell_id": "operator_probs[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "auc_minus_random_site_auc",
+        "reason": "no non-candidate random-site null with matched dimensionality and compatible site type; this is a null-feasibility limit, not an implementation failure",
+        "site": "operator_probs[0]"
+      },
+      {
+        "cell_id": "operator_probs[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "auc_minus_matched_control_auc",
+        "reason": "site has no matched control site metadata",
+        "site": "operator_probs[0]"
+      }
+    ],
+    "results": {
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 0.15484515484515485,
+        "q_value": 0.33446553446553445,
+        "rejected": false
+      },
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_add_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.8771228771228772,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_add_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7512487512487512,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_add_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_add_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.001998001998001998,
+        "q_value": 0.006743256743256743,
+        "rejected": true
+      },
+      "operator_add_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.21478521478521478,
+        "q_value": 0.44609236916929224,
+        "rejected": false
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7282717282717283,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_bind_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 0.14985014985014986,
+        "q_value": 0.33446553446553445,
+        "rejected": false
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.7472527472527473,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7542457542457542,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_combined_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 0.34165834165834164,
+        "q_value": 0.6833166833166833,
+        "rejected": false
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 0.003996003996003996,
+        "q_value": 0.012693189163777398,
+        "rejected": true
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.8161838161838162,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7482517482517482,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.11588411588411589,
+        "q_value": 0.28444282989737535,
+        "rejected": false
+      },
+      "operator_gate_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_probs[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_probs[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.10989010989010989,
+        "q_value": 0.282574568288854,
+        "rejected": false
+      },
+      "operator_probs[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7562437562437563,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_probs[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.001998001998001998,
+        "q_value": 0.006743256743256743,
+        "rejected": true
+      },
+      "operator_probs[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.3646353646353646,
+        "q_value": 0.7032253460824889,
+        "rejected": false
+      },
+      "operator_probs[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.015984015984015984,
+        "q_value": 0.04542825595457174,
+        "rejected": true
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7522477522477522,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.07092907092907093,
+        "q_value": 0.1915084915084915,
+        "rejected": false
+      },
+      "operator_suppress_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_random_site_auc": {
+        "p_value": 0.12487512487512488,
+        "q_value": 0.29318507579377145,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc": {
+        "p_value": 0.006993006993006993,
+        "q_value": 0.020979020979020976,
+        "rejected": true
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=component_patch_restoration": {
+        "p_value": 0.5094905094905094,
+        "q_value": 0.9487064659478451,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=full_layer_patch_restoration": {
+        "p_value": 0.7442557442557443,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5": {
+        "p_value": 0.000999000999000999,
+        "q_value": 0.0038532895675752817,
+        "rejected": true
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=mediation_fraction": {
+        "p_value": 0.993006993006993,
+        "q_value": 1.0,
+        "rejected": false
+      },
+      "operator_transform_out[0]|family=negation_scope|metric=target_vs_decoy_specificity": {
+        "p_value": 1.0,
+        "q_value": 1.0,
+        "rejected": false
+      }
+    },
+    "tested_cells": [
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_add_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_add_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_add_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_add_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_add_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_add_out[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_bind_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_bind_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_bind_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_bind_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_bind_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_bind_out[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_combined_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_combined_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_combined_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_combined_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_combined_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_combined_out[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_gate_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_gate_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_gate_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_gate_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_gate_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_gate_out[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_probs[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_probs[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_probs[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_probs[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_probs[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_probs[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_suppress_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_suppress_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_suppress_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_suppress_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_suppress_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_suppress_out[0]|family=negation_scope|metric=target_vs_decoy_specificity",
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_matched_control_auc",
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_random_site_auc",
+      "operator_transform_out[0]|family=negation_scope|metric=auc_minus_shuffled_auc",
+      "operator_transform_out[0]|family=negation_scope|metric=component_patch_restoration",
+      "operator_transform_out[0]|family=negation_scope|metric=full_layer_patch_restoration",
+      "operator_transform_out[0]|family=negation_scope|metric=linear_probe_auc_minus_0_5",
+      "operator_transform_out[0]|family=negation_scope|metric=mediation_fraction",
+      "operator_transform_out[0]|family=negation_scope|metric=target_vs_decoy_specificity"
+    ]
+  },
+  "feature_pooling": {
+    "strategy": "patch_positions_mean",
+    "task_aligned": true
+  },
+  "hypothesis": {
+    "fields": {
+      "CHECKPOINT_EXPECTATIONS": {
+        "candidate_checkpoint": "runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt",
+        "candidate_run": "operator_valued_attention_30m_seed2_rung500",
+        "canonical_control_checkpoint": "runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt",
+        "canonical_control_run": "standard_refactor_control_30m_seed2_rung500"
+      },
+      "CLAIM": "The promoted E004 operator-valued rung500 checkpoint exposes task-relevant negation information at operator-valued sites beyond seed-matched standard-attention controls, matched random-site nulls when feasible, shuffled-label nulls, and decoy contrasts.\n",
+      "CONTROL_THAT_RULES_IT_OUT": "Seed-matched standard_refactor_control_30m_seed2_rung500 probes, shuffled-label nulls, matched-dimensional random-site nulls, grouped template splits, x_decoy controls, and explicit feasibility caps for operator_probs when no compatible null/control site exists.\n",
+      "DISALLOWED_CLAIMS": [
+        "replicated finding",
+        "universal mechanism",
+        "architecture superiority",
+        "solved negation",
+        "lower superposition",
+        "representational novelty",
+        "candidate-to-control alignment proves cross-architecture universality"
+      ],
+      "EXPECTED_DIRECTION": "positive",
+      "FDR_SCOPE": "Every computed site x layer x task_family x metric cell in the run, including linear_probe_auc_minus_0_5, auc_minus_shuffled_auc, auc_minus_random_site_auc when available, auc_minus_matched_control_auc when available, target_vs_decoy_specificity, component_patch_restoration, full_layer_patch_restoration, and mediation_fraction when valid; not only the pre-registered target site and not only the primary metric.\n",
+      "FEATURE_POOLING_RULE": "Confirmatory candidate_mechanism_evidence requires task-aligned feature pooling (`patch_positions_mean` by default, or `answer_position`). Mean-sequence pooling is allowed only as exploratory/diagnostic evidence and caps the top claim.\n",
+      "KILL_CONDITION": [
+        "Any target site lacks real trained probe metrics under grouped template-level splitting.",
+        "Any confirmatory family has fewer than 50 contrast pairs or lacks deterministic provenance.",
+        "Decoy specificity fails after bootstrap confidence intervals and FDR-BH correction.",
+        "The canonical seed2 matched control is unavailable, overridden noncanonically, or seed-mismatched.",
+        "A random-site null is unavailable or not beaten for any site x layer x family cell claiming controlled evidence.",
+        "The low-dimensional operator_probs cell is interpreted as full-width d_model evidence or coerced into an activation null.",
+        "Feature pooling is not task-aligned to answer or patch positions in a confirmatory full run.",
+        "Restoration patching lacks valid clean/corrupt token alignment metadata.",
+        "Restoration or mediation metrics are unavailable, invalid, or have invalid denominators.",
+        "Results only support controlled_probe_signal when causal restoration/mediation fails but probe/null/control gates pass."
+      ],
+      "MATCHED_CONTROL_RULE": "The canonical seed2 standard-refactor rung500 control must be used for candidate_mechanism_evidence. Noncanonical overrides may be recorded for exploratory analysis but cap claims below candidate_mechanism_evidence.\n",
+      "MECHANISM_PROOF": "Candidate evidence requires grouped linear-probe AUC above chance, above shuffled labels, above a matched-dimensional random site where one exists, and above the canonical seed2 standard control for comparable full-width operator output sites, all under bootstrap confidence intervals and FDR-BH correction, plus target-vs-decoy specificity and valid component/full-layer restoration with a valid mediation_fraction.\n",
+      "MIN_N": 50,
+      "NEAREST_BORING_EXPLANATION": "Operator-valued sites may only reflect lexical frequency, prompt surface form, broad topic/adverb artifacts, ordinary standard-attention output features, or a low-dimensional routing probability that is not comparable to full-width activation sites.\n",
+      "PRIMARY_METRIC": "linear_probe_auc_minus_0_5",
+      "RANDOM_SITE_NULL_RULE": "Each site x layer cell needs a non-candidate site with matched feature dimensionality and compatible tensor kind. operator_probs may lack such a null because it is low-dimensional probability output, while full-width operator output sites may use matched full-width activation sites when available.\n",
+      "RESTORATION_AND_MEDIATION_REQUIREMENTS": "component_patch_restoration, full_layer_patch_restoration, and mediation_fraction must be valid and must pass FDR-BH correction. Task records must provide single-token GPT-2 target/foil metadata, valid clean/corrupt answer positions, and explicit patch token alignment when clean and corrupted prompts have different token lengths. Invalid restoration or mediation denominators force controlled_probe_signal or insufficient_evidence, not candidate_mechanism_evidence.\n",
+      "SPECIFICITY_GATE": "The bootstrap confidence interval for target_vs_decoy_specificity must exclude zero in the expected positive direction after FDR-BH correction.\n",
+      "STATISTICAL_TEST": "Grouped train/test split by template_id, bootstrap confidence intervals over grouped pairs, and FDR-BH over every computed site x layer x task_family x metric cell.\n",
+      "TARGET_SITES": [
+        {
+          "control_site": null,
+          "feasibility_note": "Low-dimensional operator probability vectors must not be coerced into d_model activation comparisons. This cell can provide exploratory/probe signal but cannot claim controlled evidence when matched random-site/control comparisons are unavailable.\n",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_probs",
+          "tensor_kind": "probability"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_add_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_suppress_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_gate_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_transform_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_bind_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "control_site": "attn_out",
+          "full_layer_comparator": "attn_out",
+          "layer": 0,
+          "site": "operator_combined_out",
+          "tensor_kind": "activation"
+        }
+      ],
+      "TASK_CONTRASTS": {
+        "x_decoy": "matched topic/shape/adverb control without negation",
+        "x_neg": "same template/filler action without negation",
+        "x_para": "negation preserved under marker variation using never",
+        "x_pos": "explicit negation with a not-style marker"
+      }
+    },
+    "path": "docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml"
+  },
+  "mode": {
+    "exploratory": false,
+    "probe_only": false
+  },
+  "preflight": {
+    "actual_control_checkpoint_path": "runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt",
+    "actual_control_config_path": "configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2_rung500.yaml",
+    "allow_diagnostic_with_missing_control": false,
+    "candidate_checkpoint_exists": true,
+    "candidate_checkpoint_path": "runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt",
+    "candidate_config_exists": true,
+    "candidate_config_path": "configs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2_rung500.yaml",
+    "canonical_control_checkpoint_path": "runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt",
+    "canonical_control_config_path": "configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2_rung500.yaml",
+    "control_available": true,
+    "control_override_used": false,
+    "control_reason": null,
+    "control_seed_matches_expected": true,
+    "feature_pooling": {
+      "confirmatory_candidate_evidence_cap": null,
+      "strategy": "patch_positions_mean",
+      "task_aligned": true
+    },
+    "force_noncanonical_control": false,
+    "hypothesis_doc_validation": {
+      "valid": true
+    },
+    "patching_metadata_validation": {
+      "required": true,
+      "valid": true
+    },
+    "selected_site_validation": {
+      "sites": [
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": null,
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_probs",
+          "tensor_kind": "probability"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_add_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_suppress_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_gate_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_transform_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_bind_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "operator_combined_out",
+          "tensor_kind": "activation"
+        }
+      ],
+      "valid": true
+    },
+    "task_suite_validation": {
+      "confirmatory_floor_met": true,
+      "deterministic_provenance": true,
+      "errors": [],
+      "restoration_token_metadata_valid": true,
+      "valid": true,
+      "warnings": []
+    }
+  },
+  "run": {
+    "attention_type": "operator_valued_attention",
+    "candidate": "operator_valued",
+    "checkpoint": "runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt",
+    "config": "configs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2_rung500.yaml",
+    "expected_checkpoint": "runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt",
+    "experiment_id": "E004_operator_binding_qkv_gauntlet",
+    "hypothesis_doc": "docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml",
+    "preset_run_name": "operator_valued_attention_30m_seed2_rung500",
+    "task_file": "configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml"
+  },
+  "schema_version": 1,
+  "sites_evaluated": [
+    "operator_probs[0]",
+    "operator_add_out[0]",
+    "operator_suppress_out[0]",
+    "operator_gate_out[0]",
+    "operator_transform_out[0]",
+    "operator_bind_out[0]",
+    "operator_combined_out[0]"
+  ],
+  "task_suite": {
+    "confirmatory_floor_met": true,
+    "deterministic_provenance": true,
+    "metadata": {
+      "candidate": "e004_operator_valued",
+      "created_at": "2026-07-01T00:00:00Z",
+      "filler_set": "negation_scope_fillers_v1",
+      "generation_seed": 2,
+      "generator_name": "attention_lab_tier1_negation_template_filler",
+      "generator_version": "1",
+      "restoration_token_metadata": "gpt2_single_token_true_false_v1",
+      "template_set": "e004_operator_valued_negation_prompts_v1"
+    },
+    "min_n": 50,
+    "pair_counts_by_family": {
+      "negation_scope": 50
+    },
+    "restoration_token_metadata_valid": true,
+    "validation_errors": [],
+    "validation_warnings": []
+  }
+}

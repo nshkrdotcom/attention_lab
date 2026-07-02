@@ -413,62 +413,50 @@ reports/mechanisms/probes/E004_operator_valued_rung500/
 
 may be retained as historical/partial evidence if it points to the same checkpoint, but the `_inventory_path` probe supersedes it for current analysis.
 
-### Tier-1 statistical mechanism-probe suite rules
+### Tier-1 mechanism probe suite rules
 
-The Tier-1 suite is implemented by:
-
-```bash
-uv run scripts/run_mechanism_probe_suite.py
-uv run scripts/summarize_mechanism_probe_suite.py --input-dir <suite-output-dir>
-```
-
-Read before modifying or running it:
+The Tier-1 mechanism probe suite is implemented under:
 
 ```text
+src/attention_lab/mechanisms/
+scripts/run_mechanism_probe_suite.py
+scripts/summarize_mechanism_probe_suite.py
+scripts/verify_tier1_mechanism_probe_suite.py
 docs/mechanism_probe_framework.md
 ```
 
-Initial executable presets are deliberately narrow:
+It is scoped to statistically controlled post-hoc mechanism checks for promoted E003/E004 candidates, not generic probing infrastructure.
+
+Committed Tier-1 hypothesis docs live under:
 
 ```text
-E003_qkv_architecture_gauntlet / differential
-E004_operator_binding_qkv_gauntlet / operator_valued
+docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
+docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
 ```
 
-Everything else in the suite registry must remain `stub_not_executable` until explicitly promoted by a future implementation pass.
+Committed deterministic Tier-1 task suites live under:
 
-Canonical Tier-1 matched controls are:
+```text
+configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
+```
+
+Regenerate or validate them with:
+
+```text
+scripts/generate_tier1_mechanism_tasks.py
+```
+
+Executable Tier-1 presets are:
 
 ```text
 E003 differential -> standard_refactor_control_30m_seed1_rung500
-E004 operator_valued -> standard_refactor_control_30m_seed2_rung500
+E004 operator-valued -> standard_refactor_control_30m_seed2_rung500
 ```
 
-Do not pair E004 against the E003 seed1 control. Control overrides must be recorded in `metrics.json`, and noncanonical or seed-mismatched controls must cap claims below `candidate_mechanism_evidence`.
+Do not pair E004 against the E003 seed1 control.
 
-Confirmatory suite runs require:
-
-```text
---hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-name>.yaml
-```
-
-Without a hypothesis doc, the run must use `--exploratory` and cannot make confirmatory claims.
-
-Confirmatory task records require:
-
-```text
-x_pos
-x_neg
-x_para
-x_decoy
-pair_id
-template_id
-family_id
-```
-
-Confirmatory suites require at least 50 contrast pairs per family and deterministic template/filler provenance or an equivalent validated committed suite. Do not silently drop missing decoys.
-
-The mechanism-probe claim ladder is scoped to this suite and is distinct from the project-wide experiment status vocabulary:
+The mechanism-probe claim ladder is scoped to probe outputs:
 
 ```text
 insufficient_evidence
@@ -477,13 +465,36 @@ controlled_probe_signal
 candidate_mechanism_evidence
 ```
 
-No suite claim gate may pass from raw activation deltas. Gates require trained probe metrics, grouped split discipline, bootstrap CIs, full-run FDR-BH correction over every computed site x layer x task_family x metric cell, matched controls, and target-vs-decoy specificity.
+Do not confuse `candidate_mechanism_evidence` with the broader project status vocabulary. It means single-seed, checkpoint-backed, statistically controlled mechanism evidence, not replication.
 
-Random-site nulls must be selected from actual captured activation shapes. Do not pad, truncate, project, or coerce incompatible dimensions. Missing random-site nulls are feasibility limits and must be reported as such.
+Confirmatory Tier-1 runs require:
 
-Alignment-to-control metrics compare a candidate to its own matched control only. They are not cross-architecture universality evidence and are not representational novelty evidence by themselves.
+```text
+docs/mechanisms/hypotheses/<name>.yaml
+minimum 50 contrast pairs per family
+grouped split discipline
+shuffled-label null
+random-site null when feasible for that site-layer cell
+matched control evidence
+bootstrap CIs
+FDR-BH over every computed site x layer x task_family x metric cell
+target-vs-decoy specificity
+valid patch/restoration and mediation metrics for candidate_mechanism_evidence
+task-aligned feature pooling for candidate_mechanism_evidence
+valid clean/corrupt restoration token alignment metadata for full patching
+```
 
-`candidate_mechanism_evidence` means single-seed, checkpoint-backed, statistically controlled evidence. It is not a replicated finding.
+Non-exploratory `--probe-only` is not confirmatory. Cheap probe-only staging must use `--exploratory --probe-only` and cannot reach `candidate_mechanism_evidence`.
+
+Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
+
+Confirmatory `--sites` values must be declared in the Tier-1 preset. Unknown exploratory sites require explicit `--site-spec-file` metadata and remain noncanonical. Do not invent tensor kinds, control sites, or full-layer comparators for unknown sites.
+
+Full-run restoration must patch only validated aligned token positions. Do not patch whole clean sequence caches into corrupted prompts when token lengths differ. Mean-sequence feature pooling is exploratory/diagnostic for Tier-1; confirmatory candidate evidence requires `answer_position` or `patch_positions_mean` pooling.
+
+Use `scripts/verify_tier1_mechanism_probe_suite.py --preflight-only` to check local checkpoint availability and input validity without fabricating artifacts. Use `scripts/summarize_mechanism_probe_suite.py --validate` to validate produced `metrics.json`, `claim_gates.json`, and `summary.md`.
+
+Do not make Tier-2/Tier-3 presets executable, do not build SAE purity infrastructure in Tier-1, and do not handwrite fake `metrics.json`, `claim_gates.json`, or `summary.md` artifacts.
 
 ## Experiment rules
 
@@ -569,9 +580,6 @@ reports/mechanisms/cross_experiment_candidate_report.md
 reports/mechanisms/probes/<probe_name>/activation_summary.json
 reports/mechanisms/probes/<probe_name>/intervention_summary.json
 reports/mechanisms/probes/<probe_name>/probe_report.md
-reports/mechanisms/probes/<suite_name>/metrics.json
-reports/mechanisms/probes/<suite_name>/claim_gates.json
-reports/mechanisms/probes/<suite_name>/summary.md
 ```
 
 Use statuses honestly:
@@ -961,11 +969,6 @@ uv run pytest tests/test_mechanism_backfill.py
 uv run pytest tests/test_mechanism_probe_cli.py
 uv run pytest tests/test_mechanism_capture_multi_qkv.py
 uv run pytest tests/test_attention_multi_qkv_global.py
-uv run pytest tests/test_mechanism_linear_probe.py
-uv run pytest tests/test_mechanism_controls.py
-uv run pytest tests/test_mechanism_claim_gates.py
-uv run pytest tests/test_mechanism_probe_suite_cli.py
-uv run pytest tests/test_mechanism_probe_summary.py
 ```
 
 If data is unavailable in the current environment, state that clearly and still run all non-data QC that is possible.

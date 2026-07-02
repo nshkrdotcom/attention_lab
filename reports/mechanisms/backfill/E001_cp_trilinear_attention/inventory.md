@@ -1,6 +1,6 @@
 # Mechanism Backfill Inventory: E001_cp_trilinear_attention
 
-- generated_from_commit: `17c563d01f8ba9d14583cb8e3df29040f4cf40df`
+- generated_from_commit: `39c40894b3f9ae195877a066db4966bb9fbcabd3`
 - repo_root_relative: `True`
 
 | run | attention | checkpoint | diagnostics | evidence | posthoc |

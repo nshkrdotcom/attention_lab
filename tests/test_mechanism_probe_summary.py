@@ -1,81 +1,138 @@
 from __future__ import annotations
 
-from attention_lab.mechanisms.claim_gates import ClaimGateResult
-from attention_lab.mechanisms.summary import render_summary_markdown
+from attention_lab.mechanisms.alignment import probe_direction_alignment
+import json
+
+from attention_lab.mechanisms.summary import render_summary, validate_suite_artifacts, write_suite_artifacts
 
 
-def test_summary_includes_required_caveats_and_status_vocabulary_boundary():
+def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     metrics = {
-        "schema_version": 1,
-        "experiment_id": "E003_qkv_architecture_gauntlet",
-        "candidate": "differential",
-        "checkpoint": "runs/screen/differential/checkpoints/ckpt_last.pt",
-        "canonical_control_checkpoint": "runs/screen/standard_seed1/checkpoints/ckpt_last.pt",
-        "actual_control_checkpoint": "runs/screen/standard_seed1/checkpoints/ckpt_last.pt",
-        "control_is_canonical": True,
-        "task_file": "tasks.json",
-        "task_suite_provenance": {"deterministic": True, "generator_name": "unit_test"},
-        "pair_counts_per_family": {"negation": 50},
-        "hypothesis_doc": "docs/mechanisms/hypotheses/test.yaml",
-        "exploratory": False,
-        "probe_only": True,
-        "sites_evaluated": ["branch_delta[0]"],
-        "random_site_null": {"available": False, "reason": "no non-candidate site has matched dimensionality"},
-        "alignment_to_control": {"available": True, "probe_direction_cosine_to_control": 0.2},
-        "fdr_scope": "every computed site x layer x task_family x metric cell in the run",
-        "limitations": ["single-seed"],
+        "run": {
+            "experiment_id": "E003_qkv_architecture_gauntlet",
+            "candidate": "differential",
+            "checkpoint": "ckpt.pt",
+            "task_file": "tasks.yaml",
+        },
+        "mode": {"exploratory": True, "probe_only": True},
+        "control": {
+            "expected_control_checkpoint": "seed1_control.pt",
+            "actual_control_checkpoint": "seed1_control.pt",
+            "canonical": True,
+            "override_used": False,
+            "available": True,
+        },
+        "task_suite": {
+            "deterministic_provenance": False,
+            "confirmatory_floor_met": False,
+            "pair_counts_by_family": {"negation": 4},
+            "validation_errors": [],
+            "validation_warnings": ["small"],
+        },
+        "fdr_bh": {"alpha": 0.05, "tested_cells": []},
+        "feature_pooling": {"strategy": "mean_sequence", "task_aligned": False},
+        "cells": {
+            "branch_delta[0]|family=negation": {
+                "site": "branch_delta",
+                "layer": 0,
+                "family_id": "negation",
+                "feature_pooling": {"strategy": "mean_sequence", "task_aligned": False},
+                "linear_probe_auc": 0.8,
+                "auc_minus_shuffled_auc": 0.2,
+                "auc_minus_random_site_auc": None,
+                "auc_minus_matched_control_auc": 0.1,
+                "target_vs_decoy_specificity": 0.05,
+                "random_site_null": {
+                    "random_site_null_available": False,
+                    "reason": "no matched dimensionality",
+                },
+                "alignment_to_control": {
+                    "available": True,
+                    "probe_direction_cosine_to_control": 0.3,
+                },
+                "matched_control": {"available": True},
+                "patching": {"valid": False, "reason": "probe-only mode"},
+                "mediation_fraction": {"valid": False, "mediation_fraction": None},
+            }
+        },
     }
-    gate = ClaimGateResult(
-        status="exploratory_probe_signal",
-        status_vocabulary="mechanism_probe_scoped",
-        reasons=["probe-only runs cannot reach candidate_mechanism_evidence"],
-        caps=["probe_only"],
-    )
+    claim_gates = {
+        "overall_status": "exploratory_probe_signal",
+        "cells": {"branch_delta[0]|family=negation": {"status": "exploratory_probe_signal", "blockers": []}},
+    }
 
-    summary = render_summary_markdown(metrics, gate)
+    summary = render_summary(metrics, claim_gates)
 
-    assert "mechanism-probe-specific" in summary
-    assert "global experiment status vocabulary" in summary
+    assert "mechanism-probe-specific claim ladder" in summary
     assert "single-seed" in summary
-    assert "not replicated" in summary
-    assert "probe-only" in summary
-    assert "not causal" in summary
-    assert "candidate-to-control alignment is not cross-architecture universality evidence" in summary
-    assert "random-site null feasibility limit" in summary
+    assert "not a replicated finding" in summary
+    assert "Candidate-to-control alignment is not cross-architecture universality evidence" in summary
+    assert "feasibility limits" in summary
+    assert "feature_pooling" in summary
+    assert "FDR-BH reports both tested metric cells and invalid/unavailable cells" in summary
+    assert "Probe-only mode skipped" in summary
+    assert "Exploratory mode capped" in summary
 
 
-def test_summary_distinguishes_noncanonical_controls_and_missing_decoys():
+def test_suite_artifact_validation_checks_required_schema(tmp_path):
     metrics = {
         "schema_version": 1,
-        "experiment_id": "E004_operator_binding_qkv_gauntlet",
-        "candidate": "operator_valued",
-        "checkpoint": "candidate.pt",
-        "canonical_control_checkpoint": "seed2.pt",
-        "actual_control_checkpoint": "seed1.pt",
-        "control_is_canonical": False,
-        "control_noncanonical_reason": "override does not match canonical seed2 control",
-        "task_file": "tasks.json",
-        "task_suite_provenance": {"deterministic": False},
-        "pair_counts_per_family": {"negation": 12},
-        "hypothesis_doc": None,
-        "exploratory": True,
-        "probe_only": False,
-        "sites_evaluated": ["operator_probs[0]"],
-        "missing_decoys": True,
-        "random_site_null": {"available": True},
-        "alignment_to_control": {"available": False, "reason": "shape mismatch"},
-        "fdr_scope": "every computed site x layer x task_family x metric cell in the run",
+        "run": {"experiment_id": "E003", "candidate": "differential", "checkpoint": "ckpt.pt", "task_file": "tasks.yaml"},
+        "mode": {"exploratory": True, "probe_only": True},
+        "control": {"available": True},
+        "task_suite": {},
+        "sites_evaluated": ["branch_delta[0]"],
+        "feature_pooling": {"strategy": "mean_sequence", "task_aligned": False},
+        "fdr_bh": {
+            "comparison_family": "every computed (site x layer x task_family x metric) cell in the run",
+            "tested_cells": [],
+            "invalid_or_unavailable_cells": [],
+            "results": {},
+        },
+        "cells": {
+            "branch_delta[0]|family=negation": {
+                "site": "branch_delta",
+                "layer": 0,
+                "family_id": "negation",
+                "feature_pooling": {"strategy": "mean_sequence", "task_aligned": False},
+                "linear_probe_auc": 0.5,
+                "random_site_null": {},
+                "matched_control": {},
+                "alignment_to_control": {},
+                "patching": {},
+                "mediation_fraction": {},
+            }
+        },
     }
-    gate = ClaimGateResult(
-        status="insufficient_evidence",
-        status_vocabulary="mechanism_probe_scoped",
-        reasons=["noncanonical control"],
-        caps=["exploratory", "noncanonical_control"],
-    )
+    claim_gates = {
+        "overall_status": "exploratory_probe_signal",
+        "status_vocabulary": ["insufficient_evidence", "exploratory_probe_signal"],
+        "status_vocabulary_scope": "mechanism-probe scoped",
+        "cells": {"branch_delta[0]|family=negation": {"status": "exploratory_probe_signal", "blockers": []}},
+    }
 
-    summary = render_summary_markdown(metrics, gate)
+    write_suite_artifacts(tmp_path, metrics, claim_gates)
+    assert validate_suite_artifacts(tmp_path) == []
 
-    assert "noncanonical control" in summary
-    assert "missing decoys" in summary
-    assert "hand-authored or non-provenance task file" in summary
-    assert "not representational novelty evidence by itself" in summary
+    broken = json.loads((tmp_path / "metrics.json").read_text(encoding="utf-8"))
+    del broken["cells"]["branch_delta[0]|family=negation"]["feature_pooling"]
+    (tmp_path / "metrics.json").write_text(json.dumps(broken), encoding="utf-8")
+    errors = validate_suite_artifacts(tmp_path)
+    assert any("feature_pooling" in error for error in errors)
+
+
+def test_alignment_metric_unavailable_on_shape_mismatch_and_not_novelty_claim():
+    result = probe_direction_alignment([1.0, 0.0], [1.0, 0.0, 0.0])
+    payload = result.to_dict()
+
+    assert not result.available
+    assert "shape mismatch" in (result.reason or "")
+    assert "not representational novelty evidence" in payload["interpretation"]
+
+
+def test_alignment_metric_emits_cosine_when_shapes_match():
+    result = probe_direction_alignment([1.0, 0.0], [0.0, 1.0])
+
+    assert result.available
+    assert result.probe_direction_cosine_to_control == 0.0
+    assert result.probe_direction_alignment_abs == 0.0

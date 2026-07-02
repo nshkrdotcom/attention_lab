@@ -254,18 +254,52 @@ class ActivationRecorder:
         return spec.source_cache.records[source_key].tensor
 
     def _patch_tensor(self, tensor: torch.Tensor, replacement: torch.Tensor, spec: InterventionSpec) -> torch.Tensor:
-        if replacement.shape != tensor.shape:
-            raise ValueError(f"replacement shape {tuple(replacement.shape)} does not match {tuple(tensor.shape)}")
         patched = tensor.clone()
         batch_index = spec.batch_indices if spec.batch_indices is not None else slice(None)
-        token_index = spec.token_indices if spec.token_indices is not None else slice(None)
-        if tensor.ndim >= 3:
-            patched[batch_index, token_index, ...] = replacement[batch_index, token_index, ...]
+        target_token_index = spec.token_indices if spec.token_indices is not None else slice(None)
+        source_token_index = spec.source_token_indices if spec.source_token_indices is not None else target_token_index
+        if spec.source_token_indices is None and spec.token_indices is None:
+            if replacement.shape != tensor.shape:
+                raise ValueError(f"replacement shape {tuple(replacement.shape)} does not match {tuple(tensor.shape)}")
+            return replacement.clone()
+        if spec.source_token_indices is not None and spec.token_indices is None:
+            raise ValueError("source_token_indices require target token_indices")
+        if isinstance(target_token_index, list) and isinstance(source_token_index, list):
+            if len(target_token_index) != len(source_token_index):
+                raise ValueError("source_token_indices and token_indices must have matching lengths")
+        _validate_patch_shape(tensor, replacement)
+        if tensor.ndim == 4:
+            patched[batch_index, :, target_token_index, ...] = replacement[batch_index, :, source_token_index, ...]
+        elif tensor.ndim >= 3:
+            patched[batch_index, target_token_index, ...] = replacement[batch_index, source_token_index, ...]
         elif tensor.ndim == 2:
-            patched[batch_index, token_index] = replacement[batch_index, token_index]
+            patched[batch_index, target_token_index] = replacement[batch_index, source_token_index]
         else:
+            if replacement.shape != tensor.shape:
+                raise ValueError(f"replacement shape {tuple(replacement.shape)} does not match {tuple(tensor.shape)}")
             patched = replacement.clone()
         return patched
+
+
+def _validate_patch_shape(tensor: torch.Tensor, replacement: torch.Tensor) -> None:
+    if tensor.ndim != replacement.ndim:
+        raise ValueError(f"replacement rank {replacement.ndim} does not match target rank {tensor.ndim}")
+    if tensor.ndim <= 2:
+        if tensor.shape[0] != replacement.shape[0]:
+            raise ValueError(
+                f"replacement batch shape {tuple(replacement.shape)} does not match target {tuple(tensor.shape)}"
+            )
+        return
+    token_dim = 2 if tensor.ndim == 4 else 1
+    for dim, (target_size, source_size) in enumerate(zip(tensor.shape, replacement.shape, strict=True)):
+        if dim == token_dim:
+            continue
+        if target_size != source_size:
+            raise ValueError(
+                "replacement shape "
+                f"{tuple(replacement.shape)} is incompatible with target {tuple(tensor.shape)} "
+                f"outside token dimension"
+            )
 
 
 def capture_activations(

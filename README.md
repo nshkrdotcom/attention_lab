@@ -608,13 +608,13 @@ configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_
 configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml
 ```
 
-Current local state, as summarized in the dynamic status file:
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, backfill currently marks only the E002 standard-refactor control checkpoint as locally available; earlier notes may refer to candidate checkpoints that are not present in every clone.
 
 ```text
-standard_refactor_control_30m_seed1                  checkpoint available
-multi_qkv_static_3track_global_30m_seed1             checkpoint available
-multi_qkv_train_rotation_3track_global_30m_seed1     checkpoint available
-multi_qkv_position_rotation_3track_global_30m_seed1  checkpoint available
+standard_refactor_control_30m_seed1                  checkpoint available in this working copy
+multi_qkv_static_3track_global_30m_seed1             restore checkpoint before local recomputation
+multi_qkv_train_rotation_3track_global_30m_seed1     restore checkpoint before local recomputation
+multi_qkv_position_rotation_3track_global_30m_seed1  restore checkpoint before local recomputation
 ```
 
 Validate:
@@ -734,20 +734,20 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state, as summarized in the dynamic status file:
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 rung checkpoint paths are absent, so backfill marks them checkpoint-unavailable until restored.
 
 ```text
-differential_qkv_anti_value_30m_seed1_rung020       checkpoint available under runs/screen
-differential_qkv_anti_value_30m_seed1_rung150       checkpoint available under runs/screen
-differential_qkv_anti_value_30m_seed1_rung500       checkpoint available under runs/screen
+differential_qkv_anti_value_30m_seed1_rung020       restore checkpoint before local recomputation
+differential_qkv_anti_value_30m_seed1_rung150       restore checkpoint before local recomputation
+differential_qkv_anti_value_30m_seed1_rung500       restore checkpoint before local recomputation
 
-scope_gated_qkv_30m_seed1_rung020                   checkpoint available under runs/screen
-scope_gated_qkv_30m_seed1_rung150                   checkpoint available under runs/screen
-scope_gated_qkv_30m_seed1_rung500                   checkpoint available under runs/screen
+scope_gated_qkv_30m_seed1_rung020                   restore checkpoint before local recomputation
+scope_gated_qkv_30m_seed1_rung150                   restore checkpoint before local recomputation
+scope_gated_qkv_30m_seed1_rung500                   restore checkpoint before local recomputation
 
-standard_refactor_control_30m_seed1_rung020         checkpoint available under runs/screen
-standard_refactor_control_30m_seed1_rung150         checkpoint available under runs/screen
-standard_refactor_control_30m_seed1_rung500         checkpoint available under runs/screen
+standard_refactor_control_30m_seed1_rung020         restore checkpoint before local recomputation
+standard_refactor_control_30m_seed1_rung150         restore checkpoint before local recomputation
+standard_refactor_control_30m_seed1_rung500         restore checkpoint before local recomputation
 ```
 
 Canonical current post-hoc probes:
@@ -791,7 +791,7 @@ Do not pass `--allow-full` unless intentionally approving long full runs.
 
 ### E003 interpretation boundary
 
-E003 has checkpoint-backed rung evidence and post-hoc probe artifacts. That supports deeper mechanism investigation.
+E003 has committed rung/probe/Tier-1 report artifacts, but local checkpoint-backed recomputation requires the `runs/screen` checkpoints to exist in the working copy.
 
 It does not prove that differential or scope-gated streams form semantically clean mechanisms.
 
@@ -833,22 +833,22 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state, as summarized in the dynamic status file:
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 rung checkpoint paths are absent, so backfill marks them checkpoint-unavailable until restored.
 
 ```text
-operator_valued_attention_30m_seed2_rung020                    checkpoint available under runs/screen
-operator_valued_attention_30m_seed2_rung150                    checkpoint available under runs/screen
-operator_valued_attention_30m_seed2_rung500                    checkpoint available under runs/screen
+operator_valued_attention_30m_seed2_rung020                    restore checkpoint before local recomputation
+operator_valued_attention_30m_seed2_rung150                    restore checkpoint before local recomputation
+operator_valued_attention_30m_seed2_rung500                    restore checkpoint before local recomputation
 
-dynamic_value_query_conditioned_attention_30m_seed2_rung020    checkpoint available under runs/screen
-dynamic_value_query_conditioned_attention_30m_seed2_rung150    checkpoint available under runs/screen
-dynamic_value_query_conditioned_attention_30m_seed2_rung500    checkpoint available under runs/screen
+dynamic_value_query_conditioned_attention_30m_seed2_rung020    restore checkpoint before local recomputation
+dynamic_value_query_conditioned_attention_30m_seed2_rung150    restore checkpoint before local recomputation
+dynamic_value_query_conditioned_attention_30m_seed2_rung500    restore checkpoint before local recomputation
 
-q3k3v3_role_routed_attention_30m_seed2_rung020                 checkpoint available under runs/screen
+q3k3v3_role_routed_attention_30m_seed2_rung020                 restore checkpoint before local recomputation
 
-standard_refactor_control_30m_seed2_rung020                    checkpoint available under runs/screen
-standard_refactor_control_30m_seed2_rung150                    checkpoint available under runs/screen
-standard_refactor_control_30m_seed2_rung500                    checkpoint available under runs/screen
+standard_refactor_control_30m_seed2_rung020                    restore checkpoint before local recomputation
+standard_refactor_control_30m_seed2_rung150                    restore checkpoint before local recomputation
+standard_refactor_control_30m_seed2_rung500                    restore checkpoint before local recomputation
 ```
 
 Canonical current E004 operator-valued probe:
@@ -905,7 +905,7 @@ reports/experiments/E004_operator_binding_qkv_gauntlet/
 
 ### E004 interpretation boundary
 
-E004 operator-valued has checkpoint-backed rung evidence and a richer post-hoc probe. That supports deeper operator-mode mechanism investigation.
+E004 operator-valued has committed rung/probe/Tier-1 report artifacts, but local checkpoint-backed recomputation requires the `runs/screen` checkpoints to exist in the working copy.
 
 It does not prove that operator probabilities or operator-specific outputs are semantically clean mechanisms.
 
@@ -1138,10 +1138,9 @@ It provides:
 * `ActivationCache` records;
 * activation capture during real forward passes;
 * zero, mean-ablation, scale, replace, and cache-patching interventions;
-* E001-E004 mechanism backfill inventories;
+* E001–E004 mechanism backfill inventories;
 * generated cross-experiment mechanism candidate reports;
 * post-hoc probe CLI;
-* Tier-1 statistical mechanism-probe suite for the initial E003/E004 targets;
 * strict missing/deployed hook-site checks.
 
 This layer is native to the local GPT and attention modules. TransformerLens compatibility is an adapter goal, not a prerequisite.
@@ -1336,20 +1335,109 @@ Use `--sites` for capture sites and `--intervention-sites` when only some captur
 
 This matters for discrete route/index sites such as Multi-QKV `selected_track`.
 
-### Tier-1 statistical mechanism-probe suite
+### Tier-1 mechanism probe suite
 
-The Tier-1 suite is the checkpoint-backed statistical follow-up path for the initial
-E003/E004 mechanism candidates. It is implemented, but it does not create evidence
-until it is actually run against real checkpoints, task suites, controls, and
-hypothesis docs.
+The Tier-1 suite is the statistically controlled E003/E004 follow-up path. It adds trained linear probes, grouped train/test splitting, shuffled-label nulls, random-site nulls, matched controls, bootstrap CIs, FDR-BH correction, target-vs-decoy specificity gates, optional patch/restoration metrics, alignment-to-control metrics, and mechanism-probe claim gates.
 
-Read the full contract first:
+Read first:
 
 ```text
 docs/mechanism_probe_framework.md
 ```
 
-Suite artifacts are:
+Committed Tier-1 inputs:
+
+```text
+docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
+docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
+```
+
+Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`. The committed suites include GPT-2 single-token target/foil metadata plus clean/corrupt answer positions and explicit patch-token alignment for restoration.
+
+Executable Tier-1 presets:
+
+```text
+E003 differential -> standard_refactor_control_30m_seed1_rung500
+E004 operator-valued -> standard_refactor_control_30m_seed2_rung500
+```
+
+E003 exploratory cheap scan:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E003_qkv_architecture_gauntlet \
+  --candidate differential \
+  --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path \
+  --exploratory \
+  --probe-only \
+  --feature-pooling mean_sequence \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 1
+```
+
+E003 confirmatory full run:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E003_qkv_architecture_gauntlet \
+  --candidate differential \
+  --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 1
+```
+
+E004 exploratory cheap scan:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E004_operator_binding_qkv_gauntlet \
+  --candidate operator_valued \
+  --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path \
+  --exploratory \
+  --probe-only \
+  --feature-pooling mean_sequence \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 2
+```
+
+E004 confirmatory full run:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E004_operator_binding_qkv_gauntlet \
+  --candidate operator_valued \
+  --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 2
+```
+
+Outputs:
 
 ```text
 metrics.json
@@ -1357,64 +1445,23 @@ claim_gates.json
 summary.md
 ```
 
-The mechanism-probe claim ladder is scoped to this suite:
-
-```text
-insufficient_evidence
-exploratory_probe_signal
-controlled_probe_signal
-candidate_mechanism_evidence
-```
-
-This is distinct from the project-wide experiment status vocabulary.
-
-Initial executable Tier-1 presets:
-
-```text
-E003_qkv_architecture_gauntlet / differential
-E004_operator_binding_qkv_gauntlet / operator_valued
-```
-
-Canonical matched controls:
-
-```text
-E003 differential -> standard_refactor_control_30m_seed1_rung500
-E004 operator_valued -> standard_refactor_control_30m_seed2_rung500
-```
-
-Exploratory cheap scan pattern:
+Validate generated suite artifacts with:
 
 ```bash
-uv run scripts/run_mechanism_probe_suite.py \
-  --experiment-id E003_qkv_architecture_gauntlet \
-  --candidate differential \
-  --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
-  --output-dir reports/mechanisms/probes/E003_differential_probe_only_inventory_path \
-  --exploratory \
-  --probe-only \
-  --control-mode matched \
-  --min-n 100 \
-  --bootstrap-samples 1000 \
-  --fdr-alpha 0.05 \
-  --seed 1 \
-  --device cuda
+uv run scripts/summarize_mechanism_probe_suite.py \
+  --output-dir reports/mechanisms/probes/<suite-output-dir> \
+  --validate
 ```
 
-Confirmatory runs require:
-
-```text
---hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-name>.yaml
-```
-
-Confirmatory task files must provide `x_pos`, `x_neg`, `x_para`, `x_decoy`,
-`pair_id`, `template_id`, and `family_id`, with at least 50 contrast pairs per family.
-
-Regenerate an existing suite summary:
+Preflight local checkpoint availability without fabricating artifacts:
 
 ```bash
-uv run scripts/summarize_mechanism_probe_suite.py --input-dir <suite-output-dir>
+uv run scripts/verify_tier1_mechanism_probe_suite.py --preflight-only
 ```
+
+`candidate_mechanism_evidence` is mechanism-probe scoped and means single-seed, checkpoint-backed, statistically controlled evidence. It is not replication and not a global experiment status.
+
+Confirmatory runs use strict preset site resolution. Unknown confirmatory `--sites` values fail before model execution; exploratory unknown sites require explicit `--site-spec-file` metadata and remain noncanonical. E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides and missing-control diagnostic runs are recorded but cap claims below evidence statuses.
 
 ### Strict capture mode
 
@@ -1469,14 +1516,6 @@ intervention_summary.json
 probe_report.md
 ```
 
-A Tier-1 mechanism-probe suite directory contains:
-
-```text
-metrics.json
-claim_gates.json
-summary.md
-```
-
 A run is not evidence until the relevant train, eval, summarize, verify, and mechanism-probe commands have actually passed.
 
 ## Testing and quality checks
@@ -1525,24 +1564,15 @@ uv run pytest tests/test_mechanism_capture_multi_qkv.py
 uv run pytest tests/test_attention_multi_qkv_global.py
 ```
 
-Targeted tests for the Tier-1 mechanism-probe suite:
-
-```bash
-uv run pytest tests/test_mechanism_linear_probe.py
-uv run pytest tests/test_mechanism_controls.py
-uv run pytest tests/test_mechanism_claim_gates.py
-uv run pytest tests/test_mechanism_probe_suite_cli.py
-uv run pytest tests/test_mechanism_probe_summary.py
-```
-
 Use targeted tests while developing, but do not treat targeted tests as a substitute for the full QC set before committing.
 
 Latest recorded QC in the dynamic status note:
 
 ```text
 ruff: passed
-pytest: 388 passed, 1 skipped
+pytest: 452 passed, 1 skipped
 targeted tests: passed
+Tier-1 verifier: blocked because local E003/E004 rung checkpoints are absent
 ```
 
 ## Known limitations
@@ -1559,20 +1589,18 @@ targeted tests: passed
 * The queue doctor is a readiness check only; it does not launch training.
 * Missing historical activations cannot be reconstructed unless tensors were saved or a checkpoint can recompute them.
 * Checkpoint availability means post-hoc probing is possible, not that the architecture hypothesis is supported.
-* Current quick probes are activation/intervention plumbing, not statistical mechanism evidence.
-* The Tier-1 mechanism-probe framework is implemented, but suite outputs are evidence only after the suite is run on real checkpoint/task/control artifacts.
+* Current quick probes are activation/intervention plumbing. The Tier-1 mechanism probe suite is the statistically controlled path for E003/E004 mechanism claims.
 
 ## Current next work
 
-The E001-E004 backfill / quick-probe artifact phase is complete.
+The E001-E004 backfill / quick-probe artifact phase is complete. The Tier-1 mechanism-probe framework now exists for staged E003/E004 follow-up.
 
-Next mechanism work should run the implemented Tier-1 suite against pre-registered
-task suites and hypothesis docs for:
+Initial executable Tier-1 targets:
 
 - E003 differential_qkv_anti_value_30m_seed1_rung500
 - E004 operator_valued_attention_30m_seed2_rung500
 
-Other E001-E004 follow-ups remain useful, but they should not displace the initial Tier-1 suite runs.
+Other E001-E004 follow-ups remain useful, but they should not displace restoring/rerunning the initial Tier-1 suite targets when checkpoint-backed recomputation is needed.
 
 ## First-day checklist
 

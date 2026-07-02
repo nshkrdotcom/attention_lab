@@ -5,120 +5,240 @@ from pathlib import Path
 
 import numpy as np
 
-from attention_lab.mechanisms.presets import MechanismPreset
+from attention_lab.mechanisms.presets import ControlPreset, MechanismProbePreset
+from attention_lab.mechanisms.presets import SitePreset
 
 
 @dataclass(frozen=True)
 class ControlResolution:
-    expected_run_name: str | None
-    canonical_control_checkpoint: Path | None
-    canonical_control_config: Path | None
-    control_checkpoint: Path | None
-    control_config: Path | None
-    is_override: bool
-    is_canonical: bool
-    noncanonical_reason: str | None
+    expected_control: ControlPreset | None
+    config_path: Path | None
+    checkpoint_path: Path | None
+    mode: str
+    canonical: bool
+    override_used: bool
+    available: bool
+    force_noncanonical: bool
+    reason: str | None = None
 
 
 @dataclass(frozen=True)
-class ActivationMatrix:
-    site: str
-    X: np.ndarray
-    tensor_kind: str
-    shape: tuple[int, ...]
-
-    @property
-    def feature_dim(self) -> int:
-        if self.X.ndim != 2:
-            raise ValueError("activation matrix must be 2D")
-        return int(self.X.shape[1])
-
-
-@dataclass(frozen=True)
-class RandomSiteNullSelection:
+class RandomSiteSelection:
     available: bool
     selected_site: str | None
-    reason: str | None
+    selected_feature_dim: int | None
     candidate_site: str
-    candidate_dim: int
-    selected_dim: int | None
-    selected_tensor_kind: str | None
+    candidate_feature_dim: int
+    candidate_tensor_kind: str
+    considered_sites: tuple[dict[str, object], ...] = ()
+    reason: str | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "random_site_null_available": self.available,
+            "selected_site": self.selected_site,
+            "selected_feature_dim": self.selected_feature_dim,
+            "candidate_site": self.candidate_site,
+            "candidate_feature_dim": self.candidate_feature_dim,
+            "candidate_tensor_kind": self.candidate_tensor_kind,
+            "considered_sites": list(self.considered_sites),
+            "reason": self.reason,
+        }
 
 
 def resolve_control(
-    preset: MechanismPreset,
+    preset: MechanismProbePreset,
     *,
-    control_checkpoint: str | Path | None = None,
-    control_config: str | Path | None = None,
+    control_mode: str,
+    control_config: str | Path | None,
+    control_checkpoint: str | Path | None,
     force_noncanonical: bool = False,
 ) -> ControlResolution:
-    canonical = preset.matched_control
-    expected_run_name = canonical.run_name if canonical is not None else None
-    canonical_checkpoint = canonical.checkpoint if canonical is not None else None
-    canonical_config = canonical.config if canonical is not None else None
-    actual_checkpoint = Path(control_checkpoint) if control_checkpoint is not None else canonical_checkpoint
-    actual_config = Path(control_config) if control_config is not None else canonical_config
-    is_override = control_checkpoint is not None or control_config is not None
-    is_canonical = canonical is not None and actual_checkpoint == canonical_checkpoint and actual_config == canonical_config
-    reason = None
-    if canonical is None:
-        is_canonical = False
-        reason = "preset has no canonical matched control"
-    elif is_override and not is_canonical:
-        reason = (
-            "override does not match canonical matched-control pairing "
-            f"{expected_run_name}; full canonical evidence claims remain capped"
+    if control_mode not in {"matched", "none"}:
+        raise ValueError("--control-mode must be one of: matched, none")
+    expected = preset.matched_control
+    if control_mode == "none":
+        return ControlResolution(
+            expected_control=expected,
+            config_path=None,
+            checkpoint_path=None,
+            mode=control_mode,
+            canonical=False,
+            override_used=False,
+            available=False,
+            force_noncanonical=force_noncanonical,
+            reason="matched control disabled; candidate mechanism evidence is unavailable",
         )
-        if force_noncanonical:
-            reason += " even with force_noncanonical=true"
+    if expected is None:
+        return ControlResolution(
+            expected_control=None,
+            config_path=Path(control_config) if control_config else None,
+            checkpoint_path=Path(control_checkpoint) if control_checkpoint else None,
+            mode=control_mode,
+            canonical=False,
+            override_used=bool(control_config or control_checkpoint),
+            available=False,
+            force_noncanonical=force_noncanonical,
+            reason="preset has no canonical matched control",
+        )
+
+    config_path = Path(control_config) if control_config else expected.config_path
+    checkpoint_path = Path(control_checkpoint) if control_checkpoint else expected.checkpoint_path
+    override_used = bool(control_config or control_checkpoint)
+    canonical = config_path == expected.config_path and checkpoint_path == expected.checkpoint_path
+    available = config_path.exists() and checkpoint_path.exists()
+    reason = None
+    if not available:
+        missing = []
+        if not config_path.exists():
+            missing.append(f"config missing: {config_path}")
+        if not checkpoint_path.exists():
+            missing.append(f"checkpoint missing: {checkpoint_path}")
+        reason = "; ".join(missing)
+    elif not canonical:
+        reason = "control override does not match the canonical seed-matched pairing"
     return ControlResolution(
-        expected_run_name=expected_run_name,
-        canonical_control_checkpoint=canonical_checkpoint,
-        canonical_control_config=canonical_config,
-        control_checkpoint=actual_checkpoint,
-        control_config=actual_config,
-        is_override=is_override,
-        is_canonical=is_canonical,
-        noncanonical_reason=reason,
+        expected_control=expected,
+        config_path=config_path,
+        checkpoint_path=checkpoint_path,
+        mode=control_mode,
+        canonical=canonical,
+        override_used=override_used,
+        available=available,
+        force_noncanonical=force_noncanonical,
+        reason=reason,
     )
 
 
-def choose_random_site_null(
+def is_seed_mismatched(preset: MechanismProbePreset, resolution: ControlResolution) -> bool:
+    if resolution.canonical or resolution.checkpoint_path is None:
+        return False
+    expected = resolution.expected_control
+    if expected is None:
+        return True
+    expected_seed = _seed_token(expected.run_name)
+    actual_seed = _seed_token(str(resolution.checkpoint_path))
+    return expected_seed is not None and actual_seed is not None and expected_seed != actual_seed
+
+
+def select_random_site_null(
     *,
-    candidate_site: str,
-    candidate: ActivationMatrix,
-    available: dict[str, ActivationMatrix],
+    candidate: SitePreset,
+    candidate_key: str,
+    feature_shapes: dict[str, tuple[int, int]],
+    pool: tuple[SitePreset, ...],
     seed: int,
-) -> RandomSiteNullSelection:
-    candidate_dim = candidate.feature_dim
-    candidates = [
-        matrix
-        for site, matrix in available.items()
-        if site != candidate_site
-        and matrix.feature_dim == candidate_dim
-        and matrix.tensor_kind == candidate.tensor_kind
-    ]
-    if not candidates:
-        return RandomSiteNullSelection(
+) -> RandomSiteSelection:
+    candidate_shape = feature_shapes.get(candidate_key)
+    if candidate_shape is None:
+        return RandomSiteSelection(
             available=False,
             selected_site=None,
+            selected_feature_dim=None,
+            candidate_site=candidate_key,
+            candidate_feature_dim=0,
+            candidate_tensor_kind=candidate.tensor_kind,
+            considered_sites=(),
+            reason="candidate site features are unavailable",
+        )
+    candidate_dim = candidate_shape[1]
+    compatible = []
+    considered: list[dict[str, object]] = []
+    for site in pool:
+        key = site.key
+        if key == candidate_key or site.site == candidate.site:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": candidate_dim if key == candidate_key else None,
+                    "accepted": False,
+                    "reason": "candidate site cannot be its own random-site null",
+                }
+            )
+            continue
+        shape = feature_shapes.get(key)
+        if shape is None:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": None,
+                    "accepted": False,
+                    "reason": "features unavailable",
+                }
+            )
+            continue
+        if shape[1] != candidate_dim:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": int(shape[1]),
+                    "accepted": False,
+                    "reason": f"feature dimension mismatch: candidate={candidate_dim}, random={shape[1]}",
+                }
+            )
+            continue
+        if not _compatible_site_type(candidate.tensor_kind, site.tensor_kind):
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": int(shape[1]),
+                    "accepted": False,
+                    "reason": f"incompatible tensor kind: candidate={candidate.tensor_kind}, random={site.tensor_kind}",
+                }
+            )
+            continue
+        considered.append(
+            {
+                "site": key,
+                "tensor_kind": site.tensor_kind,
+                "feature_dim": int(shape[1]),
+                "accepted": True,
+                "reason": "matched dimensionality and compatible tensor kind",
+            }
+        )
+        compatible.append((key, shape[1]))
+    if not compatible:
+        return RandomSiteSelection(
+            available=False,
+            selected_site=None,
+            selected_feature_dim=None,
+            candidate_site=candidate_key,
+            candidate_feature_dim=candidate_dim,
+            candidate_tensor_kind=candidate.tensor_kind,
+            considered_sites=tuple(considered),
             reason=(
-                "no non-candidate site has matched dimensionality and compatible tensor kind; "
-                "random-site null feasibility is limited by actual activation shapes"
+                "no non-candidate random-site null with matched dimensionality and compatible site type; "
+                "this is a null-feasibility limit, not an implementation failure"
             ),
-            candidate_site=candidate_site,
-            candidate_dim=candidate_dim,
-            selected_dim=None,
-            selected_tensor_kind=None,
         )
     rng = np.random.default_rng(seed)
-    selected = candidates[int(rng.integers(0, len(candidates)))]
-    return RandomSiteNullSelection(
+    index = int(rng.integers(0, len(compatible)))
+    selected_site, selected_dim = compatible[index]
+    return RandomSiteSelection(
         available=True,
-        selected_site=selected.site,
-        reason=None,
-        candidate_site=candidate_site,
-        candidate_dim=candidate_dim,
-        selected_dim=selected.feature_dim,
-        selected_tensor_kind=selected.tensor_kind,
+        selected_site=selected_site,
+        selected_feature_dim=selected_dim,
+        candidate_site=candidate_key,
+        candidate_feature_dim=candidate_dim,
+        candidate_tensor_kind=candidate.tensor_kind,
+        considered_sites=tuple(considered),
     )
+
+
+def _seed_token(value: str) -> str | None:
+    for part in value.replace("/", "_").split("_"):
+        if part.startswith("seed") and part[4:].isdigit():
+            return part
+    return None
+
+
+def _compatible_site_type(candidate_kind: str, random_kind: str) -> bool:
+    if candidate_kind == random_kind:
+        return True
+    if candidate_kind == "activation" and random_kind == "activation":
+        return True
+    return False

@@ -2,112 +2,183 @@ from __future__ import annotations
 
 import numpy as np
 
-from attention_lab.mechanisms.controls import (
-    ActivationMatrix,
-    choose_random_site_null,
-    resolve_control,
-)
-from attention_lab.mechanisms.presets import get_preset
+from attention_lab.mechanisms.controls import is_seed_mismatched, resolve_control, select_random_site_null
+from attention_lab.mechanisms.presets import resolve_preset, site_presets_for_names
 
 
-def test_e003_resolves_seed1_canonical_control():
-    preset = get_preset("E003_qkv_architecture_gauntlet", "differential")
-    control = resolve_control(preset)
+def test_tier1_presets_resolve_seed_matched_controls():
+    e003 = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+    e004 = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
 
-    assert control.expected_run_name == "standard_refactor_control_30m_seed1_rung500"
-    assert "seed1" in str(control.control_checkpoint)
-    assert control.is_canonical is True
-    assert control.noncanonical_reason is None
+    assert e003.matched_control is not None
+    assert e003.matched_control.run_name == "standard_refactor_control_30m_seed1_rung500"
+    assert "seed1" in str(e003.matched_control.checkpoint_path)
 
-
-def test_e004_resolves_seed2_canonical_control_not_seed1():
-    preset = get_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
-    control = resolve_control(preset)
-
-    assert control.expected_run_name == "standard_refactor_control_30m_seed2_rung500"
-    assert "seed2" in str(control.control_checkpoint)
-    assert "seed1" not in str(control.control_checkpoint)
-    assert control.is_canonical is True
+    assert e004.matched_control is not None
+    assert e004.matched_control.run_name == "standard_refactor_control_30m_seed2_rung500"
+    assert "seed2" in str(e004.matched_control.checkpoint_path)
+    assert "seed1" not in str(e004.matched_control.checkpoint_path)
 
 
-def test_control_override_is_recorded_and_marked_noncanonical():
-    preset = get_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
-    control = resolve_control(
+def test_control_override_is_recorded_as_noncanonical(tmp_path):
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    config = tmp_path / "control.yaml"
+    checkpoint = tmp_path / "seed1_control.pt"
+    config.write_text("x: 1\n", encoding="utf-8")
+    checkpoint.write_bytes(b"not a real checkpoint for resolution-only test")
+
+    resolved = resolve_control(
         preset,
-        control_checkpoint="runs/screen/standard_refactor_control_30m_seed1_rung500/checkpoints/ckpt_last.pt",
-        control_config="configs/experiments/E003_qkv_architecture_gauntlet/standard_refactor_control_30m_seed1_rung500.yaml",
+        control_mode="matched",
+        control_config=config,
+        control_checkpoint=checkpoint,
     )
 
-    assert control.is_override is True
-    assert control.is_canonical is False
-    assert "does not match canonical" in (control.noncanonical_reason or "")
+    assert resolved.override_used
+    assert resolved.available
+    assert not resolved.canonical
+    assert "override" in (resolved.reason or "")
 
 
-def test_random_site_null_selects_matched_dimensional_site_and_excludes_candidate():
-    activations = {
-        "branch_delta[0]": ActivationMatrix(
-            site="branch_delta[0]",
-            X=np.zeros((8, 4)),
-            tensor_kind="activation",
-            shape=(8, 4),
-        ),
-        "pos_out[0]": ActivationMatrix(
-            site="pos_out[0]",
-            X=np.ones((8, 4)),
-            tensor_kind="activation",
-            shape=(8, 4),
-        ),
-        "operator_probs[0]": ActivationMatrix(
-            site="operator_probs[0]",
-            X=np.ones((8, 5)),
-            tensor_kind="probability",
-            shape=(8, 5),
-        ),
+def test_e004_seed1_override_is_seed_mismatched(tmp_path):
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    config = tmp_path / "control.yaml"
+    checkpoint = tmp_path / "standard_refactor_control_30m_seed1_rung500_fake" / "ckpt_last.pt"
+    config.write_text("x: 1\n", encoding="utf-8")
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.write_bytes(b"not a real checkpoint for resolution-only test")
+
+    resolved = resolve_control(
+        preset,
+        control_mode="matched",
+        control_config=config,
+        control_checkpoint=checkpoint,
+    )
+
+    assert resolved.override_used
+    assert resolved.available
+    assert is_seed_mismatched(preset, resolved)
+
+
+def test_control_mode_none_is_unavailable_for_candidate_evidence():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+    resolved = resolve_control(
+        preset,
+        control_mode="none",
+        control_config=None,
+        control_checkpoint=None,
+    )
+
+    assert not resolved.available
+    assert not resolved.canonical
+    assert "disabled" in (resolved.reason or "")
+
+
+def test_random_site_null_requires_matched_dimension_and_excludes_candidate():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+    candidate = preset.target_sites[0]
+    shapes = {
+        "branch_delta[0]": (8, 4),
+        "attn_out[0]": (8, 4),
+        "mlp_out[0]": (8, 5),
     }
-
-    selected = choose_random_site_null(
-        candidate_site="branch_delta[0]",
-        candidate=activations["branch_delta[0]"],
-        available=activations,
-        seed=13,
+    selected = select_random_site_null(
+        candidate=candidate,
+        candidate_key="branch_delta[0]",
+        feature_shapes=shapes,
+        pool=preset.random_site_pool,
+        seed=0,
     )
 
-    assert selected.available is True
-    assert selected.selected_site == "pos_out[0]"
+    assert selected.available
+    assert selected.selected_site == "attn_out[0]"
     assert selected.selected_site != "branch_delta[0]"
-    assert selected.reason is None
+    assert selected.selected_feature_dim == 4
+    assert any(item["site"] == "mlp_out[0]" and not item["accepted"] for item in selected.considered_sites)
 
 
-def test_random_site_null_reports_missing_matched_shape_without_coercion():
-    activations = {
-        "operator_probs[0]": ActivationMatrix(
-            site="operator_probs[0]",
-            X=np.zeros((8, 5)),
-            tensor_kind="probability",
-            shape=(8, 5),
-        ),
-        "operator_combined_out[0]": ActivationMatrix(
-            site="operator_combined_out[0]",
-            X=np.zeros((8, 16)),
-            tensor_kind="activation",
-            shape=(8, 16),
-        ),
+def test_missing_random_site_null_reports_feasibility_limit_for_low_dim_probability_site():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_probs = preset.target_sites[0]
+    shapes = {
+        "operator_probs[0]": (8, 5),
+        "attn_out[0]": (8, 384),
+        "resid_mid[0]": (8, 384),
     }
-
-    selected = choose_random_site_null(
-        candidate_site="operator_probs[0]",
-        candidate=activations["operator_probs[0]"],
-        available=activations,
-        seed=2,
+    selected = select_random_site_null(
+        candidate=operator_probs,
+        candidate_key="operator_probs[0]",
+        feature_shapes=shapes,
+        pool=preset.random_site_pool,
+        seed=0,
     )
 
-    assert selected.available is False
-    assert selected.selected_site is None
-    assert "matched dimensionality" in (selected.reason or "")
+    assert not selected.available
+    assert selected.candidate_feature_dim == 5
+    assert selected.candidate_tensor_kind == "probability"
+    assert "feasibility limit" in (selected.reason or "")
+    assert any("dimension mismatch" in str(item["reason"]) for item in selected.considered_sites)
+    assert np.isfinite(selected.candidate_feature_dim)
 
 
-def test_tier2_and_tier3_presets_are_not_executable():
-    preset = get_preset("E004_operator_binding_qkv_gauntlet", "dynamic_value")
+def test_random_site_null_rejects_same_site_and_incompatible_tensor_kind():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_probs = preset.target_sites[0]
+    shapes = {
+        "operator_probs[0]": (8, 5),
+        "attn_out[0]": (8, 5),
+    }
+    selected = select_random_site_null(
+        candidate=operator_probs,
+        candidate_key="operator_probs[0]",
+        feature_shapes=shapes,
+        pool=(operator_probs, *preset.random_site_pool[:1]),
+        seed=0,
+    )
 
-    assert preset.executable is False
-    assert preset.status == "stub_not_executable"
+    assert not selected.available
+    assert any("own random-site null" in str(item["reason"]) for item in selected.considered_sites)
+    assert any("incompatible tensor kind" in str(item["reason"]) for item in selected.considered_sites)
+
+
+def test_e004_full_width_operator_output_can_select_matched_random_site():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_combined = next(site for site in preset.target_sites if site.site == "operator_combined_out")
+    shapes = {
+        "operator_combined_out[0]": (8, 384),
+        "operator_probs[0]": (8, 5),
+        "attn_out[0]": (8, 384),
+        "resid_mid[0]": (8, 384),
+    }
+    selected = select_random_site_null(
+        candidate=operator_combined,
+        candidate_key="operator_combined_out[0]",
+        feature_shapes=shapes,
+        pool=preset.random_site_pool,
+        seed=0,
+    )
+
+    assert selected.available
+    assert selected.selected_feature_dim == 384
+    assert selected.selected_site in {"attn_out[0]", "resid_mid[0]"}
+
+
+def test_tier2_tier3_presets_are_not_executable():
+    scope = resolve_preset("E003_qkv_architecture_gauntlet", "scope_gated")
+    q3 = resolve_preset("E004_operator_binding_qkv_gauntlet", "q3k3v3")
+
+    assert scope.status == "stub_not_executable"
+    assert not scope.executable
+    assert q3.status == "stub_not_executable"
+    assert not q3.executable
+
+
+def test_confirmatory_site_selection_rejects_wrong_explicit_layer():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+
+    try:
+        site_presets_for_names(preset, ["branch_delta[1]"], exploratory=False)
+    except ValueError as exc:
+        assert "declared layer" in str(exc)
+    else:
+        raise AssertionError("explicit wrong layer should not resolve to layer 0")

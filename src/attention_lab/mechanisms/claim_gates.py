@@ -1,90 +1,150 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
-MECHANISM_PROBE_STATUSES = (
-    "insufficient_evidence",
-    "exploratory_probe_signal",
-    "controlled_probe_signal",
-    "candidate_mechanism_evidence",
+INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+EXPLORATORY_PROBE_SIGNAL = "exploratory_probe_signal"
+CONTROLLED_PROBE_SIGNAL = "controlled_probe_signal"
+CANDIDATE_MECHANISM_EVIDENCE = "candidate_mechanism_evidence"
+
+MECHANISM_PROBE_STATUS_LADDER = (
+    INSUFFICIENT_EVIDENCE,
+    EXPLORATORY_PROBE_SIGNAL,
+    CONTROLLED_PROBE_SIGNAL,
+    CANDIDATE_MECHANISM_EVIDENCE,
 )
 
 
 @dataclass(frozen=True)
-class ClaimGateResult:
+class CellGateInputs:
+    exploratory: bool
+    probe_only: bool
+    hypothesis_doc_valid: bool
+    real_probe_metrics: bool
+    min_n_passed: bool
+    confirmatory_floor_met: bool
+    grouped_split: bool
+    matched_control_available: bool
+    canonical_control: bool
+    noncanonical_control: bool
+    shuffled_null_passed: bool
+    random_site_null_available: bool
+    random_site_null_passed: bool
+    matched_control_passed: bool
+    primary_fdr_passed: bool
+    primary_ci_passed: bool
+    specificity_fdr_passed: bool
+    specificity_ci_passed: bool
+    patching_valid: bool
+    mediation_valid: bool
+    patching_fdr_passed: bool = True
+    full_layer_patching_fdr_passed: bool = True
+    mediation_fdr_passed: bool = True
+    task_aligned_pooling: bool = True
+    restoration_alignment_valid: bool = True
+    canonical_site: bool = True
+    force_noncanonical_control: bool = False
+    extra_blockers: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class CellGateResult:
     status: str
-    status_vocabulary: str
-    reasons: list[str]
-    caps: list[str]
+    blockers: tuple[str, ...]
+    caps: tuple[str, ...]
+    inputs: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "status": self.status,
+            "blockers": list(self.blockers),
+            "caps": list(self.caps),
+            "inputs": self.inputs,
+            "status_vocabulary_scope": (
+                "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+            ),
+        }
 
 
-def evaluate_claim_gate(metrics: dict[str, Any]) -> ClaimGateResult:
-    reasons: list[str] = []
+def evaluate_cell_claim_gate(inputs: CellGateInputs) -> CellGateResult:
+    blockers: list[str] = list(inputs.extra_blockers)
     caps: list[str] = []
+    if not inputs.real_probe_metrics:
+        blockers.append("real trained probe metrics are missing")
+    if not inputs.min_n_passed:
+        blockers.append("minimum N failed")
+    if not inputs.grouped_split:
+        blockers.append("grouped split discipline missing")
 
-    if not metrics.get("has_real_probe_metrics", False):
-        reasons.append("real trained probe metrics are missing")
-        return _result("insufficient_evidence", reasons, caps)
+    if blockers:
+        return _result(INSUFFICIENT_EVIDENCE, blockers, caps, inputs)
 
-    if metrics.get("exploratory", False):
-        caps.append("exploratory")
-        reasons.append("exploratory runs cannot make confirmatory mechanism claims")
-        return _result("exploratory_probe_signal", reasons, caps)
+    if inputs.exploratory:
+        caps.append("exploratory mode caps claims below confirmatory evidence")
+        return _result(EXPLORATORY_PROBE_SIGNAL, blockers, caps, inputs)
+    if inputs.probe_only:
+        caps.append("probe-only mode skips causal patching/restoration and caps claims")
+        return _result(EXPLORATORY_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.hypothesis_doc_valid:
+        blockers.append("confirmatory run requires a valid pre-registered hypothesis doc")
+        return _result(INSUFFICIENT_EVIDENCE, blockers, caps, inputs)
+    if not inputs.confirmatory_floor_met:
+        blockers.append("confirmatory task-suite size floor failed")
+    if not inputs.matched_control_available:
+        blockers.append("matched control evidence is unavailable")
+    if not inputs.canonical_control:
+        blockers.append("control pairing is noncanonical or seed-mismatched")
+        if inputs.noncanonical_control or inputs.force_noncanonical_control:
+            caps.append("noncanonical controls can never reach candidate_mechanism_evidence")
+    if not inputs.shuffled_null_passed:
+        blockers.append("shuffled-label null comparison failed")
+    if not inputs.random_site_null_available:
+        blockers.append("random-site null unavailable for this site-layer cell")
+        caps.append("missing random-site null caps only this site-layer cell")
+    elif not inputs.random_site_null_passed:
+        blockers.append("random-site null comparison failed")
+    if not inputs.matched_control_passed:
+        blockers.append("matched-control comparison failed")
+    if not inputs.primary_fdr_passed or not inputs.primary_ci_passed:
+        blockers.append("primary probe metric failed corrected statistical gate")
+    if not inputs.specificity_fdr_passed or not inputs.specificity_ci_passed:
+        blockers.append("target-vs-decoy specificity gate failed")
 
-    if metrics.get("probe_only", False):
-        caps.append("probe_only")
-        reasons.append("probe-only runs cannot reach candidate_mechanism_evidence")
-        return _result("exploratory_probe_signal", reasons, caps)
+    if blockers:
+        return _result(INSUFFICIENT_EVIDENCE, blockers, caps, inputs)
 
-    blockers = [
-        ("minimum_n_passed", "minimum N failed"),
-        ("confirmatory_floor_passed", "confirmatory task-suite size floor failed"),
-        ("grouped_split_passed", "grouped split discipline did not pass"),
-        ("hypothesis_doc_valid", "valid pre-registered hypothesis doc is missing"),
-        ("matched_control_available", "matched control evidence is missing"),
-        ("control_canonical", "control pairing is noncanonical or seed-mismatched"),
-        ("random_site_null_available", "random-site null is unavailable"),
-        ("stats_valid", "bootstrap/statistical results are invalid"),
-        ("fdr_primary_passed", "FDR-corrected primary statistical gate failed"),
-        ("bootstrap_primary_ci_excludes_null", "primary bootstrap CI does not exclude the null"),
-        ("decoy_specificity_passed", "target-vs-decoy specificity gate failed"),
-    ]
-    for key, message in blockers:
-        if not metrics.get(key, False):
-            reasons.append(message)
-    if metrics.get("min_n_below_floor", False):
-        reasons.append("--min-n is below the committed confirmatory floor")
-    if metrics.get("raw_delta_only", False):
-        reasons.append("raw activation delta alone cannot pass a claim gate")
+    if not inputs.restoration_alignment_valid:
+        blockers.append("restoration patching alignment metadata is invalid")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.patching_valid or not inputs.mediation_valid:
+        blockers.append("valid causal patching/restoration and mediation metrics are required")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.task_aligned_pooling:
+        blockers.append("candidate_mechanism_evidence requires task-aligned feature pooling")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.canonical_site:
+        blockers.append("candidate_mechanism_evidence requires a canonical Tier-1 preset site")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.patching_fdr_passed or not inputs.full_layer_patching_fdr_passed or not inputs.mediation_fdr_passed:
+        blockers.append("restoration/mediation metrics failed corrected statistical gate")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
 
-    if reasons:
-        if any("noncanonical" in reason or "seed-mismatched" in reason for reason in reasons):
-            caps.append("noncanonical_control")
-        return _result("insufficient_evidence", reasons, caps)
-
-    causal_valid = (
-        metrics.get("patching_valid", False)
-        and metrics.get("restoration_valid", False)
-        and metrics.get("mediation_fraction_valid", False)
-    )
-    if not causal_valid:
-        reasons.append("causal patch/restoration metrics are invalid or unavailable")
-        return _result("controlled_probe_signal", reasons, caps)
-
-    return _result("candidate_mechanism_evidence", reasons, caps)
+    return _result(CANDIDATE_MECHANISM_EVIDENCE, blockers, caps, inputs)
 
 
-def _result(status: str, reasons: list[str], caps: list[str]) -> ClaimGateResult:
-    if status not in MECHANISM_PROBE_STATUSES:
-        raise ValueError(f"unknown mechanism-probe status: {status}")
-    return ClaimGateResult(
+def overall_status(cell_results: list[CellGateResult]) -> str:
+    if not cell_results:
+        return INSUFFICIENT_EVIDENCE
+    rank = {status: index for index, status in enumerate(MECHANISM_PROBE_STATUS_LADDER)}
+    return max((result.status for result in cell_results), key=lambda status: rank[status])
+
+
+def _result(status: str, blockers: list[str], caps: list[str], inputs: CellGateInputs) -> CellGateResult:
+    return CellGateResult(
         status=status,
-        status_vocabulary="mechanism_probe_scoped",
-        reasons=list(reasons),
-        caps=list(caps),
+        blockers=tuple(dict.fromkeys(blockers)),
+        caps=tuple(dict.fromkeys(caps)),
+        inputs=inputs.__dict__,
     )

@@ -1,154 +1,191 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Iterable
 
 import numpy as np
-
-from attention_lab.mechanisms.linear_probe import LinearProbeDataset, roc_auc
 
 
 @dataclass(frozen=True)
 class BootstrapResult:
     estimate: float
-    low: float
-    high: float
+    ci_low: float
+    ci_high: float
     p_value: float
     samples: int
-    valid: bool = True
+    alpha: float
+    expected_direction: str
+    valid: bool
     reason: str | None = None
 
 
-def bootstrap_ci(
+@dataclass(frozen=True)
+class FDRResult:
+    metric_id: str
+    p_value: float
+    q_value: float
+    rejected: bool
+
+
+def auc_score(labels: np.ndarray, scores: np.ndarray) -> float:
+    labels = np.asarray(labels).astype(int)
+    scores = np.asarray(scores).astype(float)
+    pos = scores[labels == 1]
+    neg = scores[labels == 0]
+    if len(pos) == 0 or len(neg) == 0:
+        raise ValueError("AUC requires at least one positive and one negative example")
+    combined = np.concatenate([pos, neg])
+    order = np.argsort(combined, kind="mergesort")
+    ranks = np.empty_like(order, dtype=float)
+    ranks[order] = np.arange(1, len(combined) + 1, dtype=float)
+    sorted_scores = combined[order]
+    start = 0
+    while start < len(sorted_scores):
+        end = start + 1
+        while end < len(sorted_scores) and sorted_scores[end] == sorted_scores[start]:
+            end += 1
+        if end - start > 1:
+            ranks[order[start:end]] = (start + 1 + end) / 2.0
+        start = end
+    pos_ranks = ranks[: len(pos)]
+    return float((pos_ranks.sum() - len(pos) * (len(pos) + 1) / 2.0) / (len(pos) * len(neg)))
+
+
+def bootstrap_metric(
     values: np.ndarray,
+    group_ids: list[str],
+    statistic,
     *,
-    seed: int,
     samples: int,
+    seed: int,
     alpha: float = 0.05,
     expected_direction: str = "positive",
+    null_value: float = 0.0,
 ) -> BootstrapResult:
-    values = np.asarray(values, dtype=float)
-    values = values[np.isfinite(values)]
-    if values.size == 0:
-        return BootstrapResult(0.0, 0.0, 0.0, 1.0, samples, valid=False, reason="no finite values")
+    if samples <= 0:
+        return BootstrapResult(
+            estimate=float(statistic(values)),
+            ci_low=float("nan"),
+            ci_high=float("nan"),
+            p_value=float("nan"),
+            samples=samples,
+            alpha=alpha,
+            expected_direction=expected_direction,
+            valid=False,
+            reason="bootstrap samples must be positive",
+        )
+    values = np.asarray(values)
+    groups = np.asarray(group_ids)
+    unique_groups = np.unique(groups)
+    if len(unique_groups) < 2:
+        return BootstrapResult(
+            estimate=float(statistic(values)),
+            ci_low=float("nan"),
+            ci_high=float("nan"),
+            p_value=float("nan"),
+            samples=samples,
+            alpha=alpha,
+            expected_direction=expected_direction,
+            valid=False,
+            reason="bootstrap requires at least two groups",
+        )
     rng = np.random.default_rng(seed)
-    estimates = np.empty(samples, dtype=float)
-    for idx in range(samples):
-        sample = rng.choice(values, size=values.size, replace=True)
-        estimates[idx] = float(np.mean(sample))
-    low, high = np.quantile(estimates, [alpha / 2.0, 1.0 - alpha / 2.0])
-    estimate = float(np.mean(values))
-    p_value = _directional_p_value(estimates, expected_direction=expected_direction)
-    return BootstrapResult(estimate=estimate, low=float(low), high=float(high), p_value=p_value, samples=samples)
-
-
-def bootstrap_auc_difference(
-    labels: np.ndarray,
-    scores_a: np.ndarray,
-    scores_b: np.ndarray,
-    *,
-    seed: int,
-    samples: int,
-    expected_direction: str = "positive",
-) -> BootstrapResult:
-    labels = np.asarray(labels).astype(int)
-    scores_a = np.asarray(scores_a, dtype=float)
-    scores_b = np.asarray(scores_b, dtype=float)
-    if not (len(labels) == len(scores_a) == len(scores_b)):
-        raise ValueError("labels and score arrays must have the same length")
-    rng = np.random.default_rng(seed)
-    estimates: list[float] = []
-    indices = np.arange(len(labels))
+    group_to_indices = {group: np.flatnonzero(groups == group) for group in unique_groups}
+    estimates = []
     for _ in range(samples):
-        sample_idx = rng.choice(indices, size=len(indices), replace=True)
-        auc_a = roc_auc(labels[sample_idx], scores_a[sample_idx])
-        auc_b = roc_auc(labels[sample_idx], scores_b[sample_idx])
-        if auc_a is not None and auc_b is not None:
-            estimates.append(float(auc_a - auc_b))
-    if not estimates:
-        return BootstrapResult(0.0, 0.0, 0.0, 1.0, samples, valid=False, reason="bootstrap samples lacked both classes")
+        drawn = rng.choice(unique_groups, size=len(unique_groups), replace=True)
+        indices = np.concatenate([group_to_indices[group] for group in drawn])
+        estimates.append(float(statistic(values[indices])))
     estimates_array = np.asarray(estimates, dtype=float)
-    low, high = np.quantile(estimates_array, [0.025, 0.975])
-    auc_a = roc_auc(labels, scores_a)
-    auc_b = roc_auc(labels, scores_b)
-    if auc_a is None or auc_b is None:
-        return BootstrapResult(0.0, 0.0, 0.0, 1.0, samples, valid=False, reason="test split lacked both classes")
+    estimate = float(statistic(values))
+    ci_low = float(np.quantile(estimates_array, alpha / 2.0))
+    ci_high = float(np.quantile(estimates_array, 1.0 - alpha / 2.0))
+    if expected_direction == "positive":
+        p_value = float((np.sum(estimates_array <= null_value) + 1) / (len(estimates_array) + 1))
+    elif expected_direction == "negative":
+        p_value = float((np.sum(estimates_array >= null_value) + 1) / (len(estimates_array) + 1))
+    else:
+        p_value = float((np.sum(np.abs(estimates_array - null_value) <= abs(estimate - null_value)) + 1) / (len(estimates_array) + 1))
     return BootstrapResult(
-        estimate=float(auc_a - auc_b),
-        low=float(low),
-        high=float(high),
-        p_value=_directional_p_value(estimates_array, expected_direction=expected_direction),
+        estimate=estimate,
+        ci_low=ci_low,
+        ci_high=ci_high,
+        p_value=p_value,
         samples=samples,
+        alpha=alpha,
+        expected_direction=expected_direction,
+        valid=True,
     )
 
 
-def target_vs_decoy_specificity(
-    dataset: LinearProbeDataset,
-    scores: np.ndarray,
+def bootstrap_mean_difference(
+    left: np.ndarray,
+    right: np.ndarray,
+    group_ids: list[str],
     *,
-    seed: int,
     samples: int,
+    seed: int,
+    alpha: float = 0.05,
+    expected_direction: str = "positive",
 ) -> BootstrapResult:
-    scores = np.asarray(scores, dtype=float)
-    if len(scores) != len(dataset.test_indices if hasattr(dataset, "test_indices") else dataset.y):
-        # The suite passes a test-split dataset here; direct callers may pass a full dataset.
-        pass
-    pair_effects = []
-    for pair_id in sorted(set(dataset.pair_ids.tolist())):
-        mask = dataset.pair_ids == pair_id
-        variants = dataset.variants[mask]
-        pair_scores = scores[mask]
-        by_variant = {variant: pair_scores[variants == variant] for variant in set(variants.tolist())}
-        required = {"x_pos", "x_neg", "x_para", "x_decoy"}
-        if not required.issubset(by_variant):
-            continue
-        target_score = float(np.mean(np.concatenate([by_variant["x_pos"], by_variant["x_para"]])))
-        neg_score = float(np.mean(by_variant["x_neg"]))
-        decoy_score = float(np.mean(by_variant["x_decoy"]))
-        pair_effects.append((target_score - neg_score) - (decoy_score - neg_score))
-    return bootstrap_ci(np.asarray(pair_effects, dtype=float), seed=seed, samples=samples)
+    left = np.asarray(left, dtype=float)
+    right = np.asarray(right, dtype=float)
+    if left.shape != right.shape:
+        raise ValueError("bootstrap paired mean difference requires matching shapes")
+    values = left - right
+    return bootstrap_metric(
+        values,
+        group_ids,
+        lambda value: float(np.mean(value)),
+        samples=samples,
+        seed=seed,
+        alpha=alpha,
+        expected_direction=expected_direction,
+        null_value=0.0,
+    )
 
 
-def fdr_bh(cells: list[dict[str, Any]], *, alpha: float) -> list[dict[str, Any]]:
-    if not cells:
-        return []
-    indexed = []
-    for idx, cell in enumerate(cells):
-        p_value = float(cell["p_value"])
-        if not 0.0 <= p_value <= 1.0:
-            raise ValueError(f"p_value must be in [0,1], got {p_value}")
-        indexed.append((idx, p_value, cell))
-    ordered = sorted(indexed, key=lambda item: item[1])
-    m = len(ordered)
-    max_reject_rank = -1
-    for rank, (_, p_value, _) in enumerate(ordered, start=1):
-        if p_value <= (rank / m) * alpha:
-            max_reject_rank = rank
-    adjusted_by_idx: dict[int, dict[str, Any]] = {}
-    running_q = 1.0
-    for reverse_rank, (original_idx, p_value, cell) in enumerate(reversed(ordered), start=1):
-        rank = m - reverse_rank + 1
-        running_q = min(running_q, p_value * m / rank)
-        corrected = dict(cell)
-        corrected["q_value"] = float(min(1.0, running_q))
-        corrected["rejected"] = bool(rank <= max_reject_rank)
-        adjusted_by_idx[original_idx] = corrected
-    return [adjusted_by_idx[idx] for idx in range(len(cells))]
+def fdr_bh(p_values: dict[str, float], *, alpha: float) -> dict[str, FDRResult]:
+    usable = [(metric_id, float(p)) for metric_id, p in p_values.items() if np.isfinite(p)]
+    unusable = [metric_id for metric_id, p in p_values.items() if not np.isfinite(p)]
+    if not usable:
+        return {
+            metric_id: FDRResult(metric_id=metric_id, p_value=float("nan"), q_value=float("nan"), rejected=False)
+            for metric_id in p_values
+        }
+    usable.sort(key=lambda item: item[1])
+    m = len(usable)
+    raw_q: dict[str, float] = {}
+    for rank, (metric_id, p_value) in enumerate(usable, start=1):
+        raw_q[metric_id] = min(1.0, p_value * m / rank)
+    adjusted: dict[str, float] = {}
+    running = 1.0
+    for metric_id, _ in reversed(usable):
+        running = min(running, raw_q[metric_id])
+        adjusted[metric_id] = running
+    result = {
+        metric_id: FDRResult(
+            metric_id=metric_id,
+            p_value=p_value,
+            q_value=adjusted[metric_id],
+            rejected=adjusted[metric_id] <= alpha,
+        )
+        for metric_id, p_value in usable
+    }
+    for metric_id in unusable:
+        result[metric_id] = FDRResult(metric_id=metric_id, p_value=float("nan"), q_value=float("nan"), rejected=False)
+    return result
 
 
-def ci_excludes_zero(result: BootstrapResult, *, expected_direction: str = "positive") -> bool:
+def ci_excludes_null(result: BootstrapResult, *, null_value: float = 0.0) -> bool:
     if not result.valid:
         return False
-    if expected_direction == "positive":
-        return result.low > 0.0
-    if expected_direction == "negative":
-        return result.high < 0.0
-    raise ValueError("expected_direction must be 'positive' or 'negative'")
+    if result.expected_direction == "positive":
+        return result.ci_low > null_value
+    if result.expected_direction == "negative":
+        return result.ci_high < null_value
+    return result.ci_low > null_value or result.ci_high < null_value
 
 
-def _directional_p_value(estimates: np.ndarray, *, expected_direction: str) -> float:
-    if expected_direction == "positive":
-        return float((np.sum(estimates <= 0.0) + 1.0) / (len(estimates) + 1.0))
-    if expected_direction == "negative":
-        return float((np.sum(estimates >= 0.0) + 1.0) / (len(estimates) + 1.0))
-    raise ValueError("expected_direction must be 'positive' or 'negative'")
+def finite_p_values(results: Iterable[tuple[str, BootstrapResult]]) -> dict[str, float]:
+    return {metric_id: result.p_value for metric_id, result in results if result.valid}

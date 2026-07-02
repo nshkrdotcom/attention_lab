@@ -1,108 +1,154 @@
 from __future__ import annotations
 
-import numpy as np
+from attention_lab.mechanisms.claim_gates import (
+    CANDIDATE_MECHANISM_EVIDENCE,
+    CONTROLLED_PROBE_SIGNAL,
+    EXPLORATORY_PROBE_SIGNAL,
+    INSUFFICIENT_EVIDENCE,
+    CellGateInputs,
+    evaluate_cell_claim_gate,
+    overall_status,
+)
 
-from attention_lab.mechanisms.alignment import probe_direction_alignment
-from attention_lab.mechanisms.claim_gates import evaluate_claim_gate
-from attention_lab.mechanisms.patching import compute_mediation_fraction, compute_restoration_score
 
-
-def _base_gate_input(**overrides):
-    data = {
-        "exploratory": False,
-        "probe_only": False,
-        "has_real_probe_metrics": True,
-        "minimum_n_passed": True,
-        "confirmatory_floor_passed": True,
-        "grouped_split_passed": True,
-        "hypothesis_doc_valid": True,
-        "matched_control_available": True,
-        "control_canonical": True,
-        "random_site_null_available": True,
-        "stats_valid": True,
-        "fdr_primary_passed": True,
-        "bootstrap_primary_ci_excludes_null": True,
-        "decoy_specificity_passed": True,
-        "patching_valid": True,
-        "restoration_valid": True,
-        "mediation_fraction_valid": True,
-        "min_n_below_floor": False,
-        "raw_delta_only": False,
-    }
+def _passing_inputs(**overrides) -> CellGateInputs:
+    data = dict(
+        exploratory=False,
+        probe_only=False,
+        hypothesis_doc_valid=True,
+        real_probe_metrics=True,
+        min_n_passed=True,
+        confirmatory_floor_met=True,
+        grouped_split=True,
+        matched_control_available=True,
+        canonical_control=True,
+        noncanonical_control=False,
+        shuffled_null_passed=True,
+        random_site_null_available=True,
+        random_site_null_passed=True,
+        matched_control_passed=True,
+        primary_fdr_passed=True,
+        primary_ci_passed=True,
+        specificity_fdr_passed=True,
+        specificity_ci_passed=True,
+        patching_valid=True,
+        mediation_valid=True,
+    )
     data.update(overrides)
-    return data
+    return CellGateInputs(**data)
 
 
-def test_candidate_mechanism_evidence_requires_full_confirmatory_controls_and_causality():
-    result = evaluate_claim_gate(_base_gate_input())
+def test_candidate_mechanism_evidence_requires_all_gates():
+    result = evaluate_cell_claim_gate(_passing_inputs())
 
-    assert result.status == "candidate_mechanism_evidence"
-    assert result.status_vocabulary == "mechanism_probe_scoped"
-
-
-def test_probe_only_and_exploratory_are_capped_below_confirmatory_claims():
-    probe_only = evaluate_claim_gate(_base_gate_input(probe_only=True))
-    exploratory = evaluate_claim_gate(_base_gate_input(exploratory=True))
-
-    assert probe_only.status == "exploratory_probe_signal"
-    assert exploratory.status == "exploratory_probe_signal"
+    assert result.status == CANDIDATE_MECHANISM_EVIDENCE
 
 
-def test_minimum_n_floor_missing_control_noncanonical_and_decoy_fail_block_gates():
-    for override in (
-        {"minimum_n_passed": False},
-        {"confirmatory_floor_passed": False},
-        {"min_n_below_floor": True},
-        {"matched_control_available": False},
-        {"control_canonical": False},
-        {"random_site_null_available": False},
-        {"decoy_specificity_passed": False},
-        {"fdr_primary_passed": False},
-        {"raw_delta_only": True},
+def test_raw_delta_or_missing_stats_cannot_pass_gate():
+    result = evaluate_cell_claim_gate(_passing_inputs(primary_fdr_passed=False))
+
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("primary probe" in blocker for blocker in result.blockers)
+
+
+def test_probe_only_and_exploratory_modes_are_capped():
+    assert evaluate_cell_claim_gate(_passing_inputs(probe_only=True)).status == EXPLORATORY_PROBE_SIGNAL
+    assert evaluate_cell_claim_gate(_passing_inputs(exploratory=True)).status == EXPLORATORY_PROBE_SIGNAL
+
+
+def test_missing_random_site_null_caps_only_affected_cell():
+    missing = evaluate_cell_claim_gate(
+        _passing_inputs(random_site_null_available=False, random_site_null_passed=False)
+    )
+    passing = evaluate_cell_claim_gate(_passing_inputs())
+
+    assert missing.status == INSUFFICIENT_EVIDENCE
+    assert "missing random-site null caps only this site-layer cell" in missing.caps
+    assert overall_status([missing, passing]) == CANDIDATE_MECHANISM_EVIDENCE
+
+
+def test_missing_or_seed_mismatched_control_blocks_candidate_evidence():
+    missing = evaluate_cell_claim_gate(_passing_inputs(matched_control_available=False))
+    mismatched = evaluate_cell_claim_gate(
+        _passing_inputs(canonical_control=False, noncanonical_control=True, force_noncanonical_control=True)
+    )
+
+    assert missing.status == INSUFFICIENT_EVIDENCE
+    assert mismatched.status == INSUFFICIENT_EVIDENCE
+    assert any("control" in blocker for blocker in mismatched.blockers)
+
+
+def test_valid_controlled_probe_without_patching_stops_below_candidate_evidence():
+    result = evaluate_cell_claim_gate(_passing_inputs(patching_valid=False, mediation_valid=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("patching" in blocker for blocker in result.blockers)
+
+
+def test_candidate_mechanism_evidence_requires_full_layer_restoration_fdr():
+    result = evaluate_cell_claim_gate(_passing_inputs(full_layer_patching_fdr_passed=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("restoration/mediation" in blocker for blocker in result.blockers)
+
+
+def test_candidate_mechanism_evidence_requires_task_aligned_pooling():
+    result = evaluate_cell_claim_gate(_passing_inputs(task_aligned_pooling=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("task-aligned" in blocker for blocker in result.blockers)
+
+
+def test_candidate_mechanism_evidence_requires_valid_restoration_alignment():
+    result = evaluate_cell_claim_gate(_passing_inputs(restoration_alignment_valid=False, patching_valid=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("alignment" in blocker for blocker in result.blockers)
+
+
+def test_min_n_floor_grouping_and_decoy_specificity_block_gates():
+    for kwargs in (
+        {"min_n_passed": False},
+        {"confirmatory_floor_met": False},
+        {"grouped_split": False},
+        {"specificity_fdr_passed": False},
+        {"specificity_ci_passed": False},
     ):
-        result = evaluate_claim_gate(_base_gate_input(**override))
-        assert result.status == "insufficient_evidence"
-        assert result.reasons
+        assert evaluate_cell_claim_gate(_passing_inputs(**kwargs)).status == INSUFFICIENT_EVIDENCE
 
 
-def test_controlled_probe_signal_can_pass_when_causal_metrics_are_invalid_but_probe_gates_pass():
-    result = evaluate_claim_gate(
-        _base_gate_input(
-            patching_valid=False,
-            restoration_valid=False,
-            mediation_fraction_valid=False,
+def test_controlled_probe_signal_requires_random_null_and_fdr_not_raw_auc():
+    missing_random = evaluate_cell_claim_gate(_passing_inputs(random_site_null_available=False, random_site_null_passed=False))
+    raw_auc_only = evaluate_cell_claim_gate(_passing_inputs(primary_fdr_passed=False, primary_ci_passed=True))
+
+    assert missing_random.status == INSUFFICIENT_EVIDENCE
+    assert raw_auc_only.status == INSUFFICIENT_EVIDENCE
+
+
+def test_specificity_ci_without_fdr_cannot_pass_candidate_evidence():
+    result = evaluate_cell_claim_gate(_passing_inputs(specificity_fdr_passed=False, specificity_ci_passed=True))
+
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("specificity" in blocker for blocker in result.blockers)
+
+
+def test_noncanonical_forced_control_still_blocks_candidate_mechanism_evidence():
+    result = evaluate_cell_claim_gate(
+        _passing_inputs(canonical_control=False, noncanonical_control=True, force_noncanonical_control=True)
+    )
+
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("noncanonical" in cap for cap in result.caps)
+
+
+def test_hand_authored_or_small_task_suite_blocks_confirmatory_gate():
+    result = evaluate_cell_claim_gate(
+        _passing_inputs(
+            min_n_passed=False,
+            confirmatory_floor_met=False,
+            extra_blockers=("confirmatory task suite lacks deterministic generator provenance",),
         )
     )
 
-    assert result.status == "controlled_probe_signal"
-    assert "causal patch/restoration metrics are invalid or unavailable" in result.reasons
-
-
-def test_restoration_score_formula_and_denominator_guard():
-    score = compute_restoration_score(clean_logitdiff=4.0, corrupted_logitdiff=1.0, patched_logitdiff=2.5)
-    invalid = compute_restoration_score(clean_logitdiff=1.0, corrupted_logitdiff=1.0, patched_logitdiff=1.5)
-
-    assert score.valid is True
-    assert score.value == 0.5
-    assert invalid.valid is False
-    assert "denominator" in (invalid.reason or "")
-
-
-def test_mediation_fraction_formula_and_edge_case():
-    fraction = compute_mediation_fraction(component_patch_restoration=0.25, full_layer_patch_restoration=0.5)
-    invalid = compute_mediation_fraction(component_patch_restoration=0.25, full_layer_patch_restoration=0.0)
-
-    assert fraction.valid is True
-    assert fraction.value == 0.5
-    assert invalid.valid is False
-
-
-def test_alignment_metric_emitted_or_unavailable_without_shape_coercion():
-    aligned = probe_direction_alignment(np.array([1.0, 0.0]), np.array([0.5, 0.0]))
-    mismatch = probe_direction_alignment(np.array([1.0, 0.0]), np.array([1.0, 0.0, 0.0]))
-
-    assert aligned.available is True
-    assert aligned.probe_direction_cosine_to_control == 1.0
-    assert aligned.probe_direction_alignment_abs == 1.0
-    assert mismatch.available is False
-    assert "shape mismatch" in (mismatch.reason or "")
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("provenance" in blocker for blocker in result.blockers)

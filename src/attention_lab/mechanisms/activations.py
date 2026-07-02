@@ -7,146 +7,279 @@ from typing import Any
 import numpy as np
 import torch
 
+from attention_lab.mechanisms.cache import ActivationRecord
 from attention_lab.mechanisms.capture import capture_activations
-from attention_lab.mechanisms.controls import ActivationMatrix
-from attention_lab.mechanisms.hook_sites import format_site_name, get_hook_site_spec, site_base
-from attention_lab.mechanisms.linear_probe import LinearProbeDataset
-from attention_lab.mechanisms.probe import encode_prompts, tokenizer_metadata
-from attention_lab.mechanisms.task_schema import TaskExample
+from attention_lab.mechanisms.probe import tokenizer_metadata
 from attention_lab.models.gpt import GPT, config_from_dict
 from attention_lab.training.checkpointing import load_checkpoint
 from attention_lab.training.config import load_config
+from attention_lab.mechanisms.task_schema import TaskExample
+
+
+FEATURE_POOLING_STRATEGIES = ("mean_sequence", "final_token", "answer_position", "patch_positions_mean")
+TASK_ALIGNED_FEATURE_POOLING = ("answer_position", "patch_positions_mean")
 
 
 @dataclass(frozen=True)
 class LoadedMechanismModel:
     model: GPT
     config: dict[str, Any]
-    config_path: Path
-    checkpoint_path: Path
-    tokenizer_name: str
+    tokenizer: dict[str, int | str]
+    attention_type: str
     block_size: int
     vocab_size: int
-    attention_type: str
 
 
-def load_mechanism_model(
-    *,
-    config_path: str | Path,
-    checkpoint_path: str | Path,
-    device: str,
-) -> LoadedMechanismModel:
-    config_file = Path(config_path)
-    checkpoint_file = Path(checkpoint_path)
-    if not config_file.exists():
-        raise ValueError(f"config does not exist: {config_file}")
-    if not checkpoint_file.exists():
-        raise ValueError(f"checkpoint does not exist: {checkpoint_file}")
-    config = load_config(config_file)
+@dataclass(frozen=True)
+class EncodedTexts:
+    input_ids: torch.Tensor
+    lengths: list[int]
+    tokenizer: dict[str, int | str]
+
+
+@dataclass(frozen=True)
+class ActivationFeatureSet:
+    features: dict[str, np.ndarray]
+    record_summaries: dict[str, dict[str, Any]]
+    missing_sites: dict[str, str]
+    tokenizer: dict[str, int | str]
+    feature_pooling: str
+    task_aligned: bool
+
+
+def load_mechanism_model(config_path: str | Path, checkpoint_path: str | Path, *, device: str) -> LoadedMechanismModel:
+    config = load_config(config_path)
     model_config = config_from_dict(config["model"], config["data"])
+    tokenizer_name = str(config.get("data", {}).get("tokenizer", "gpt2"))
+    tokenizer_info = tokenizer_metadata(
+        tokenizer_name=tokenizer_name,
+        block_size=model_config.block_size,
+        vocab_size=model_config.vocab_size,
+    )
     model = GPT(model_config)
-    checkpoint = load_checkpoint(checkpoint_file, device=device)
+    checkpoint = load_checkpoint(checkpoint_path, device=device)
     model.load_state_dict(checkpoint["model"])
     model.to(device)
     model.eval()
-    tokenizer_name = str(config.get("data", {}).get("tokenizer", "gpt2"))
     return LoadedMechanismModel(
         model=model,
         config=config,
-        config_path=config_file,
-        checkpoint_path=checkpoint_file,
-        tokenizer_name=tokenizer_name,
-        block_size=int(model_config.block_size),
-        vocab_size=int(model_config.vocab_size),
-        attention_type=str(model_config.attention_type),
+        tokenizer=tokenizer_info,
+        attention_type=model_config.attention_type,
+        block_size=model_config.block_size,
+        vocab_size=model_config.vocab_size,
     )
 
 
-def capture_feature_matrices(
+def encode_texts(
+    texts: list[str],
+    *,
+    tokenizer_name: str,
+    block_size: int,
+    vocab_size: int,
+) -> EncodedTexts:
+    if tokenizer_name != "gpt2":
+        raise ValueError(f"unsupported tokenizer for mechanism probe suite: {tokenizer_name!r}")
+    import tiktoken
+
+    enc = tiktoken.get_encoding("gpt2")
+    token_lists = [enc.encode(text)[:block_size] or [0] for text in texts]
+    lengths = [len(tokens) for tokens in token_lists]
+    max_len = max(lengths) if lengths else 1
+    max_token_id = max((max(tokens) for tokens in token_lists), default=0)
+    if max_token_id >= vocab_size:
+        raise ValueError(f"tokenizer produced token id {max_token_id}, exceeding vocab_size={vocab_size}")
+    padded = [tokens + [0] * (max_len - len(tokens)) for tokens in token_lists]
+    return EncodedTexts(
+        input_ids=torch.tensor(padded, dtype=torch.long),
+        lengths=lengths,
+        tokenizer=tokenizer_metadata(tokenizer_name=tokenizer_name, block_size=block_size, vocab_size=vocab_size),
+    )
+
+
+def collect_activation_features(
     loaded: LoadedMechanismModel,
-    examples: tuple[TaskExample, ...],
+    texts: list[str],
     *,
     sites: list[str],
-    layer: int,
-    batch_size: int,
+    checkpoint_path: str | Path,
     device: str,
-) -> dict[str, ActivationMatrix]:
-    if not examples:
-        raise ValueError("need at least one task example")
+    batch_size: int = 16,
+    examples: list[TaskExample] | None = None,
+    feature_pooling: str = "mean_sequence",
+) -> ActivationFeatureSet:
     if batch_size <= 0:
         raise ValueError("batch_size must be positive")
-    site_keys = [format_site_name(site_base(site), layer=layer) for site in sites]
-    features: dict[str, list[np.ndarray]] = {key: [] for key in site_keys}
-    tokenizer_info = tokenizer_metadata(
-        tokenizer_name=loaded.tokenizer_name,
-        block_size=loaded.block_size,
-        vocab_size=loaded.vocab_size,
+    if feature_pooling not in FEATURE_POOLING_STRATEGIES:
+        raise ValueError(f"unknown feature pooling strategy {feature_pooling!r}")
+    if examples is not None and len(examples) != len(texts):
+        raise ValueError("examples length must match texts length for task-aligned feature pooling")
+    encoded = encode_texts(
+        texts,
+        tokenizer_name=str(loaded.tokenizer["tokenizer"]),
+        block_size=int(loaded.tokenizer["block_size"]),
+        vocab_size=int(loaded.tokenizer["vocab_size"]),
     )
+    records: dict[str, list[ActivationRecord]] = {}
+    missing: dict[str, str] = {}
     with torch.no_grad():
-        for start in range(0, len(examples), batch_size):
-            batch = examples[start : start + batch_size]
-            input_ids = encode_prompts(
-                [example.text for example in batch],
-                tokenizer_name=loaded.tokenizer_name,
-                block_size=loaded.block_size,
-                vocab_size=loaded.vocab_size,
-            ).to(device)
+        for start in range(0, len(texts), batch_size):
+            input_ids = encoded.input_ids[start : start + batch_size].to(device)
             capture = capture_activations(
                 loaded.model,
                 input_ids,
-                sites=[site_base(site) for site in sites],
+                sites=sites,
                 detach=True,
                 cpu=True,
-                checkpoint_path=loaded.checkpoint_path,
-                batch_metadata={"tokenizer": tokenizer_info},
+                checkpoint_path=checkpoint_path,
+                batch_metadata={"tokenizer": loaded.tokenizer},
                 schedule_mode="eval",
             )
-            for key in site_keys:
-                if key not in capture.cache.records:
-                    continue
-                record = capture.cache.records[key]
-                pooled = pool_activation_tensor(record.tensor, expected_batch=len(batch))
-                features[key].append(pooled)
-    matrices: dict[str, ActivationMatrix] = {}
-    for key, chunks in features.items():
-        if not chunks:
-            continue
-        X = np.concatenate(chunks, axis=0).astype(np.float32)
-        spec = get_hook_site_spec(loaded.attention_type, key)
-        tensor_kind = spec.tensor_kind if spec is not None else "activation"
-        matrices[key] = ActivationMatrix(site=key, X=X, tensor_kind=tensor_kind, shape=tuple(X.shape))
-    return matrices
+            for key, record in capture.cache.records.items():
+                records.setdefault(key, []).append(record)
+            for key, item in capture.missing_sites.items():
+                missing[key] = item.reason
 
-
-def pool_activation_tensor(tensor: torch.Tensor, *, expected_batch: int) -> np.ndarray:
-    if not torch.is_floating_point(tensor):
-        raise ValueError("discrete route/index tensors are not continuous probe activations")
-    value = tensor.detach().float().cpu()
-    if value.shape[0] != expected_batch:
-        raise ValueError(
-            f"activation tensor first dimension {value.shape[0]} does not match batch size {expected_batch}; "
-            "parameter or scalar hook sites are not per-example activations"
+    features: dict[str, np.ndarray] = {}
+    summaries: dict[str, dict[str, Any]] = {}
+    for key, chunks in records.items():
+        tensor = torch.cat([record.tensor for record in chunks], dim=0)
+        feature_matrix = tensor_to_feature_matrix(
+            tensor,
+            expected_batch=len(texts),
+            lengths=encoded.lengths,
+            examples=examples,
+            feature_pooling=feature_pooling,
         )
-    if value.ndim == 2:
-        pooled = value
-    elif value.ndim == 3:
-        pooled = value.mean(dim=1)
-    elif value.ndim == 4:
-        pooled = value.mean(dim=2).reshape(value.shape[0], -1)
-    else:
-        pooled = value.reshape(value.shape[0], -1)
-    return pooled.numpy()
-
-
-def probe_dataset_from_matrix(matrix: ActivationMatrix, examples: tuple[TaskExample, ...], *, family_id: str) -> LinearProbeDataset:
-    selected = [idx for idx, example in enumerate(examples) if example.family_id == family_id]
-    if not selected:
-        raise ValueError(f"family {family_id!r} has no examples")
-    return LinearProbeDataset(
-        X=matrix.X[selected],
-        y=np.asarray([examples[idx].label for idx in selected], dtype=np.int64),
-        pair_ids=np.asarray([examples[idx].pair_id for idx in selected]),
-        template_ids=np.asarray([examples[idx].template_id for idx in selected]),
-        family_ids=np.asarray([examples[idx].family_id for idx in selected]),
-        variants=np.asarray([examples[idx].variant for idx in selected]),
+        if feature_matrix is None:
+            missing[key] = f"site {key} tensor shape {tuple(tensor.shape)} is not example-indexed"
+            continue
+        features[key] = feature_matrix
+        summaries[key] = {
+            "site": key,
+            "shape": list(tensor.shape),
+            "feature_shape": list(feature_matrix.shape),
+            "dtype": str(tensor.dtype).replace("torch.", ""),
+            "feature_pooling": feature_pooling,
+            "task_aligned_pooling": feature_pooling in TASK_ALIGNED_FEATURE_POOLING,
+        }
+    return ActivationFeatureSet(
+        features=features,
+        record_summaries=summaries,
+        missing_sites=missing,
+        tokenizer=loaded.tokenizer,
+        feature_pooling=feature_pooling,
+        task_aligned=feature_pooling in TASK_ALIGNED_FEATURE_POOLING,
     )
+
+
+def tensor_to_feature_matrix(
+    tensor: torch.Tensor,
+    *,
+    expected_batch: int,
+    lengths: list[int] | None = None,
+    examples: list[TaskExample] | None = None,
+    feature_pooling: str = "mean_sequence",
+) -> np.ndarray | None:
+    value = tensor.detach().cpu().float()
+    if value.ndim == 0 or value.shape[0] != expected_batch:
+        return None
+    if value.ndim == 1:
+        return value.reshape(expected_batch, 1).numpy()
+    if value.ndim == 2:
+        return value.numpy()
+    if value.ndim == 3:
+        return _pool_sequence_tensor(
+            value,
+            expected_batch=expected_batch,
+            token_dim=1,
+            lengths=lengths,
+            examples=examples,
+            feature_pooling=feature_pooling,
+        )
+    if value.ndim == 4:
+        return _pool_sequence_tensor(
+            value,
+            expected_batch=expected_batch,
+            token_dim=2,
+            lengths=lengths,
+            examples=examples,
+            feature_pooling=feature_pooling,
+        )
+    return value.reshape(expected_batch, -1).numpy()
+
+
+def _pool_sequence_tensor(
+    value: torch.Tensor,
+    *,
+    expected_batch: int,
+    token_dim: int,
+    lengths: list[int] | None,
+    examples: list[TaskExample] | None,
+    feature_pooling: str,
+) -> np.ndarray:
+    if feature_pooling == "mean_sequence":
+        return value.mean(dim=token_dim).reshape(expected_batch, -1).numpy()
+    if lengths is None:
+        raise ValueError(f"{feature_pooling} pooling requires encoded sequence lengths")
+    rows = []
+    for index in range(expected_batch):
+        positions = _pool_positions(
+            index=index,
+            length=lengths[index],
+            examples=examples,
+            feature_pooling=feature_pooling,
+        )
+        rows.append(_take_token_positions(value[index], token_dim=token_dim - 1, positions=positions).reshape(-1))
+    return torch.stack(rows, dim=0).numpy()
+
+
+def _take_token_positions(value: torch.Tensor, *, token_dim: int, positions: list[int]) -> torch.Tensor:
+    index = torch.tensor(positions, dtype=torch.long)
+    selected = value.index_select(token_dim, index)
+    return selected.mean(dim=token_dim)
+
+
+def _pool_positions(
+    *,
+    index: int,
+    length: int,
+    examples: list[TaskExample] | None,
+    feature_pooling: str,
+) -> list[int]:
+    if length <= 0:
+        raise ValueError("cannot pool an empty encoded sequence")
+    if feature_pooling == "final_token":
+        return [length - 1]
+    if examples is None:
+        raise ValueError(f"{feature_pooling} pooling requires task examples with metadata")
+    example = examples[index]
+    metadata = example.metadata
+    if feature_pooling == "answer_position":
+        if example.variant == "pos" and "clean_answer_position" in metadata:
+            positions = [metadata["clean_answer_position"]]
+        elif example.variant == "neg" and "corrupted_answer_position" in metadata:
+            positions = [metadata["corrupted_answer_position"]]
+        else:
+            positions = [length - 1]
+    elif feature_pooling == "patch_positions_mean":
+        if example.variant == "pos":
+            positions = metadata.get("clean_patch_token_indices", metadata.get("patch_token_indices"))
+        elif example.variant == "neg":
+            positions = metadata.get("corrupted_patch_token_indices", metadata.get("patch_token_indices"))
+        else:
+            positions = [length - 1]
+        if not isinstance(positions, list):
+            raise ValueError(f"{feature_pooling} pooling requires patch token metadata")
+    else:
+        raise ValueError(f"unsupported feature pooling strategy {feature_pooling!r}")
+    clean_positions: list[int] = []
+    for position in positions:
+        if isinstance(position, bool) or not isinstance(position, int):
+            raise ValueError(f"{feature_pooling} pooling has non-integer token position for example {index}")
+        if position < 0 or position >= length:
+            raise ValueError(
+                f"{feature_pooling} pooling token position {position} out of range for encoded length {length}"
+            )
+        clean_positions.append(position)
+    return clean_positions

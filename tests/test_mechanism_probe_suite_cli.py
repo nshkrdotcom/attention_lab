@@ -5,78 +5,30 @@ import subprocess
 import sys
 from pathlib import Path
 
+import torch
 import yaml
 
+from attention_lab.mechanisms.hypotheses import validate_hypothesis_doc
+from attention_lab.mechanisms.task_generation import gpt2_single_token_id
+from attention_lab.mechanisms.task_schema import load_task_suite, validate_task_suite
 from attention_lab.models.gpt import GPT, config_from_dict
-from attention_lab.training.checkpointing import save_checkpoint
-from attention_lab.training.optim import build_optimizer
 
 
-def _write_task_file(path: Path, n_pairs: int = 4) -> None:
-    records = []
-    marks = ["!", ".", "?", ","]
-    for idx in range(n_pairs):
-        mark = marks[idx % len(marks)]
-        records.append(
-            {
-                "x_pos": f"{mark} !",
-                "x_neg": f"{mark} .",
-                "x_para": f"! {mark}",
-                "x_decoy": f". {mark}",
-                "pair_id": f"pair_{idx}",
-                "template_id": f"template_{idx // 2}",
-                "family_id": "punctuation",
-                "metadata": {},
-            }
-        )
-    path.write_text(
-        json.dumps(
-            {
-                "metadata": {
-                    "generator_name": "unit_test",
-                    "generator_version": "1",
-                    "template_set": "punctuation",
-                    "filler_set": "punctuation",
-                    "generation_seed": 1,
-                    "created_at": "2026-07-02",
-                },
-                "records": records,
-            }
-        ),
-        encoding="utf-8",
-    )
-
-
-def _write_hypothesis_doc(path: Path, *, valid: bool = True) -> None:
-    payload = {
-        "CLAIM": "Branch delta encodes the punctuation contrast.",
-        "KILL_CONDITION": "AUC fails to beat nulls after correction.",
-        "MECHANISM_PROOF": "Linear probe and patching gates pass.",
-        "NEAREST_BORING_EXPLANATION": "Any same-dimensional site encodes punctuation.",
-        "CONTROL_THAT_RULES_IT_OUT": "standard_refactor_control_30m_seed1_rung500",
-        "TARGET_SITES": ["branch_delta"],
-        "TASK_CONTRASTS": ["x_pos", "x_neg", "x_para", "x_decoy"],
-        "PRIMARY_METRIC": "auc_minus_matched_control_auc",
-        "STATISTICAL_TEST": "bootstrap_ci_with_fdr_bh",
-        "MIN_N": 50,
-        "FDR_SCOPE": "all computed cells",
-        "EXPECTED_DIRECTION": "positive",
-    }
-    if not valid:
-        payload.pop("KILL_CONDITION")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
-
-
-def _write_tiny_checkpoint(tmp_path: Path, attention_type: str = "differential_qkv_anti_value") -> tuple[Path, Path]:
+def _write_tiny_config(path: Path, *, attention_type: str, name: str) -> None:
     config = {
-        "run": {"name": "tiny_probe_suite", "out_dir": str(tmp_path / "run"), "seed": 1},
-        "data": {"data_root": str(tmp_path / "data"), "tokenizer": "gpt2", "vocab_size": 50304},
+        "run": {"name": name, "out_dir": str(path.parent / name), "seed": 1},
+        "data": {
+            "data_root": "data/fineweb_edu_100m",
+            "tokenizer": "gpt2",
+            "vocab_size": 50304,
+            "train_tokens": 100,
+            "val_tokens": 20,
+        },
         "model": {
             "attention_type": attention_type,
-            "block_size": 8,
+            "block_size": 64,
             "n_layer": 1,
-            "n_head": 1,
+            "n_head": 2,
             "n_embd": 16,
             "dropout": 0.0,
             "bias": False,
@@ -85,12 +37,13 @@ def _write_tiny_checkpoint(tmp_path: Path, attention_type: str = "differential_q
             "device": "cpu",
             "dtype": "float32",
             "compile": False,
+            "eval_at_start": True,
             "B": 1,
-            "T": 8,
-            "total_batch_size": 8,
+            "T": 16,
+            "total_batch_size": 16,
             "max_steps": 1,
             "grad_clip": 1.0,
-            "weight_decay": 0.0,
+            "weight_decay": 0.1,
             "learning_rate": 0.001,
             "min_lr": 0.0001,
             "warmup_steps": 1,
@@ -99,126 +52,111 @@ def _write_tiny_checkpoint(tmp_path: Path, attention_type: str = "differential_q
             "save_every": 1,
             "log_every": 1,
         },
-        "sample": {
-            "sample_every": 1,
-            "prompt": "!",
-            "num_samples": 1,
-            "max_new_tokens": 1,
-            "top_k": 10,
-            "temperature": 1.0,
-            "seed": 1,
-        },
     }
-    config_path = tmp_path / "candidate.yaml"
-    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+
+def _write_tiny_checkpoint(config_path: Path, checkpoint_path: Path) -> None:
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    torch.manual_seed(0)
     model = GPT(config_from_dict(config["model"], config["data"]))
-    optimizer = build_optimizer(model, weight_decay=0.0, learning_rate=0.001, device_type="cpu", master_process=False)
-    checkpoint = save_checkpoint(tmp_path / "checkpoint", model, optimizer, config, step=0)
-    return config_path, checkpoint
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({"model": model.state_dict()}, checkpoint_path)
 
 
-def test_suite_cli_requires_hypothesis_doc_unless_exploratory(tmp_path, repo_root):
-    task_file = tmp_path / "tasks.json"
-    _write_task_file(task_file)
-    config_path, checkpoint = _write_tiny_checkpoint(tmp_path)
+def _write_task_file(
+    path: Path,
+    *,
+    pairs: int = 6,
+    provenance: bool = False,
+    restoration_tokens: bool = False,
+    families: tuple[str, ...] = ("negation",),
+) -> None:
+    records = []
+    target_id = gpt2_single_token_id(" true")
+    foil_id = gpt2_single_token_id(" false")
+    import tiktoken
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(repo_root / "scripts" / "run_mechanism_probe_suite.py"),
-            "--experiment-id",
-            "E003_qkv_architecture_gauntlet",
-            "--candidate",
-            "differential",
-            "--config",
-            str(config_path),
-            "--checkpoint",
-            str(checkpoint),
-            "--task-file",
-            str(task_file),
-            "--output-dir",
-            str(tmp_path / "out"),
-            "--control-mode",
-            "none",
-            "--min-n",
-            "2",
-            "--bootstrap-samples",
-            "25",
-            "--seed",
-            "1",
-        ],
-        cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=False,
+    enc = tiktoken.get_encoding("gpt2")
+    template_mod = min(max(pairs, 2), 8)
+    for family in families:
+        for index in range(pairs):
+            x_pos = f"Sentence: The analyst did not approve report {index}. Answer:"
+            x_neg = f"Sentence: The analyst approved report {index}. Answer:"
+            x_para = f"Sentence: The analyst never approved report {index}. Answer:"
+            x_decoy = f"Sentence: The analyst carefully approved report {index}. Answer:"
+            metadata = {}
+            if restoration_tokens:
+                clean_answer_position = len(enc.encode(x_pos)) - 1
+                corrupted_answer_position = len(enc.encode(x_neg)) - 1
+                shared_index = min(clean_answer_position, corrupted_answer_position)
+                metadata.update(
+                    {
+                        "target_token_text": " true",
+                        "foil_token_text": " false",
+                        "target_token_id": target_id,
+                        "foil_token_id": foil_id,
+                        "clean_answer_position": clean_answer_position,
+                        "corrupted_answer_position": corrupted_answer_position,
+                        "patch_token_indices": [shared_index],
+                        "clean_patch_token_indices": [clean_answer_position],
+                        "corrupted_patch_token_indices": [corrupted_answer_position],
+                        "clean_corrupt_token_alignment": "explicit_patch_indices",
+                    }
+                )
+            records.append(
+                    {
+                        "pair_id": f"{family}_pair_{index}",
+                        "template_id": f"{family}_template_{index % template_mod}",
+                    "family_id": family,
+                    "x_pos": x_pos,
+                    "x_neg": x_neg,
+                    "x_para": x_para,
+                    "x_decoy": x_decoy,
+                    "metadata": metadata,
+                }
+            )
+    suite_metadata = {}
+    if provenance:
+        suite_metadata = {
+            "generator_name": "test_generator",
+            "generator_version": "1",
+            "template_set": "test_templates",
+            "filler_set": "test_fillers",
+            "generation_seed": 1,
+            "created_at": "1970-01-01T00:00:00Z",
+        }
+    path.write_text(
+        yaml.safe_dump({"schema_version": 1, "metadata": suite_metadata, "records": records}, sort_keys=False),
+        encoding="utf-8",
     )
 
-    assert result.returncode != 0
-    assert "--hypothesis-doc is required" in result.stderr
 
-
-def test_suite_cli_rejects_invalid_hypothesis_doc(tmp_path, repo_root):
-    task_file = tmp_path / "tasks.json"
-    hypothesis_doc = tmp_path / "docs" / "hypothesis.yaml"
+def test_probe_suite_cli_exploratory_probe_only_real_path(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    output_dir = tmp_path / "suite_out"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
     _write_task_file(task_file)
-    _write_hypothesis_doc(hypothesis_doc, valid=False)
-    config_path, checkpoint = _write_tiny_checkpoint(tmp_path)
 
     result = subprocess.run(
         [
             sys.executable,
-            str(repo_root / "scripts" / "run_mechanism_probe_suite.py"),
+            "scripts/run_mechanism_probe_suite.py",
             "--experiment-id",
             "E003_qkv_architecture_gauntlet",
             "--candidate",
             "differential",
             "--config",
-            str(config_path),
+            str(candidate_config),
             "--checkpoint",
-            str(checkpoint),
-            "--task-file",
-            str(task_file),
-            "--hypothesis-doc",
-            str(hypothesis_doc),
-            "--output-dir",
-            str(tmp_path / "out"),
-            "--control-mode",
-            "none",
-            "--min-n",
-            "2",
-            "--bootstrap-samples",
-            "25",
-            "--seed",
-            "1",
-        ],
-        cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert result.returncode != 0
-    assert "missing required hypothesis fields" in result.stderr
-
-
-def test_suite_cli_exploratory_probe_only_writes_real_artifacts(tmp_path, repo_root):
-    task_file = tmp_path / "tasks.json"
-    output_dir = tmp_path / "out"
-    _write_task_file(task_file)
-    config_path, checkpoint = _write_tiny_checkpoint(tmp_path)
-
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(repo_root / "scripts" / "run_mechanism_probe_suite.py"),
-            "--experiment-id",
-            "E003_qkv_architecture_gauntlet",
-            "--candidate",
-            "differential",
-            "--config",
-            str(config_path),
-            "--checkpoint",
-            str(checkpoint),
+            str(candidate_checkpoint),
             "--task-file",
             str(task_file),
             "--output-dir",
@@ -228,22 +166,26 @@ def test_suite_cli_exploratory_probe_only_writes_real_artifacts(tmp_path, repo_r
             "--sites",
             "branch_delta",
             "--control-mode",
-            "none",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
             "--min-n",
             "2",
             "--bootstrap-samples",
-            "25",
+            "10",
             "--fdr-alpha",
-            "0.05",
+            "0.2",
             "--seed",
             "1",
-            "--device",
-            "cpu",
+            "--batch-size",
+            "4",
         ],
-        cwd=repo_root,
-        text=True,
-        capture_output=True,
+        cwd=Path.cwd(),
         check=False,
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0, result.stderr
@@ -251,9 +193,712 @@ def test_suite_cli_exploratory_probe_only_writes_real_artifacts(tmp_path, repo_r
     gates = json.loads((output_dir / "claim_gates.json").read_text(encoding="utf-8"))
     summary = (output_dir / "summary.md").read_text(encoding="utf-8")
 
-    assert metrics["probe_only"] is True
-    assert metrics["exploratory"] is True
-    assert metrics["patching_restoration"] == {"skipped": True, "reason": "probe-only mode"}
-    assert "linear_probe_auc" in metrics["probe_metrics"]["branch_delta[0]"]["punctuation"]
-    assert gates["status"] != "candidate_mechanism_evidence"
-    assert "single-seed" in summary
+    assert metrics["mode"]["probe_only"] is True
+    assert metrics["feature_pooling"] == {"strategy": "mean_sequence", "task_aligned": False}
+    assert metrics["control"]["override_used"] is True
+    assert metrics["control"]["canonical"] is False
+    assert metrics["cells"]
+    cell = next(iter(metrics["cells"].values()))
+    assert cell["linear_probe_auc"] is not None
+    assert cell["feature_pooling"]["strategy"] == "mean_sequence"
+    assert cell["shuffled_label_auc"] is not None
+    assert "random_site_null_available" in cell["random_site_null"]
+    assert "probe_direction_cosine_to_control" in cell["alignment_to_control"]
+    assert cell["patching"]["reason"] == "probe-only mode"
+    assert any("linear_probe_auc_minus_0_5" in item for item in metrics["fdr_bh"]["tested_cells"])
+    assert any("auc_minus_shuffled_auc" in item for item in metrics["fdr_bh"]["tested_cells"])
+    assert any("target_vs_decoy_specificity" in item for item in metrics["fdr_bh"]["tested_cells"])
+    assert gates["overall_status"] == "exploratory_probe_signal"
+    assert "Probe-only mode skipped" in summary
+
+
+def test_probe_suite_cli_requires_hypothesis_doc_for_confirmatory(tmp_path):
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            "missing.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "--hypothesis-doc" in result.stderr
+
+
+def test_confirmatory_small_suite_fails_before_checkpoint_loading(tmp_path):
+    task_file = tmp_path / "small.yaml"
+    _write_task_file(task_file, pairs=4, provenance=True, restoration_tokens=True)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "confirmatory task suite invalid" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
+def test_confirmatory_missing_provenance_fails_before_checkpoint_loading(tmp_path):
+    task_file = tmp_path / "missing_provenance.yaml"
+    _write_task_file(task_file, pairs=50, provenance=False, restoration_tokens=True)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "deterministic generator provenance" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
+def test_confirmatory_missing_restoration_tokens_fails_before_checkpoint_loading(tmp_path):
+    task_file = tmp_path / "missing_tokens.yaml"
+    _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=False)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "lacks restoration token metadata" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
+def test_exploratory_full_run_is_capped_and_labels_patching_limitation(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    output_dir = tmp_path / "suite_full_exploratory"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
+    _write_task_file(task_file, pairs=6)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--output-dir",
+            str(output_dir),
+            "--exploratory",
+            "--sites",
+            "branch_delta",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
+            "--min-n",
+            "2",
+            "--bootstrap-samples",
+            "5",
+            "--fdr-alpha",
+            "0.2",
+            "--seed",
+            "2",
+            "--batch-size",
+            "4",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    gates = json.loads((output_dir / "claim_gates.json").read_text(encoding="utf-8"))
+    summary = (output_dir / "summary.md").read_text(encoding="utf-8")
+    assert metrics["mode"] == {"exploratory": True, "probe_only": False}
+    assert gates["overall_status"] == "exploratory_probe_signal"
+    cell = next(iter(metrics["cells"].values()))
+    assert cell["patching"]["valid"] is False
+    assert "invalid restoration alignment metadata" in cell["patching"]["reason"]
+    assert "Exploratory mode capped" in summary
+
+
+def test_confirmatory_full_tiny_run_writes_real_artifacts_and_caps_noncanonical_control(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "generated_tasks.yaml"
+    output_dir = tmp_path / "suite_full_confirmatory"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
+
+    generated = subprocess.run(
+        [
+            sys.executable,
+            "scripts/generate_tier1_mechanism_tasks.py",
+            "--output",
+            str(task_file),
+            "--candidate",
+            "e003_differential",
+            "--pairs-per-family",
+            "50",
+            "--seed",
+            "3",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert generated.returncode == 0, generated.stderr
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(output_dir),
+            "--sites",
+            "branch_delta",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
+            "--force-noncanonical-control",
+            "--min-n",
+            "50",
+            "--bootstrap-samples",
+            "5",
+            "--fdr-alpha",
+            "0.2",
+            "--seed",
+            "3",
+            "--batch-size",
+            "8",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    gates = json.loads((output_dir / "claim_gates.json").read_text(encoding="utf-8"))
+    summary = (output_dir / "summary.md").read_text(encoding="utf-8")
+    assert metrics["mode"] == {"exploratory": False, "probe_only": False}
+    assert metrics["feature_pooling"] == {"strategy": "patch_positions_mean", "task_aligned": True}
+    assert metrics["hypothesis"]["path"].endswith("E003_differential_negation_tier1.yaml")
+    assert metrics["control"]["override_used"] is True
+    assert metrics["control"]["canonical"] is False
+    assert metrics["control"]["force_noncanonical"] is True
+    assert metrics["task_suite"]["restoration_token_metadata_valid"] is True
+    assert metrics["task_suite"]["confirmatory_floor_met"] is True
+    assert metrics["cells"]
+    cell = next(iter(metrics["cells"].values()))
+    assert cell["linear_probe_auc"] is not None
+    assert "patching" in cell
+    assert "mediation_fraction" in cell
+    assert "fdr_bh" in metrics
+    assert (
+        any("component_patch_restoration" in item for item in metrics["fdr_bh"]["tested_cells"])
+        or not cell["patching"]["valid"]
+    )
+    assert (
+        any("full_layer_patch_restoration" in item for item in metrics["fdr_bh"]["tested_cells"])
+        or not cell["patching"]["valid"]
+    )
+    assert gates["overall_status"] != "candidate_mechanism_evidence"
+    assert any("control pairing" in blocker for gate in gates["cells"].values() for blocker in gate["blockers"])
+    assert "mode: `confirmatory`" in summary
+    assert "canonical_control: `False`" in summary
+    assert "FDR-BH" in summary
+
+
+def test_confirmatory_unknown_site_fails_before_model_execution(tmp_path):
+    task_file = tmp_path / "tasks.yaml"
+    _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=True)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--sites",
+            "not_a_preset_site",
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "unknown confirmatory site" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
+def test_exploratory_unknown_site_requires_explicit_metadata(tmp_path):
+    task_file = tmp_path / "tasks.yaml"
+    _write_task_file(task_file, pairs=4)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--exploratory",
+            "--probe-only",
+            "--sites",
+            "attn_out",
+            "--min-n",
+            "2",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "--site-spec-file" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
+def test_exploratory_unknown_site_with_metadata_is_noncanonical_and_capped(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    site_spec = tmp_path / "site_spec.yaml"
+    output_dir = tmp_path / "suite_unknown_site"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
+    _write_task_file(task_file, pairs=6)
+    site_spec.write_text(
+        yaml.safe_dump(
+            {
+                "sites": [
+                    {
+                        "site": "attn_out",
+                        "layer": 0,
+                        "tensor_kind": "activation",
+                        "continuous": True,
+                        "control_site": "attn_out",
+                        "full_layer_site": "attn_out",
+                    }
+                ]
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--output-dir",
+            str(output_dir),
+            "--exploratory",
+            "--probe-only",
+            "--sites",
+            "attn_out",
+            "--site-spec-file",
+            str(site_spec),
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
+            "--min-n",
+            "2",
+            "--bootstrap-samples",
+            "5",
+            "--seed",
+            "8",
+            "--batch-size",
+            "4",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    gates = json.loads((output_dir / "claim_gates.json").read_text(encoding="utf-8"))
+    cell = next(iter(metrics["cells"].values()))
+    assert cell["site_metadata"]["canonical"] is False
+    assert gates["overall_status"] == "exploratory_probe_signal"
+
+
+def test_confirmatory_missing_control_requires_diagnostic_flag(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=True)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--sites",
+            "branch_delta",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(tmp_path / "missing_control.yaml"),
+            "--control-checkpoint",
+            str(tmp_path / "missing_control.pt"),
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "allow-diagnostic-with-missing-control" in result.stderr
+
+
+def test_diagnostic_missing_control_run_cannot_reach_controlled_probe_signal(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    output_dir = tmp_path / "diagnostic_missing_control"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=True)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(output_dir),
+            "--sites",
+            "branch_delta",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(tmp_path / "missing_control.yaml"),
+            "--control-checkpoint",
+            str(tmp_path / "missing_control.pt"),
+            "--allow-diagnostic-with-missing-control",
+            "--min-n",
+            "50",
+            "--bootstrap-samples",
+            "5",
+            "--seed",
+            "9",
+            "--batch-size",
+            "8",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    gates = json.loads((output_dir / "claim_gates.json").read_text(encoding="utf-8"))
+    assert metrics["preflight"]["allow_diagnostic_with_missing_control"] is True
+    assert metrics["control"]["available"] is False
+    assert gates["overall_status"] == "insufficient_evidence"
+    assert all(cell["status"] == "insufficient_evidence" for cell in gates["cells"].values())
+
+
+def test_fdr_scope_includes_all_computed_site_family_metric_cells(tmp_path):
+    candidate_config = tmp_path / "candidate.yaml"
+    control_config = tmp_path / "control.yaml"
+    candidate_checkpoint = tmp_path / "candidate" / "ckpt_last.pt"
+    control_checkpoint = tmp_path / "control" / "ckpt_last.pt"
+    task_file = tmp_path / "tasks.yaml"
+    output_dir = tmp_path / "suite_fdr_scope"
+    _write_tiny_config(candidate_config, attention_type="differential_qkv_anti_value", name="tiny_candidate")
+    _write_tiny_config(control_config, attention_type="standard", name="tiny_control")
+    _write_tiny_checkpoint(candidate_config, candidate_checkpoint)
+    _write_tiny_checkpoint(control_config, control_checkpoint)
+    _write_task_file(task_file, pairs=6, families=("negation", "adverb_control"))
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--config",
+            str(candidate_config),
+            "--checkpoint",
+            str(candidate_checkpoint),
+            "--task-file",
+            str(task_file),
+            "--output-dir",
+            str(output_dir),
+            "--exploratory",
+            "--probe-only",
+            "--sites",
+            "branch_delta,pos_out",
+            "--control-mode",
+            "matched",
+            "--control-config",
+            str(control_config),
+            "--control-checkpoint",
+            str(control_checkpoint),
+            "--min-n",
+            "2",
+            "--bootstrap-samples",
+            "5",
+            "--fdr-alpha",
+            "0.2",
+            "--seed",
+            "4",
+            "--batch-size",
+            "4",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output_dir / "metrics.json").read_text(encoding="utf-8"))
+    tested = set(metrics["fdr_bh"]["tested_cells"])
+    invalid = metrics["fdr_bh"]["invalid_or_unavailable_cells"]
+    for site in ("branch_delta[0]", "pos_out[0]"):
+        for family in ("negation", "adverb_control"):
+            prefix = f"{site}|family={family}|metric="
+            assert prefix + "linear_probe_auc_minus_0_5" in tested
+            assert prefix + "auc_minus_shuffled_auc" in tested
+            assert prefix + "target_vs_decoy_specificity" in tested
+    assert "every computed (site x layer x task_family x metric) cell" in metrics["fdr_bh"]["comparison_family"]
+    assert any(item["metric"] == "component_patch_restoration" for item in invalid)
+    assert any(item["metric"] == "full_layer_patch_restoration" for item in invalid)
+
+
+def test_invalid_hypothesis_doc_fails_schema_and_convention(tmp_path):
+    bad = tmp_path / "bad.yaml"
+    bad.write_text("CLAIM: x\n", encoding="utf-8")
+
+    try:
+        validate_hypothesis_doc(bad, repo_root=tmp_path)
+    except ValueError as exc:
+        assert "docs/mechanisms/hypotheses" in str(exc)
+    else:
+        raise AssertionError("invalid hypothesis path should fail")
+
+    good_path = tmp_path / "docs" / "mechanisms" / "hypotheses" / "h.yaml"
+    good_path.parent.mkdir(parents=True)
+    good_path.write_text("CLAIM: x\n", encoding="utf-8")
+    try:
+        validate_hypothesis_doc(good_path, repo_root=tmp_path)
+    except ValueError as exc:
+        assert "missing required fields" in str(exc)
+    else:
+        raise AssertionError("invalid hypothesis schema should fail")
+
+
+def test_task_suite_validation_blocks_small_hand_authored_confirmatory_suite(tmp_path):
+    task_file = tmp_path / "tasks.yaml"
+    _write_task_file(task_file, pairs=4)
+    suite = load_task_suite(task_file)
+    result = validate_task_suite(suite, confirmatory=True, exploratory=False, min_n=50)
+
+    assert not result.valid
+    assert not result.deterministic_provenance
+    assert not result.confirmatory_floor_met
+    assert any("deterministic generator provenance" in error for error in result.errors)
+    assert any("below confirmatory floor" in error for error in result.errors)
+
+
+def test_task_suite_validation_rejects_multitoken_restoration_text(tmp_path):
+    task_file = tmp_path / "tasks.yaml"
+    _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=True)
+    payload = yaml.safe_load(task_file.read_text(encoding="utf-8"))
+    payload["records"][0]["metadata"]["target_token_text"] = " definitely true"
+    task_file.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    suite = load_task_suite(task_file)
+    result = validate_task_suite(
+        suite,
+        confirmatory=True,
+        exploratory=False,
+        min_n=50,
+        require_restoration_tokens=True,
+    )
+
+    assert not result.valid
+    assert any("not a single GPT-2 token" in error for error in result.errors)
