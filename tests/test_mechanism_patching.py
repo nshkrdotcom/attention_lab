@@ -5,7 +5,7 @@ import torch
 
 from attention_lab.mechanisms.capture import capture_activations
 from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec, run_with_interventions
-from attention_lab.mechanisms.patching import make_cache_patch
+from attention_lab.mechanisms.patching import make_cache_patch, mediation_fraction, restoration_score
 from attention_lab.models.gpt import GPT, GPTConfig
 
 
@@ -77,3 +77,23 @@ def test_patching_rejects_attention_type_mismatch():
             torch.randint(0, 64, (1, 8)),
             [make_cache_patch(source, site="attn_out", layer=0)],
         )
+
+
+def test_restoration_score_and_mediation_fraction_formulas():
+    restoration = restoration_score(clean_logitdiff=5.0, corrupted_logitdiff=1.0, patched_logitdiff=3.0)
+    mediation = mediation_fraction(component_patch_restoration=0.25, full_layer_patch_restoration=0.5)
+
+    assert restoration.valid
+    assert restoration.restoration_score == 0.5
+    assert mediation.valid
+    assert mediation.mediation_fraction == 0.5
+
+
+def test_restoration_and_mediation_denominator_edges_are_invalid():
+    restoration = restoration_score(clean_logitdiff=1.0, corrupted_logitdiff=1.0, patched_logitdiff=1.5)
+    mediation = mediation_fraction(component_patch_restoration=0.2, full_layer_patch_restoration=0.0)
+
+    assert not restoration.valid
+    assert "denominator" in (restoration.reason or "")
+    assert not mediation.valid
+    assert "denominator" in (mediation.reason or "")

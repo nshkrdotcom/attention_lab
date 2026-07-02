@@ -413,6 +413,58 @@ reports/mechanisms/probes/E004_operator_valued_rung500/
 
 may be retained as historical/partial evidence if it points to the same checkpoint, but the `_inventory_path` probe supersedes it for current analysis.
 
+### Tier-1 mechanism probe suite rules
+
+The Tier-1 mechanism probe suite is implemented under:
+
+```text
+src/attention_lab/mechanisms/
+scripts/run_mechanism_probe_suite.py
+scripts/summarize_mechanism_probe_suite.py
+docs/mechanism_probe_framework.md
+```
+
+It is scoped to statistically controlled post-hoc mechanism checks for promoted E003/E004 candidates, not generic probing infrastructure.
+
+Executable Tier-1 presets are:
+
+```text
+E003 differential -> standard_refactor_control_30m_seed1_rung500
+E004 operator-valued -> standard_refactor_control_30m_seed2_rung500
+```
+
+Do not pair E004 against the E003 seed1 control.
+
+The mechanism-probe claim ladder is scoped to probe outputs:
+
+```text
+insufficient_evidence
+exploratory_probe_signal
+controlled_probe_signal
+candidate_mechanism_evidence
+```
+
+Do not confuse `candidate_mechanism_evidence` with the broader project status vocabulary. It means single-seed, checkpoint-backed, statistically controlled mechanism evidence, not replication.
+
+Confirmatory Tier-1 runs require:
+
+```text
+docs/mechanisms/hypotheses/<name>.yaml
+minimum 50 contrast pairs per family
+grouped split discipline
+shuffled-label null
+random-site null when feasible for that site-layer cell
+matched control evidence
+bootstrap CIs
+FDR-BH over every computed site x layer x task_family x metric cell
+target-vs-decoy specificity
+valid patch/restoration and mediation metrics for candidate_mechanism_evidence
+```
+
+Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
+
+Do not make Tier-2/Tier-3 presets executable, do not build SAE purity infrastructure in Tier-1, and do not handwrite fake `metrics.json`, `claim_gates.json`, or `summary.md` artifacts.
+
 ## Experiment rules
 
 Experiment configs belong under:
