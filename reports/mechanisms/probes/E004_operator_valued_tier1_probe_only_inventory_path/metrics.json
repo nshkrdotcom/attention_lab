@@ -4,8 +4,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.053988322463357455,
-        "probe_direction_cosine_to_control": -0.053988322463357455,
+        "probe_direction_alignment_abs": 0.05398837009919135,
+        "probe_direction_cosine_to_control": -0.05398837009919135,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -107,14 +107,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 6.435853720176965e-05
+      "train_loss": 6.435851537389681e-05
     },
     "operator_bind_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.022734384623603884,
-        "probe_direction_cosine_to_control": -0.022734384623603884,
+        "probe_direction_alignment_abs": 0.022734325607429714,
+        "probe_direction_cosine_to_control": -0.022734325607429714,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -216,14 +216,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 3.5271634260425344e-05
+      "train_loss": 3.527162698446773e-05
     },
     "operator_combined_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.07358546085322445,
-        "probe_direction_cosine_to_control": -0.07358546085322445,
+        "probe_direction_alignment_abs": 0.07358542444626849,
+        "probe_direction_cosine_to_control": -0.07358542444626849,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -325,14 +325,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 3.702856702147983e-05
+      "train_loss": 3.702861795318313e-05
     },
     "operator_gate_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.11214721172182981,
-        "probe_direction_cosine_to_control": -0.11214721172182981,
+        "probe_direction_alignment_abs": 0.11214718576065881,
+        "probe_direction_cosine_to_control": -0.11214718576065881,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -434,7 +434,7 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 5.425794734037481e-05
+      "train_loss": 5.425791096058674e-05
     },
     "operator_probs[0]|family=negation_scope": {
       "alignment_to_control": {
@@ -539,14 +539,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": -0.008888888888888835,
-      "train_loss": 0.30018723011016846
+      "train_loss": 0.30018624663352966
     },
     "operator_suppress_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.028658327861959824,
-        "probe_direction_cosine_to_control": -0.028658327861959824,
+        "probe_direction_alignment_abs": 0.028658310007792977,
+        "probe_direction_cosine_to_control": -0.028658310007792977,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -648,14 +648,14 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 7.29531966499053e-05
+      "train_loss": 7.295313116628677e-05
     },
     "operator_transform_out[0]|family=negation_scope": {
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.005041233938798633,
-        "probe_direction_cosine_to_control": -0.005041233938798633,
+        "probe_direction_alignment_abs": 0.005041222622675732,
+        "probe_direction_cosine_to_control": -0.005041222622675732,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -757,7 +757,7 @@
         "train_size": 70
       },
       "target_vs_decoy_specificity": 0.0,
-      "train_loss": 3.103045673924498e-05
+      "train_loss": 3.103043854935095e-05
     }
   },
   "control": {

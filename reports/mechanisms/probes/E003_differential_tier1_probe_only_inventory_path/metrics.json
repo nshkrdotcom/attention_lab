@@ -4,8 +4,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.024503561156061116,
-        "probe_direction_cosine_to_control": 0.024503561156061116,
+        "probe_direction_alignment_abs": 0.024503581005298206,
+        "probe_direction_cosine_to_control": 0.024503581005298206,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -113,8 +113,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.06687405850945626,
-        "probe_direction_cosine_to_control": -0.06687405850945626,
+        "probe_direction_alignment_abs": 0.0668740404139238,
+        "probe_direction_cosine_to_control": -0.0668740404139238,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
@@ -222,8 +222,8 @@
       "alignment_to_control": {
         "available": true,
         "interpretation": "high alignment suggests an already-present or universal feature direction surfaced differently; low alignment is only a prompt for scrutiny and is not representational novelty evidence by itself",
-        "probe_direction_alignment_abs": 0.0023994484502870973,
-        "probe_direction_cosine_to_control": -0.0023994484502870973,
+        "probe_direction_alignment_abs": 0.0023994374263533818,
+        "probe_direction_cosine_to_control": -0.0023994374263533818,
         "reason": null
       },
       "auc_minus_matched_control_auc": 0.0,
