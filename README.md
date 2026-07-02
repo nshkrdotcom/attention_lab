@@ -736,6 +736,47 @@ Comparison artifacts read `evals/run_summary.json`, add experiment metadata, req
 
 For Multi-QKV candidates, comparison output also includes mechanism and destructive-test fields when the relevant artifacts exist.
 
+## Mechanism investigation
+
+Attention Lab includes a native mechanism investigation layer under:
+
+```text
+src/attention_lab/mechanisms/
+```
+
+It provides a deterministic hook-site registry, `ActivationCache` records, activation capture during real forward passes, zero/mean/scale/replace/cache-patching interventions, E001-E004 backfill inventories, and a generated cross-experiment mechanism candidate report. This layer is native to the local GPT and attention modules. TransformerLens compatibility is an adapter goal, not a prerequisite.
+
+Generate derived E001-E004 inventories without modifying historical artifacts:
+
+```bash
+uv run scripts/backfill_mechanism_inventory.py --experiments E001,E002,E003,E004
+uv run scripts/compare_mechanism_candidates.py \
+  --backfill-root reports/mechanisms/backfill \
+  --output reports/mechanisms/cross_experiment_candidate_report.md
+```
+
+Run a small post-hoc probe only when a checkpoint exists:
+
+```bash
+uv run scripts/run_mechanism_probe.py \
+  --config configs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2_rung500.yaml \
+  --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
+  --prompt "The history of mathematics" \
+  --sites operator_probs,operator_suppress_out,operator_bind_out \
+  --interventions zero \
+  --output-dir reports/mechanisms/probes/E004_operator_valued_rung500
+```
+
+Backfill evidence levels are:
+
+```text
+artifact_summary       metadata recoverable from existing configs/reports/summaries/diagnostics
+checkpoint_recompute   checkpoint exists, so small-batch activations/interventions can be recomputed
+not_available          checkpoint or required evidence is absent
+```
+
+Missing historical activations remain missing. The backfill reports list unavailable items explicitly as `missing`, `not_recorded`, or `checkpoint_unavailable`.
+
 ## Testing and quality checks
 
 Before committing source or documentation changes, run the normal local QC set:

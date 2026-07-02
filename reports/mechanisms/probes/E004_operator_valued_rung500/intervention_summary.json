@@ -1,0 +1,23 @@
+{
+  "interventions": {
+    "zero": {
+      "applied": [
+        {
+          "kind": "zero",
+          "site": "operator_probs[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_suppress_out[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "operator_bind_out[0]"
+        }
+      ],
+      "logit_delta_norm": 321.88958740234375,
+      "missing_or_failed": []
+    }
+  },
+  "schema_version": 1
+}

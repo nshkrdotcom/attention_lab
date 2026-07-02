@@ -47,6 +47,7 @@ class DifferentialQKVAntiValueCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
@@ -65,6 +66,13 @@ class DifferentialQKVAntiValueCausalSelfAttention(nn.Module):
         q_neg = self._split_heads(q_neg, batch_size, seq_len)
         k_neg = self._split_heads(k_neg, batch_size, seq_len)
         v_neg = self._split_heads(v_neg, batch_size, seq_len)
+        if activation_recorder is not None:
+            q_pos = activation_recorder.record("pos_q", q_pos, layer=layer_idx)
+            k_pos = activation_recorder.record("pos_k", k_pos, layer=layer_idx)
+            v_pos = activation_recorder.record("pos_v", v_pos, layer=layer_idx)
+            q_neg = activation_recorder.record("neg_q", q_neg, layer=layer_idx)
+            k_neg = activation_recorder.record("neg_k", k_neg, layer=layer_idx)
+            v_neg = activation_recorder.record("neg_v", v_neg, layer=layer_idx)
 
         y_pos = F.scaled_dot_product_attention(
             q_pos,
@@ -84,8 +92,16 @@ class DifferentialQKVAntiValueCausalSelfAttention(nn.Module):
         )
 
         lambda_value = F.softplus(self.lambda_raw).to(dtype=y_pos.dtype)
-        y_branch = y_pos - lambda_value * y_neg
-        y = y_branch.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
+        if activation_recorder is not None:
+            lambda_value = activation_recorder.record("lambda", lambda_value.reshape(()), layer=layer_idx)
+        pos_flat = y_pos.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
+        neg_flat = y_neg.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
+        if activation_recorder is not None:
+            pos_flat = activation_recorder.record("pos_out", pos_flat, layer=layer_idx)
+            neg_flat = activation_recorder.record("neg_out", neg_flat, layer=layer_idx)
+        y = pos_flat - lambda_value * neg_flat
+        if activation_recorder is not None:
+            y = activation_recorder.record("branch_delta", y, layer=layer_idx)
         y = self.resid_dropout(self.c_proj(y))
 
         pos_norm = y_pos.detach().float().norm()

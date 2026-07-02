@@ -142,15 +142,27 @@ class CPScoreAugmentedCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
-        del step, positions, position_ids, schedule_mode, layer_idx
+        del step, positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
         head_size = channels // self.n_head
         q, k, v = self._split_qkv(x)
+        if activation_recorder is not None:
+            q = activation_recorder.record("attn_q", q, layer=layer_idx)
+            k = activation_recorder.record("attn_k", k, layer=layer_idx)
+            v = activation_recorder.record("attn_v", v, layer=layer_idx)
 
         standard_scores = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(head_size))
         extra_scores = self.compute_extra_scores(x)
-        scores = standard_scores + self.cp_lambda.to(dtype=standard_scores.dtype) * extra_scores
+        cp_lambda = self.cp_lambda.to(dtype=standard_scores.dtype)
+        if activation_recorder is not None:
+            extra_scores = activation_recorder.record("cp_score", extra_scores, layer=layer_idx)
+            cp_lambda = activation_recorder.record("cp_lambda", cp_lambda.reshape(()), layer=layer_idx)
+        cp_output = cp_lambda * extra_scores
+        if activation_recorder is not None:
+            cp_output = activation_recorder.record("cp_output", cp_output, layer=layer_idx)
+        scores = standard_scores + cp_output
         causal_mask = torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device).tril()
         scores = scores.masked_fill(~causal_mask, float("-inf"))
         attention = F.softmax(scores, dim=-1)

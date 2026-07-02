@@ -70,6 +70,7 @@ class OperatorValuedCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
@@ -92,6 +93,8 @@ class OperatorValuedCausalSelfAttention(nn.Module):
         router_input = torch.cat([x, content], dim=-1)
         active_probs = F.softmax(self.router(router_input), dim=-1)
         probs = self._full_operator_probs(active_probs)
+        if activation_recorder is not None:
+            probs = activation_recorder.record("operator_probs", probs, layer=layer_idx)
 
         suppress_scale = F.softplus(self.suppress_scale_raw).to(dtype=content.dtype)
         outputs = {
@@ -105,10 +108,33 @@ class OperatorValuedCausalSelfAttention(nn.Module):
             ),
             "bind": self.op_bind(x * content) if self.include_bind else torch.zeros_like(content),
         }
+        if activation_recorder is not None:
+            outputs["add"] = activation_recorder.record("operator_add_out", outputs["add"], layer=layer_idx)
+            outputs["suppress"] = activation_recorder.record(
+                "operator_suppress_out",
+                outputs["suppress"],
+                layer=layer_idx,
+                metadata={"signed": "negative"},
+            )
+            outputs["gate"] = activation_recorder.record("operator_gate_out", outputs["gate"], layer=layer_idx)
+            outputs["transform"] = activation_recorder.record(
+                "operator_transform_out",
+                outputs["transform"],
+                layer=layer_idx,
+                metadata={"disabled": not self.include_transform},
+            )
+            outputs["bind"] = activation_recorder.record(
+                "operator_bind_out",
+                outputs["bind"],
+                layer=layer_idx,
+                metadata={"disabled": not self.include_bind},
+            )
 
         combined = torch.zeros_like(content)
         for index, name in enumerate(self._operator_names):
             combined = combined + probs[..., index : index + 1] * outputs[name]
+        if activation_recorder is not None:
+            combined = activation_recorder.record("operator_combined_out", combined, layer=layer_idx)
         y = self.resid_dropout(combined)
 
         self._record_diagnostics(

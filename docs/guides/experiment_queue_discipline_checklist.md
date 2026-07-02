@@ -134,6 +134,18 @@ scripts/compare_runs.py
 The queue must not rewrite training, checkpointing, config validation, manifest checks,
 run verification, or existing experiment reports.
 
+## Mechanism Investigation Addendum
+
+The queue remains an orchestration and promotion layer. Mechanism investigation is handled by the native substrate under `src/attention_lab/mechanisms/` and its scripts:
+
+```bash
+uv run scripts/backfill_mechanism_inventory.py --experiments E001,E002,E003,E004
+uv run scripts/run_mechanism_probe.py --config <config> --checkpoint <ckpt_last.pt> --prompt "..." --sites <sites> --interventions zero --output-dir <derived-output-dir>
+uv run scripts/compare_mechanism_candidates.py --backfill-root reports/mechanisms/backfill --output reports/mechanisms/cross_experiment_candidate_report.md
+```
+
+Queue readiness, promotion reports, and gauntlet reports can contribute `artifact_summary` evidence. They do not contain historical activations. Post-hoc probes require checkpoints and produce derived artifacts only under `reports/mechanisms/`.
+
 ## No Full Runs In This Working Copy
 
 For this documentation and checklist pass:

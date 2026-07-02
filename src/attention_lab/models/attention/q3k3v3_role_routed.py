@@ -56,6 +56,7 @@ class Q3K3V3RoleRoutedCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del positions, position_ids, schedule_mode
         batch_size, seq_len, _ = x.size()
@@ -74,6 +75,25 @@ class Q3K3V3RoleRoutedCausalSelfAttention(nn.Module):
         content = self._merge_heads(diagonal_outputs["content"], batch_size, seq_len)
         operator = self._merge_heads(diagonal_outputs["operator"], batch_size, seq_len)
         binding = self._merge_heads(diagonal_outputs["binding"], batch_size, seq_len)
+        if activation_recorder is not None:
+            content = activation_recorder.record(
+                "content_out",
+                content,
+                layer=layer_idx,
+                metadata={"norm": float(content.detach().float().norm().item())},
+            )
+            operator = activation_recorder.record(
+                "operator_out",
+                operator,
+                layer=layer_idx,
+                metadata={"norm": float(operator.detach().float().norm().item())},
+            )
+            binding = activation_recorder.record(
+                "binding_out",
+                binding,
+                layer=layer_idx,
+                metadata={"norm": float(binding.detach().float().norm().item())},
+            )
 
         if self.cross_role_grid:
             grid_outputs = []
@@ -86,7 +106,26 @@ class Q3K3V3RoleRoutedCausalSelfAttention(nn.Module):
         else:
             pieces = [content, operator, binding]
             if self.include_pair_products:
-                pieces.extend([content * operator, content * binding, operator * binding])
+                content_operator = content * operator
+                content_binding = content * binding
+                operator_binding = operator * binding
+                if activation_recorder is not None:
+                    content_operator = activation_recorder.record(
+                        "content_operator_product",
+                        content_operator,
+                        layer=layer_idx,
+                    )
+                    content_binding = activation_recorder.record(
+                        "content_binding_product",
+                        content_binding,
+                        layer=layer_idx,
+                    )
+                    operator_binding = activation_recorder.record(
+                        "operator_binding_product",
+                        operator_binding,
+                        layer=layer_idx,
+                    )
+                pieces.extend([content_operator, content_binding, operator_binding])
             projected_input = torch.cat(pieces, dim=-1)
 
         y = self.resid_dropout(self.c_proj(projected_input))

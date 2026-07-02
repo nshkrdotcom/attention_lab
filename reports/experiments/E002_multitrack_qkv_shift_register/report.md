@@ -821,3 +821,14 @@ distinguishes their route-specialization behavior,
 and selects the next objects for deeper mechanistic analysis.
 ```
 
+## Mechanism Investigation Addendum
+
+Derived backfill artifacts now live under:
+
+```text
+reports/mechanisms/backfill/E002_multitrack_qkv_shift_register/
+```
+
+The backfill found checkpoint-recompute availability for the canonical completed global Multi-QKV runs: `standard_refactor_control_30m_seed1`, `multi_qkv_static_3track_global_30m_seed1`, `multi_qkv_train_rotation_3track_global_30m_seed1`, and `multi_qkv_position_rotation_3track_global_30m_seed1`. Old skeleton configs remain `not_available` and must not be treated as evidence.
+
+Supported post-hoc hook sites include `selected_track`, `track_q`, `track_k`, `track_v`, and `track_out`. The next mechanism action is a route-specialization workbench: route replacement, Q/K/V-only track swaps, and per-layer/per-position patching from checkpoint-recomputed caches.

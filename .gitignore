@@ -247,5 +247,7 @@ reports/*
 !reports/schema/attention_diagnostics.schema.json
 !reports/experiments/
 !reports/experiments/**
+!reports/mechanisms/
+!reports/mechanisms/**
 
 wandb/

@@ -121,17 +121,31 @@ class Block(nn.Module):
         positions: torch.Tensor | None = None,
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         if position_ids is not None:
             positions = position_ids
-        x = x + self.attn(
+        if activation_recorder is not None:
+            x = activation_recorder.record("resid_pre", x, layer=self.layer_idx)
+        attn_out = self.attn(
             self.ln_1(x),
             step=step,
             position_ids=positions,
             schedule_mode=schedule_mode,
             layer_idx=self.layer_idx,
+            activation_recorder=activation_recorder,
         )
-        x = x + self.mlp(self.ln_2(x))
+        if activation_recorder is not None:
+            attn_out = activation_recorder.record("attn_out", attn_out, layer=self.layer_idx)
+        x = x + attn_out
+        if activation_recorder is not None:
+            x = activation_recorder.record("resid_mid", x, layer=self.layer_idx)
+        mlp_out = self.mlp(self.ln_2(x))
+        if activation_recorder is not None:
+            mlp_out = activation_recorder.record("mlp_out", mlp_out, layer=self.layer_idx)
+        x = x + mlp_out
+        if activation_recorder is not None:
+            x = activation_recorder.record("resid_post", x, layer=self.layer_idx)
         return x
 
 
@@ -177,6 +191,7 @@ class GPT(nn.Module):
         positions: torch.Tensor | None = None,
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
+        activation_recorder=None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         _, seq_len = idx.size()
         if seq_len > self.config.block_size:
@@ -198,9 +213,11 @@ class GPT(nn.Module):
         x = tok_emb + pos_emb
 
         for block in self.transformer.h:
-            x = block(x, step=step, position_ids=pos, schedule_mode=schedule_mode)
+            x = block(x, step=step, position_ids=pos, schedule_mode=schedule_mode, activation_recorder=activation_recorder)
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x)
+        if activation_recorder is not None:
+            logits = activation_recorder.record("logits", logits)
 
         loss = None
         if targets is not None:

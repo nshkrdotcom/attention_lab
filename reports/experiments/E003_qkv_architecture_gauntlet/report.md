@@ -1111,3 +1111,15 @@ The result is not a performance claim. It is a viability claim.
 The most scientifically useful next step is not simply to scale training. It is to determine whether the added streams become **causally meaningful mechanisms** or merely **active extra capacity**.
 
 The strongest candidate for immediate follow-up is `differential_qkv_anti_value`, because its subtractive branch gives the clearest testbed for studying counterwrite behavior, suppression, cancellation, and the limitations of standard value-stream writes.
+
+## Mechanism Investigation Addendum
+
+Derived backfill artifacts now live under:
+
+```text
+reports/mechanisms/backfill/E003_qkv_architecture_gauntlet/
+```
+
+The base full-run configs have no full-run checkpoints in this tree. Rung checkpoints exist for the standard control, `differential_qkv_anti_value`, and `scope_gated_qkv` at rung020, rung150, and rung500. The mechanism substrate can recompute branch, gate, scope, and standard residual/attention activations from those rung checkpoints for small prompt batches.
+
+The generated cross-experiment report classifies the rung500 `differential_qkv_anti_value` and `scope_gated_qkv` candidates as mechanism-probe promotion candidates, not as semantic explanations.

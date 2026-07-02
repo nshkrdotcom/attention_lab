@@ -28,8 +28,9 @@ class StandardCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
-        del step, positions, position_ids, schedule_mode, layer_idx
+        del step, positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
         head_size = channels // self.n_head
 
@@ -38,6 +39,10 @@ class StandardCausalSelfAttention(nn.Module):
         q = q.view(batch_size, seq_len, self.n_head, head_size).transpose(1, 2)
         k = k.view(batch_size, seq_len, self.n_head, head_size).transpose(1, 2)
         v = v.view(batch_size, seq_len, self.n_head, head_size).transpose(1, 2)
+        if activation_recorder is not None:
+            q = activation_recorder.record("attn_q", q, layer=layer_idx)
+            k = activation_recorder.record("attn_k", k, layer=layer_idx)
+            v = activation_recorder.record("attn_v", v, layer=layer_idx)
 
         y = F.scaled_dot_product_attention(
             q,

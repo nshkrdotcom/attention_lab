@@ -44,6 +44,7 @@ class ScopeGatedQKVCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
@@ -75,12 +76,25 @@ class ScopeGatedQKVCausalSelfAttention(nn.Module):
         scoped_flat = scoped.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
         scoped_flat = self.scope_scale.to(dtype=scoped_flat.dtype) * scoped_flat
         gate = torch.sigmoid(self.c_gate(x))
+        if activation_recorder is not None:
+            content_flat = activation_recorder.record("content_out", content_flat, layer=layer_idx)
+            scoped_flat = activation_recorder.record("scope_out", scoped_flat, layer=layer_idx)
+            gate = activation_recorder.record("gate", gate, layer=layer_idx)
+        content_scope_product = content_flat * scoped_flat
+        gated_content = gate * content_flat
+        if activation_recorder is not None:
+            content_scope_product = activation_recorder.record(
+                "content_scope_product",
+                content_scope_product,
+                layer=layer_idx,
+            )
+            gated_content = activation_recorder.record("gated_content", gated_content, layer=layer_idx)
         combined = torch.cat(
             [
                 content_flat,
                 scoped_flat,
-                content_flat * scoped_flat,
-                gate * content_flat,
+                content_scope_product,
+                gated_content,
             ],
             dim=-1,
         )

@@ -50,6 +50,7 @@ class DynamicValueQueryConditionedCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del positions, position_ids, schedule_mode
         batch_size, seq_len, channels = x.size()
@@ -69,7 +70,19 @@ class DynamicValueQueryConditionedCausalSelfAttention(nn.Module):
         content = content_heads.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
         gate_input = self._gate_input(x, q_flat)
         gate = torch.sigmoid(self.c_gate(gate_input))
+        if activation_recorder is not None:
+            content = activation_recorder.record("static_value_content", content, layer=layer_idx)
+            gate = activation_recorder.record(
+                "dynamic_gate",
+                gate,
+                layer=layer_idx,
+                metadata={"mean": float(gate.detach().float().mean().item())},
+            )
         gated_content = gate * content
+        dynamic_delta = gated_content - content
+        if activation_recorder is not None:
+            dynamic_delta = activation_recorder.record("dynamic_delta", dynamic_delta, layer=layer_idx)
+            gated_content = activation_recorder.record("dynamic_value_output", content + dynamic_delta, layer=layer_idx)
         y = self.resid_dropout(self.c_proj(gated_content))
         self._record_diagnostics(
             gate=gate,

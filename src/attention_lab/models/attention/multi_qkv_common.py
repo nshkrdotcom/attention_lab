@@ -334,6 +334,7 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
         position_ids: torch.Tensor | None = None,
         schedule_mode: str | None = None,
         layer_idx: int | None = None,
+        activation_recorder=None,
     ) -> torch.Tensor:
         del layer_idx
         batch_size, seq_len, channels = x.size()
@@ -351,7 +352,29 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
         active_tracks = self.active_track_indices(step=step, positions=positions, schedule_mode=schedule_mode).to(
             device=x.device, dtype=torch.long
         )
-        qkv = self._project(x, active_tracks)
+        if activation_recorder is not None:
+            active_tracks = activation_recorder.record("selected_track", active_tracks, layer=self.layer_idx)
+        if active_tracks.dim() == 0:
+            qkv = self.qkv_bank.project_track(x, int(active_tracks.item()))
+            if activation_recorder is not None:
+                q_flat, k_flat, v_flat = qkv.split(self.n_embd, dim=2)
+                track = int(active_tracks.item())
+                q_flat = activation_recorder.record("track_q", q_flat, layer=self.layer_idx, track=track)
+                k_flat = activation_recorder.record("track_k", k_flat, layer=self.layer_idx, track=track)
+                v_flat = activation_recorder.record("track_v", v_flat, layer=self.layer_idx, track=track)
+                qkv = torch.cat([q_flat, k_flat, v_flat], dim=2)
+        else:
+            projections = self.qkv_bank.project_all_tracks(x)
+            if activation_recorder is not None:
+                recorded = []
+                for track, projection in enumerate(projections):
+                    q_flat, k_flat, v_flat = projection.split(self.n_embd, dim=2)
+                    q_flat = activation_recorder.record("track_q", q_flat, layer=self.layer_idx, track=track)
+                    k_flat = activation_recorder.record("track_k", k_flat, layer=self.layer_idx, track=track)
+                    v_flat = activation_recorder.record("track_v", v_flat, layer=self.layer_idx, track=track)
+                    recorded.append(torch.cat([q_flat, k_flat, v_flat], dim=2))
+                projections = recorded
+            qkv = self._select_per_position(projections, active_tracks)
         if self.debug_route_override is not None and self.debug_route_override.mode == "zero_selected":
             qkv = torch.zeros_like(qkv)
         q, k, v = self._split_qkv_heads(qkv)
@@ -372,6 +395,8 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
         attention = self.attn_dropout(attention)
         y = attention @ v
         y = y.transpose(1, 2).contiguous().view(batch_size, seq_len, channels)
+        if activation_recorder is not None:
+            y = activation_recorder.record("track_out", y, layer=self.layer_idx)
         return self.resid_dropout(self.c_proj(y))
 
 

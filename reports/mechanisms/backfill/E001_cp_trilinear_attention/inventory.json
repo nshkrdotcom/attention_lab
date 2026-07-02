@@ -1,0 +1,182 @@
+{
+  "candidates": [
+    {
+      "artifact_dirs": [
+        "runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1"
+      ],
+      "attention_type": "cp_bilinear",
+      "checkpoint_path": "runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1/checkpoints/ckpt_last.pt",
+      "checkpoint_status": "available",
+      "config_path": "configs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1.yaml",
+      "diagnostics_path": "runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1/evals/attention_diagnostics.jsonl",
+      "diagnostics_status": "available",
+      "evidence_level": "checkpoint_recompute",
+      "experiment_id": "E001_cp_trilinear_attention",
+      "gauntlet_status": "missing",
+      "notes": "",
+      "posthoc_probe_status": "checkpoint_recompute_available",
+      "promotion_status": "missing",
+      "run_name": "cp_bilinear_r8_30m_seed1",
+      "run_summary_path": "runs/experiments/E001_cp_trilinear_attention/cp_bilinear_r8_30m_seed1/evals/run_summary.json",
+      "run_summary_status": "available",
+      "supported_hook_sites": [
+        "resid_pre[layer]",
+        "attn_q[layer]",
+        "attn_k[layer]",
+        "attn_v[layer]",
+        "attn_out[layer]",
+        "resid_mid[layer]",
+        "mlp_out[layer]",
+        "resid_post[layer]",
+        "logits",
+        "cp_score[layer]",
+        "cp_output[layer]",
+        "cp_lambda[layer]"
+      ],
+      "unsupported_hook_sites": [
+        "cp_rank_component[layer, rank]"
+      ]
+    },
+    {
+      "artifact_dirs": [
+        "runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1"
+      ],
+      "attention_type": "cp_trilinear",
+      "checkpoint_path": "runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1/checkpoints/ckpt_last.pt",
+      "checkpoint_status": "available",
+      "config_path": "configs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1.yaml",
+      "diagnostics_path": "runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1/evals/attention_diagnostics.jsonl",
+      "diagnostics_status": "available",
+      "evidence_level": "checkpoint_recompute",
+      "experiment_id": "E001_cp_trilinear_attention",
+      "gauntlet_status": "missing",
+      "notes": "",
+      "posthoc_probe_status": "checkpoint_recompute_available",
+      "promotion_status": "missing",
+      "run_name": "cp_trilinear_r8_30m_seed1",
+      "run_summary_path": "runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_30m_seed1/evals/run_summary.json",
+      "run_summary_status": "available",
+      "supported_hook_sites": [
+        "resid_pre[layer]",
+        "attn_q[layer]",
+        "attn_k[layer]",
+        "attn_v[layer]",
+        "attn_out[layer]",
+        "resid_mid[layer]",
+        "mlp_out[layer]",
+        "resid_post[layer]",
+        "logits",
+        "cp_score[layer]",
+        "cp_output[layer]",
+        "cp_lambda[layer]"
+      ],
+      "unsupported_hook_sites": [
+        "cp_rank_component[layer, rank]"
+      ]
+    },
+    {
+      "artifact_dirs": [
+        "runs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_lambda0_30m_seed1"
+      ],
+      "attention_type": "cp_trilinear",
+      "checkpoint_path": null,
+      "checkpoint_status": "checkpoint_unavailable",
+      "config_path": "configs/experiments/E001_cp_trilinear_attention/cp_trilinear_r8_lambda0_30m_seed1.yaml",
+      "diagnostics_path": null,
+      "diagnostics_status": "missing",
+      "evidence_level": "not_available",
+      "experiment_id": "E001_cp_trilinear_attention",
+      "gauntlet_status": "missing",
+      "notes": "checkpoint_unavailable; missing; run_summary_missing",
+      "posthoc_probe_status": "checkpoint_unavailable",
+      "promotion_status": "missing",
+      "run_name": "cp_trilinear_r8_lambda0_30m_seed1",
+      "run_summary_path": null,
+      "run_summary_status": "missing",
+      "supported_hook_sites": [
+        "resid_pre[layer]",
+        "attn_q[layer]",
+        "attn_k[layer]",
+        "attn_v[layer]",
+        "attn_out[layer]",
+        "resid_mid[layer]",
+        "mlp_out[layer]",
+        "resid_post[layer]",
+        "logits",
+        "cp_score[layer]",
+        "cp_output[layer]",
+        "cp_lambda[layer]"
+      ],
+      "unsupported_hook_sites": [
+        "cp_rank_component[layer, rank]"
+      ]
+    },
+    {
+      "artifact_dirs": [
+        "runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1"
+      ],
+      "attention_type": "standard",
+      "checkpoint_path": "runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1/checkpoints/ckpt_last.pt",
+      "checkpoint_status": "available",
+      "config_path": "configs/experiments/E001_cp_trilinear_attention/standard_30m_seed1.yaml",
+      "diagnostics_path": null,
+      "diagnostics_status": "not_recorded",
+      "evidence_level": "checkpoint_recompute",
+      "experiment_id": "E001_cp_trilinear_attention",
+      "gauntlet_status": "missing",
+      "notes": "not_recorded",
+      "posthoc_probe_status": "checkpoint_recompute_available",
+      "promotion_status": "missing",
+      "run_name": "standard_30m_seed1",
+      "run_summary_path": "runs/experiments/E001_cp_trilinear_attention/standard_30m_seed1/evals/run_summary.json",
+      "run_summary_status": "available",
+      "supported_hook_sites": [
+        "resid_pre[layer]",
+        "attn_q[layer]",
+        "attn_k[layer]",
+        "attn_v[layer]",
+        "attn_out[layer]",
+        "resid_mid[layer]",
+        "mlp_out[layer]",
+        "resid_post[layer]",
+        "logits"
+      ],
+      "unsupported_hook_sites": []
+    },
+    {
+      "artifact_dirs": [],
+      "attention_type": "standard",
+      "checkpoint_path": null,
+      "checkpoint_status": "checkpoint_unavailable",
+      "config_path": "configs/experiments/E001_cp_trilinear_attention/standard_refactor_control_30m_seed1.yaml",
+      "diagnostics_path": null,
+      "diagnostics_status": "not_recorded",
+      "evidence_level": "not_available",
+      "experiment_id": "E001_cp_trilinear_attention",
+      "gauntlet_status": "missing",
+      "notes": "checkpoint_unavailable; not_recorded; run_summary_missing",
+      "posthoc_probe_status": "checkpoint_unavailable",
+      "promotion_status": "missing",
+      "run_name": "standard_refactor_control_30m_seed1",
+      "run_summary_path": null,
+      "run_summary_status": "missing",
+      "supported_hook_sites": [
+        "resid_pre[layer]",
+        "attn_q[layer]",
+        "attn_k[layer]",
+        "attn_v[layer]",
+        "attn_out[layer]",
+        "resid_mid[layer]",
+        "mlp_out[layer]",
+        "resid_post[layer]",
+        "logits"
+      ],
+      "unsupported_hook_sites": []
+    }
+  ],
+  "config_dir": "configs/experiments/E001_cp_trilinear_attention",
+  "experiment_id": "E001_cp_trilinear_attention",
+  "report_dir": "reports/experiments/E001_cp_trilinear_attention",
+  "run_dir": "runs/experiments/E001_cp_trilinear_attention",
+  "schema_version": 1
+}

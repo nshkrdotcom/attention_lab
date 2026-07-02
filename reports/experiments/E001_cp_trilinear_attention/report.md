@@ -880,3 +880,15 @@ The unresolved question is:
 ```text
 Do the learned CP components become interpretable, causal, and differentiated mechanisms?
 ```
+
+## Mechanism Investigation Addendum
+
+Derived backfill artifacts now live under:
+
+```text
+reports/mechanisms/backfill/E001_cp_trilinear_attention/
+```
+
+The backfill found checkpoint-recompute availability for `standard_30m_seed1`, `cp_bilinear_r8_30m_seed1`, and `cp_trilinear_r8_30m_seed1`. `cp_trilinear_r8_lambda0_30m_seed1` is explicitly `checkpoint_unavailable`, so historical activations cannot be recovered for it.
+
+CP capture currently supports `cp_score`, `cp_output`, and `cp_lambda`. `cp_rank_component[layer, rank]` is declared in the registry but full tensor capture is unsupported until an optimized path exists. This addendum records a new post-hoc workflow and does not alter the historical claims above.

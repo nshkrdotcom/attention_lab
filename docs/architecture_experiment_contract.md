@@ -50,3 +50,14 @@ Do not start CP attention experiments until these runs exist and verify:
 - CP trilinear candidate.
 
 The CP modules are intentionally not implemented in this hardening pass.
+
+## Mechanism Investigation Addendum
+
+Survival screens and full-run comparisons are not mechanism explanations. Mechanism investigation now uses the native substrate under `src/attention_lab/mechanisms/`:
+
+- Hook sites are declared in a registry and include standard GPT sites plus architecture-specific sites for E001-E004 mechanisms.
+- Activation capture returns `ActivationCache` records from real forward passes.
+- Interventions support zero, mean ablation, replacement, scaling, and cache patching at named sites.
+- Backfill inventories distinguish `artifact_summary`, `checkpoint_recompute`, and `not_available`.
+
+Do not claim that a historical run has recoverable activations unless tensors were actually captured or can be recomputed from a checkpoint and a specified prompt/eval batch. Historical run directories remain read-only evidence inputs; derived mechanism artifacts belong under `reports/mechanisms/`.
