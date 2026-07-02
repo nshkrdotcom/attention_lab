@@ -9,7 +9,13 @@ from typing import Any
 import torch
 
 from attention_lab.mechanisms.cache import ActivationCache, ActivationRecord, tensor_summary
-from attention_lab.mechanisms.hook_sites import format_site_name, get_hook_site_specs, get_hook_site_status, site_base
+from attention_lab.mechanisms.hook_sites import (
+    format_site_name,
+    get_hook_site_specs,
+    get_hook_site_status,
+    is_discrete_hook_site,
+    site_base,
+)
 from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec
 
 
@@ -90,6 +96,12 @@ class ActivationRecorder:
         for index, spec in enumerate(self.interventions):
             if not self._spec_targets_key(spec, site, key):
                 continue
+            if is_discrete_hook_site(self.attention_type, key):
+                raise ValueError(
+                    f"{key} is a discrete route-index hook site. Capture it for diagnostics, "
+                    "but do not apply continuous activation interventions to it. "
+                    "Use continuous sites such as track_q, track_k, track_v, or track_out."
+                )
             before = modified
             try:
                 modified = self._apply_intervention(spec, modified, key)

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import torch
+import pytest
 
 from attention_lab.mechanisms.capture import capture_activations
+from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec, run_with_interventions
 from attention_lab.models.gpt import GPT, GPTConfig
 
 
@@ -77,4 +79,45 @@ def test_position_rotation_selected_track_depends_on_token_position():
     result = capture_activations(model, torch.randint(0, 64, (1, 8)), detach=True)
 
     selected = result.cache.records["selected_track[0]"].tensor
+    assert selected.dtype == torch.long
     assert selected.tolist() == [0, 1, 2, 0, 1, 2, 0, 1]
+
+
+def test_position_rotation_probe_can_capture_selected_track_while_intervening_on_continuous_track_sites():
+    torch.manual_seed(3)
+    model = GPT(tiny_multi_config("multi_qkv_position_rotation_3track_global", "layer_plus_position"))
+    model.eval()
+    input_ids = torch.randint(0, 64, (1, 8))
+    specs = [
+        InterventionSpec(site=site, layer=0, kind=InterventionKind.ZERO)
+        for site in ("track_q", "track_k", "track_v", "track_out")
+    ]
+
+    result = run_with_interventions(
+        model,
+        input_ids,
+        specs,
+        capture_sites=["selected_track", "track_q", "track_k", "track_v", "track_out"],
+        schedule_mode="eval",
+    )
+
+    assert not result.missing_or_failed_interventions
+    assert result.after_cache.records["selected_track[0]"].tensor.dtype == torch.long
+    assert result.after_cache.records["selected_track[0]"].tensor.tolist() == [0, 1, 2, 0, 1, 2, 0, 1]
+    assert all(item["site"] != "selected_track[0]" for item in result.applied_interventions)
+
+
+def test_selected_track_interventions_fail_clearly():
+    torch.manual_seed(4)
+    model = GPT(tiny_multi_config("multi_qkv_position_rotation_3track_global", "layer_plus_position"))
+    model.eval()
+    input_ids = torch.randint(0, 64, (1, 8))
+
+    with pytest.raises(ValueError, match="discrete route-index"):
+        run_with_interventions(
+            model,
+            input_ids,
+            [InterventionSpec(site="selected_track", layer=0, kind=InterventionKind.SCALE, scale=0.0)],
+            capture_sites=["selected_track"],
+            schedule_mode="eval",
+        )

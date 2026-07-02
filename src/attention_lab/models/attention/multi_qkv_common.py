@@ -222,6 +222,7 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
     def _select_per_position(self, projections: list[torch.Tensor], active_tracks: torch.Tensor) -> torch.Tensor:
         stacked = torch.stack(projections, dim=2)
         batch_size, seq_len, _, channels = stacked.shape
+        active_tracks = self._route_indices_for_gather(active_tracks)
         if active_tracks.dim() == 1:
             index = active_tracks.view(1, seq_len, 1, 1).expand(batch_size, seq_len, 1, channels)
         elif active_tracks.dim() == 2:
@@ -229,6 +230,26 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
         else:
             raise ValueError("active track tensor must be scalar, [T], or [B, T]")
         return stacked.gather(dim=2, index=index).squeeze(2)
+
+    def _route_indices_for_gather(self, active_tracks: torch.Tensor) -> torch.Tensor:
+        if active_tracks.dtype not in {
+            torch.int8,
+            torch.int16,
+            torch.int32,
+            torch.int64,
+            torch.uint8,
+        }:
+            raise TypeError(
+                f"route indices must be integer tensors before gather, got dtype={active_tracks.dtype}. "
+                "selected_track is a discrete route-index site and cannot be edited as a float activation."
+            )
+        route_indices = active_tracks.to(dtype=torch.long)
+        if route_indices.numel() > 0:
+            min_route = int(route_indices.min().item())
+            max_route = int(route_indices.max().item())
+            if min_route < 0 or max_route >= self.track_count:
+                raise ValueError(f"route indices must be in [0, {self.track_count}), got [{min_route}, {max_route}]")
+        return route_indices
 
     def _project(self, x: torch.Tensor, active_tracks: torch.Tensor) -> torch.Tensor:
         if active_tracks.dim() == 0:

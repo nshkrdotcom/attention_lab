@@ -10,7 +10,7 @@ import torch
 from attention_lab.mechanisms.capture import capture_activations
 from attention_lab.mechanisms.interventions import run_with_interventions
 from attention_lab.mechanisms.probe import (
-    build_probe_intervention_specs,
+    build_probe_intervention_plan,
     encode_prompts,
     load_replacement_tensor,
     load_source_cache,
@@ -29,6 +29,13 @@ def main() -> None:
     parser.add_argument("--prompt")
     parser.add_argument("--prompts-file")
     parser.add_argument("--sites", required=True, help="Comma-separated hook site bases")
+    parser.add_argument(
+        "--intervention-sites",
+        help=(
+            "Comma-separated hook site bases to intervene on. Defaults to intervention-capable "
+            "continuous sites from --sites; discrete route-index sites remain capture-only."
+        ),
+    )
     parser.add_argument(
         "--interventions",
         default="",
@@ -86,10 +93,17 @@ def main() -> None:
     sites = [site.strip() for site in args.sites.split(",") if site.strip()]
     if not sites:
         raise SystemExit("provide at least one hook site via --sites")
+    intervention_sites = (
+        [site.strip() for site in args.intervention_sites.split(",") if site.strip()]
+        if args.intervention_sites
+        else None
+    )
     intervention_names = [name.strip() for name in args.interventions.split(",") if name.strip()]
     try:
-        intervention_specs = build_probe_intervention_specs(
-            sites=sites,
+        intervention_plan = build_probe_intervention_plan(
+            attention_type=model_config.attention_type,
+            capture_sites=sites,
+            intervention_sites=intervention_sites,
             intervention_names=intervention_names,
             layer=args.layer,
             scale=args.scale,
@@ -115,7 +129,7 @@ def main() -> None:
         )
         intervention_summary = {}
         for intervention_name in intervention_names:
-            specs = [spec for spec in intervention_specs if spec.kind.value == intervention_name]
+            specs = [spec for spec in intervention_plan.specs if spec.kind.value == intervention_name]
             result = run_with_interventions(
                 model,
                 input_ids,
@@ -125,7 +139,10 @@ def main() -> None:
             )
             intervention_summary[intervention_name] = {
                 "applied": result.applied_interventions,
-                "missing_or_failed": result.missing_or_failed_interventions,
+                "missing_or_failed": [
+                    item for item in intervention_plan.invalid_interventions if item["kind"] == intervention_name
+                ]
+                + result.missing_or_failed_interventions,
                 "logit_delta_norm": float((result.logits.detach().cpu() - capture.logits.detach().cpu()).float().norm()),
             }
 
@@ -134,7 +151,14 @@ def main() -> None:
     capture.cache.save_metadata_summary(output_dir / "activation_summary.json")
     (output_dir / "intervention_summary.json").write_text(
         json.dumps(
-            {"schema_version": 1, "tokenizer": tokenizer_info, "interventions": intervention_summary},
+            {
+                "schema_version": 1,
+                "tokenizer": tokenizer_info,
+                "capture_sites": sites,
+                "intervention_sites": intervention_plan.intervention_sites,
+                "invalid_interventions": intervention_plan.invalid_interventions,
+                "interventions": intervention_summary,
+            },
             indent=2,
             sort_keys=True,
         ),
@@ -147,6 +171,8 @@ def main() -> None:
         capture,
         intervention_summary,
         tokenizer_info,
+        intervention_plan.intervention_sites,
+        intervention_plan.invalid_interventions,
     )
     print(f"wrote {output_dir}")
 
@@ -170,6 +196,8 @@ def _write_probe_report(
     capture,
     intervention_summary: dict,
     tokenizer_info: dict[str, int | str],
+    intervention_sites: list[str],
+    invalid_interventions: list[dict[str, str]],
 ) -> None:
     lines = [
         "# Mechanism Probe Report",
@@ -182,6 +210,8 @@ def _write_probe_report(
         f"- captured_sites: {len(capture.cache.records)}",
         f"- missing_sites: {len(capture.missing_sites)}",
         f"- declared_but_unemitted_sites: {len(capture.declared_but_unemitted_sites)}",
+        f"- intervention_sites: {', '.join(intervention_sites) if intervention_sites else 'none'}",
+        f"- invalid_interventions: {len(invalid_interventions)}",
         f"- interventions: {', '.join(intervention_summary) if intervention_summary else 'none'}",
         "",
     ]
@@ -194,6 +224,11 @@ def _write_probe_report(
         lines.append("## Declared But Unemitted Sites")
         for site, missing in capture.declared_but_unemitted_sites.items():
             lines.append(f"- `{site}`: {missing.status} ({missing.reason})")
+        lines.append("")
+    if invalid_interventions:
+        lines.append("## Invalid Interventions")
+        for item in invalid_interventions:
+            lines.append(f"- `{item['site']}` / `{item['kind']}`: {item['reason']}")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

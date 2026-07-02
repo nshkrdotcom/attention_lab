@@ -205,6 +205,8 @@ patch_from_cache:
 
 Patch compatibility validates attention type and tensor shape. Missing or failed intervention sites are returned explicitly.
 
+Discrete route/index sites are capture-only in this substrate unless a future route-replacement operation validates integer dtype and range. For Multi-QKV, `selected_track` is a route-index diagnostic site, not a continuous activation. Component ablations should target `track_q`, `track_k`, `track_v`, and `track_out`.
+
 Capture-only instrumentation must be math-preserving. Architecture-specific hook support is covered by no-op capture equivalence tests on tiny real models. For capture completeness audits, use:
 
 ```python
@@ -255,6 +257,21 @@ uv run scripts/run_mechanism_probe.py \
 ```
 
 The CLI fails before model execution if `scale` lacks `--scale`, `replace` lacks both `--replacement-tensor` and `--source-cache`, or `patch_from_cache` lacks `--source-cache`.
+
+When capture sites and intervention sites differ, use `--intervention-sites`. For E002 position rotation, capture the route pattern but edit only continuous track tensors:
+
+```bash
+uv run scripts/run_mechanism_probe.py \
+  --config configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml \
+  --checkpoint runs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1/checkpoints/ckpt_last.pt \
+  --prompts-file configs/mechanisms/quick_probe_prompts.txt \
+  --sites selected_track,track_q,track_k,track_v,track_out \
+  --intervention-sites track_q,track_k,track_v,track_out \
+  --interventions zero,scale \
+  --layer 0 \
+  --scale 0.0 \
+  --output-dir reports/mechanisms/probes/E002_position_rotation_quick
+```
 
 The probe writes:
 

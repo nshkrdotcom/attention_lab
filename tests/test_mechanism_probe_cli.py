@@ -6,6 +6,7 @@ import torch
 from attention_lab.mechanisms.cache import ActivationCache, ActivationRecord
 from attention_lab.mechanisms.interventions import InterventionKind
 from attention_lab.mechanisms.probe import (
+    build_probe_intervention_plan,
     build_probe_intervention_specs,
     encode_prompts,
     load_replacement_tensor,
@@ -113,6 +114,64 @@ def test_probe_intervention_validation_fails_before_forward_for_missing_inputs()
             batch_indices=None,
             token_indices=None,
         )
+
+
+def test_probe_plan_treats_selected_track_as_capture_only_by_default():
+    plan = build_probe_intervention_plan(
+        attention_type="multi_qkv_position_rotation_3track_global",
+        capture_sites=["selected_track", "track_q", "track_k", "track_v", "track_out"],
+        intervention_sites=None,
+        intervention_names=["zero", "scale"],
+        layer=0,
+        scale=0.0,
+        source_cache=None,
+        source_site=None,
+        replacement_tensor=None,
+        batch_indices=None,
+        token_indices=None,
+    )
+
+    assert {spec.site for spec in plan.specs} == {"track_q", "track_k", "track_v", "track_out"}
+    assert {item["site"] for item in plan.invalid_interventions} == {"selected_track"}
+    assert {item["kind"] for item in plan.invalid_interventions} == {"zero", "scale"}
+    assert "discrete route-index" in plan.invalid_interventions[0]["reason"]
+
+
+def test_probe_plan_rejects_explicit_selected_track_intervention():
+    with pytest.raises(ValueError, match="capture-only"):
+        build_probe_intervention_plan(
+            attention_type="multi_qkv_position_rotation_3track_global",
+            capture_sites=["selected_track", "track_q"],
+            intervention_sites=["selected_track"],
+            intervention_names=["zero"],
+            layer=0,
+            scale=None,
+            source_cache=None,
+            source_site=None,
+            replacement_tensor=None,
+            batch_indices=None,
+            token_indices=None,
+        )
+
+
+def test_probe_plan_capture_only_has_no_intervention_sites():
+    plan = build_probe_intervention_plan(
+        attention_type="multi_qkv_position_rotation_3track_global",
+        capture_sites=["selected_track", "track_q"],
+        intervention_sites=None,
+        intervention_names=[],
+        layer=0,
+        scale=None,
+        source_cache=None,
+        source_site=None,
+        replacement_tensor=None,
+        batch_indices=None,
+        token_indices=None,
+    )
+
+    assert plan.specs == []
+    assert plan.invalid_interventions == []
+    assert plan.intervention_sites == []
 
 
 def test_probe_tokenizer_is_config_driven_and_vocab_checked():

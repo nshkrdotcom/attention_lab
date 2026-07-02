@@ -67,3 +67,5 @@ Do not claim that a historical run has recoverable activations unless tensors we
 Post-hoc probes must use the tokenizer declared by the config. The current probe CLI supports GPT-2 tokenization and fails explicitly for unsupported tokenizers or prompt token IDs outside the configured vocabulary. Probe outputs must record tokenizer metadata.
 
 Capture-only instrumentation is part of the live forward path. New hook support must include no-op capture equivalence tests showing that logits are unchanged when capture is enabled and no interventions are applied. If a declared site cannot be emitted for a config or remains runtime-unsupported, `capture_activations(..., require_declared_sites=True)` must report it instead of fabricating tensors.
+
+Hook sites whose `tensor_kind` is `route` are discrete index sites, not continuous activations. They may be captured and reported, but zero/scale/mean/replacement/cache-patch interventions are invalid unless a future route-replacement operation validates integer dtype and range. For Multi-QKV, `selected_track` is capture-only; use `track_q`, `track_k`, `track_v`, or `track_out` for component ablations.

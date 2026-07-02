@@ -158,9 +158,12 @@ The post-hoc probe CLI exposes the native intervention contract:
 --source-site <site>
 --batch-indices 0,1
 --token-indices 3,4,5
+--intervention-sites track_q,track_k,track_v,track_out
 ```
 
 `scale` requires `--scale`, `replace` requires either `--replacement-tensor` or `--source-cache`, and `patch_from_cache` requires `--source-cache`. The probe reads the tokenizer from the config, currently supports GPT-2, validates token IDs against configured vocab size, and records tokenizer metadata in derived probe outputs.
+
+Use `--sites` for capture and `--intervention-sites` for edit targets when they differ. Discrete route/index sites such as Multi-QKV `selected_track` are capture-only for this substrate; component interventions should target continuous tensors such as `track_q`, `track_k`, `track_v`, and `track_out`. Invalid route-index interventions must be reported explicitly, not silently applied as float edits.
 
 ## No Full Runs In This Working Copy
 

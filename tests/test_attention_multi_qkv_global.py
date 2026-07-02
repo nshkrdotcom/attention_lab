@@ -186,6 +186,41 @@ def test_position_rotation_uses_layer_plus_position_vector():
     assert tracks.tolist() == [1, 2, 0, 1, 2, 0, 1, 2]
 
 
+def test_position_rotation_select_per_position_uses_integer_gather_indices():
+    config = tiny_multi_qkv_config("multi_qkv_position_rotation_3track_global")
+    bank = MultiQKVGlobalBank(config)
+    attention = MultiQKVPositionRotationGlobalCausalSelfAttention(config, layer_idx=0, qkv_bank=bank)
+    context = MultiQKVRouteContext(
+        layer_idx=0,
+        step=None,
+        schedule_mode="eval",
+        position_ids=torch.arange(0, 4),
+    )
+    active_tracks = attention.select_position_tracks(context, seq_len=4, device=torch.device("cpu"))
+    projections = [
+        torch.full((2, 4, 3 * config.n_embd), float(track))
+        for track in range(config.qkv_track_count)
+    ]
+
+    selected = attention._select_per_position(projections, active_tracks.to(dtype=torch.int32))
+
+    assert selected.shape == (2, 4, 3 * config.n_embd)
+    assert selected[0, :, 0].tolist() == [0.0, 1.0, 2.0, 0.0]
+
+
+def test_position_rotation_rejects_float_route_indices_before_gather():
+    config = tiny_multi_qkv_config("multi_qkv_position_rotation_3track_global")
+    bank = MultiQKVGlobalBank(config)
+    attention = MultiQKVPositionRotationGlobalCausalSelfAttention(config, layer_idx=0, qkv_bank=bank)
+    projections = [
+        torch.full((1, 4, 3 * config.n_embd), float(track))
+        for track in range(config.qkv_track_count)
+    ]
+
+    with pytest.raises(TypeError, match="route indices"):
+        attention._select_per_position(projections, torch.tensor([0.0, 1.0, 2.0, 0.0]))
+
+
 def test_position_rotation_rejects_wrong_position_length():
     config = tiny_multi_qkv_config("multi_qkv_position_rotation_3track_global")
     bank = MultiQKVGlobalBank(config)

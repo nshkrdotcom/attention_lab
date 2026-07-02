@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import torch
 
 from attention_lab.mechanisms.cache import ActivationCache
+from attention_lab.mechanisms.hook_sites import is_discrete_hook_site
 from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec
+
+
+@dataclass(frozen=True)
+class ProbeInterventionPlan:
+    specs: list[InterventionSpec]
+    invalid_interventions: list[dict[str, str]]
+    capture_sites: list[str]
+    intervention_sites: list[str]
 
 
 def parse_index_list(value: str | None) -> list[int] | None:
@@ -103,11 +113,72 @@ def build_probe_intervention_specs(
     batch_indices: list[int] | None,
     token_indices: list[int] | None,
 ) -> list[InterventionSpec]:
+    plan = build_probe_intervention_plan(
+        attention_type=None,
+        capture_sites=sites,
+        intervention_sites=sites,
+        intervention_names=intervention_names,
+        layer=layer,
+        scale=scale,
+        source_cache=source_cache,
+        source_site=source_site,
+        replacement_tensor=replacement_tensor,
+        batch_indices=batch_indices,
+        token_indices=token_indices,
+    )
+    return plan.specs
+
+
+def build_probe_intervention_plan(
+    *,
+    attention_type: str | None,
+    capture_sites: list[str],
+    intervention_sites: list[str] | None,
+    intervention_names: list[str],
+    layer: int,
+    scale: float | None,
+    source_cache: ActivationCache | None,
+    source_site: str | None,
+    replacement_tensor: torch.Tensor | None,
+    batch_indices: list[int] | None,
+    token_indices: list[int] | None,
+) -> ProbeInterventionPlan:
+    requested_names = [name.strip() for name in intervention_names if name.strip()]
+    if not requested_names:
+        return ProbeInterventionPlan(
+            specs=[],
+            invalid_interventions=[],
+            capture_sites=list(capture_sites),
+            intervention_sites=[],
+        )
+    effective_intervention_sites = list(intervention_sites) if intervention_sites is not None else [
+        site for site in capture_sites if not _is_discrete_site(attention_type, site)
+    ]
+    invalid_interventions = []
+    if intervention_sites is None:
+        invalid_interventions = [
+            {
+                "site": site,
+                "kind": name,
+                "reason": _discrete_site_reason(site),
+            }
+            for site in capture_sites
+            if _is_discrete_site(attention_type, site)
+            for name in requested_names
+        ]
+    else:
+        discrete_sites = [site for site in effective_intervention_sites if _is_discrete_site(attention_type, site)]
+        if discrete_sites:
+            sites_text = ", ".join(discrete_sites)
+            raise ValueError(
+                f"route-index hook sites are capture-only for mechanism probes: {sites_text}. "
+                "Use --sites to capture them and --intervention-sites for continuous sites."
+            )
+    if not effective_intervention_sites:
+        raise ValueError("no intervention-capable sites remain after excluding capture-only route-index sites")
+
     specs: list[InterventionSpec] = []
-    for raw_name in intervention_names:
-        name = raw_name.strip()
-        if not name:
-            continue
+    for name in requested_names:
         try:
             kind = InterventionKind(name)
         except ValueError as exc:
@@ -121,7 +192,7 @@ def build_probe_intervention_specs(
         if kind == InterventionKind.PATCH_FROM_CACHE and source_cache is None:
             raise ValueError("patch_from_cache requires --source-cache")
 
-        for site in sites:
+        for site in effective_intervention_sites:
             specs.append(
                 InterventionSpec(
                     site=site,
@@ -135,4 +206,22 @@ def build_probe_intervention_specs(
                     token_indices=token_indices if kind == InterventionKind.PATCH_FROM_CACHE else None,
                 )
             )
-    return specs
+    return ProbeInterventionPlan(
+        specs=specs,
+        invalid_interventions=invalid_interventions,
+        capture_sites=list(capture_sites),
+        intervention_sites=effective_intervention_sites,
+    )
+
+
+def _is_discrete_site(attention_type: str | None, site: str) -> bool:
+    if attention_type is None:
+        return site.split("[", 1)[0] == "selected_track"
+    return is_discrete_hook_site(attention_type, site)
+
+
+def _discrete_site_reason(site: str) -> str:
+    return (
+        f"{site} is a discrete route-index hook site. It is captured for diagnostics, "
+        "but continuous activation interventions are only applied to continuous sites."
+    )

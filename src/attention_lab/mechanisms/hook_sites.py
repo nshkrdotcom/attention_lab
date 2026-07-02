@@ -306,6 +306,27 @@ def get_hook_site_status(attention_type: str, site_name: str) -> HookSiteStatus:
     return HookSiteStatus(site_name, declared=True, runtime_supported=True)
 
 
+def get_hook_site_spec(attention_type: str, site_name: str) -> HookSiteSpec | None:
+    specs = get_hook_site_specs(attention_type)
+    declared = {_normalize_declared_name(spec.name): spec for spec in specs}
+    spec = declared.get(_normalize_declared_name(site_name))
+    if spec is not None:
+        return spec
+    requested_base = site_base(site_name)
+    for candidate in specs:
+        if site_base(candidate.name) == requested_base:
+            return candidate
+    return None
+
+
+def is_discrete_hook_site(attention_type: str, site_name: str) -> bool:
+    try:
+        spec = get_hook_site_spec(attention_type, site_name)
+    except UnknownAttentionTypeError:
+        return False
+    return spec is not None and spec.tensor_kind == "route"
+
+
 def supported_site_names(attention_type: str) -> list[str]:
     names = []
     for spec in get_hook_site_specs(attention_type):

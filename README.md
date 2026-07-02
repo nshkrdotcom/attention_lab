@@ -800,6 +800,21 @@ uv run scripts/run_mechanism_probe.py \
 
 The CLI fails before model execution if `scale` lacks `--scale`, `replace` lacks both `--replacement-tensor` and `--source-cache`, or `patch_from_cache` lacks `--source-cache`.
 
+Use `--sites` for capture sites and `--intervention-sites` when only some captured sites should be edited. This matters for discrete route/index sites such as Multi-QKV `selected_track`: they are captured for diagnostics, but they are not ordinary floating-point activations and are capture-only unless a future validated route-replacement intervention is added. For E002 position rotation, a component probe should capture the route pattern while intervening only on continuous track tensors:
+
+```bash
+uv run scripts/run_mechanism_probe.py \
+  --config configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml \
+  --checkpoint runs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1/checkpoints/ckpt_last.pt \
+  --prompts-file configs/mechanisms/quick_probe_prompts.txt \
+  --sites selected_track,track_q,track_k,track_v,track_out \
+  --intervention-sites track_q,track_k,track_v,track_out \
+  --interventions zero,scale \
+  --layer 0 \
+  --scale 0.0 \
+  --output-dir reports/mechanisms/probes/E002_position_rotation_quick
+```
+
 Backfill evidence levels are:
 
 ```text
