@@ -29,7 +29,7 @@ PROMPTS
 uv run scripts/backfill_mechanism_inventory.py --experiments E004 E003 E002 E001 --repo-root . --output-root reports/mechanisms/backfill
 uv run scripts/compare_mechanism_candidates.py --backfill-root reports/mechanisms/backfill --output reports/mechanisms/cross_experiment_candidate_report.md
 
-python - <<'PY'
+uv run python - <<'PY'
 import json
 from pathlib import Path
 
