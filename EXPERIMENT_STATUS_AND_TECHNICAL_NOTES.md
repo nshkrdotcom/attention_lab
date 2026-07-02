@@ -4,7 +4,7 @@ This document is the current dynamic status page for Attention Lab experiments. 
 
 Last updated from pasted local run artifacts: 2026-07-01 UTC.
 
-Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; route-index probe semantics were fixed for E002 position rotation; QC passed with ruff and pytest; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
+Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; route-index probe semantics were fixed for E002 position rotation; the Tier-1 statistical mechanism-probe suite framework has been implemented but no Tier-1 suite evidence artifacts are claimed until real suite runs are executed; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
 
 ## Current Bottom Line
 
@@ -407,12 +407,15 @@ uv run ruff check .
 All checks passed.
 
 uv run pytest
-388 passed, 1 skipped in 12.81s
+411 passed, 1 skipped in 17.30s
 ```
 
 Targeted tests also passed:
 
 ```text
+uv run pytest tests/test_mechanism_linear_probe.py tests/test_mechanism_controls.py tests/test_mechanism_claim_gates.py tests/test_mechanism_probe_suite_cli.py tests/test_mechanism_probe_summary.py
+23 passed
+
 uv run pytest tests/test_mechanism_backfill.py
 4 passed
 
@@ -484,17 +487,16 @@ Attention Lab is using deliberately nonstandard attention architectures as inter
 
 The E001-E004 backfill / quick-probe artifact phase is complete. Do not rerun broad quick-probe backfill just to refresh status docs.
 
-Next implementation should build the Tier-1 mechanism-probe framework:
+The Tier-1 statistical mechanism-probe framework is now implemented under:
 
-- pre-registered hypothesis docs
-- minimum-size task contrast suites
-- trained linear-probe AUC
-- bootstrap confidence intervals
-- multiple-comparison correction
-- matched-control normalization
-- causal patching / restoration metrics
-- claim gates
-- summary report synthesis
+```text
+src/attention_lab/mechanisms/
+scripts/run_mechanism_probe_suite.py
+scripts/summarize_mechanism_probe_suite.py
+docs/mechanism_probe_framework.md
+```
+
+This is implementation status only. It is not Tier-1 mechanism evidence until the suite is run against real checkpoints, contrast task suites, matched controls, nulls, and hypothesis docs, and the resulting `metrics.json`, `claim_gates.json`, and `summary.md` are inspected.
 
 Initial executable Tier-1 targets:
 

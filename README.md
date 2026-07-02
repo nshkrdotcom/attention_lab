@@ -1138,9 +1138,10 @@ It provides:
 * `ActivationCache` records;
 * activation capture during real forward passes;
 * zero, mean-ablation, scale, replace, and cache-patching interventions;
-* E001–E004 mechanism backfill inventories;
+* E001-E004 mechanism backfill inventories;
 * generated cross-experiment mechanism candidate reports;
 * post-hoc probe CLI;
+* Tier-1 statistical mechanism-probe suite for the initial E003/E004 targets;
 * strict missing/deployed hook-site checks.
 
 This layer is native to the local GPT and attention modules. TransformerLens compatibility is an adapter goal, not a prerequisite.
@@ -1335,6 +1336,86 @@ Use `--sites` for capture sites and `--intervention-sites` when only some captur
 
 This matters for discrete route/index sites such as Multi-QKV `selected_track`.
 
+### Tier-1 statistical mechanism-probe suite
+
+The Tier-1 suite is the checkpoint-backed statistical follow-up path for the initial
+E003/E004 mechanism candidates. It is implemented, but it does not create evidence
+until it is actually run against real checkpoints, task suites, controls, and
+hypothesis docs.
+
+Read the full contract first:
+
+```text
+docs/mechanism_probe_framework.md
+```
+
+Suite artifacts are:
+
+```text
+metrics.json
+claim_gates.json
+summary.md
+```
+
+The mechanism-probe claim ladder is scoped to this suite:
+
+```text
+insufficient_evidence
+exploratory_probe_signal
+controlled_probe_signal
+candidate_mechanism_evidence
+```
+
+This is distinct from the project-wide experiment status vocabulary.
+
+Initial executable Tier-1 presets:
+
+```text
+E003_qkv_architecture_gauntlet / differential
+E004_operator_binding_qkv_gauntlet / operator_valued
+```
+
+Canonical matched controls:
+
+```text
+E003 differential -> standard_refactor_control_30m_seed1_rung500
+E004 operator_valued -> standard_refactor_control_30m_seed2_rung500
+```
+
+Exploratory cheap scan pattern:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E003_qkv_architecture_gauntlet \
+  --candidate differential \
+  --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
+  --task-file <task-file> \
+  --output-dir reports/mechanisms/probes/E003_differential_probe_only_inventory_path \
+  --exploratory \
+  --probe-only \
+  --control-mode matched \
+  --min-n 100 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 1 \
+  --device cuda
+```
+
+Confirmatory runs require:
+
+```text
+--hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-name>.yaml
+```
+
+Confirmatory task files must provide `x_pos`, `x_neg`, `x_para`, `x_decoy`,
+`pair_id`, `template_id`, and `family_id`, with at least 50 contrast pairs per family.
+
+Regenerate an existing suite summary:
+
+```bash
+uv run scripts/summarize_mechanism_probe_suite.py --input-dir <suite-output-dir>
+```
+
 ### Strict capture mode
 
 Capture-all can be made strict through:
@@ -1388,6 +1469,14 @@ intervention_summary.json
 probe_report.md
 ```
 
+A Tier-1 mechanism-probe suite directory contains:
+
+```text
+metrics.json
+claim_gates.json
+summary.md
+```
+
 A run is not evidence until the relevant train, eval, summarize, verify, and mechanism-probe commands have actually passed.
 
 ## Testing and quality checks
@@ -1436,6 +1525,16 @@ uv run pytest tests/test_mechanism_capture_multi_qkv.py
 uv run pytest tests/test_attention_multi_qkv_global.py
 ```
 
+Targeted tests for the Tier-1 mechanism-probe suite:
+
+```bash
+uv run pytest tests/test_mechanism_linear_probe.py
+uv run pytest tests/test_mechanism_controls.py
+uv run pytest tests/test_mechanism_claim_gates.py
+uv run pytest tests/test_mechanism_probe_suite_cli.py
+uv run pytest tests/test_mechanism_probe_summary.py
+```
+
 Use targeted tests while developing, but do not treat targeted tests as a substitute for the full QC set before committing.
 
 Latest recorded QC in the dynamic status note:
@@ -1460,30 +1559,20 @@ targeted tests: passed
 * The queue doctor is a readiness check only; it does not launch training.
 * Missing historical activations cannot be reconstructed unless tensors were saved or a checkpoint can recompute them.
 * Checkpoint availability means post-hoc probing is possible, not that the architecture hypothesis is supported.
-* Current quick probes are activation/intervention plumbing, not the full mechanism-probe framework.
+* Current quick probes are activation/intervention plumbing, not statistical mechanism evidence.
+* The Tier-1 mechanism-probe framework is implemented, but suite outputs are evidence only after the suite is run on real checkpoint/task/control artifacts.
 
 ## Current next work
 
 The E001-E004 backfill / quick-probe artifact phase is complete.
 
-Next implementation should be the Tier-1 mechanism-probe framework:
-
-- pre-registered hypothesis docs
-- minimum-size task contrast suites
-- trained linear-probe AUC
-- bootstrap confidence intervals
-- multiple-comparison correction
-- matched-control normalization
-- causal patching / restoration metrics
-- claim gates
-- summary report synthesis
-
-Initial executable Tier-1 targets:
+Next mechanism work should run the implemented Tier-1 suite against pre-registered
+task suites and hypothesis docs for:
 
 - E003 differential_qkv_anti_value_30m_seed1_rung500
 - E004 operator_valued_attention_30m_seed2_rung500
 
-Other E001-E004 follow-ups remain useful, but they should not replace the Tier-1 probe-framework implementation.
+Other E001-E004 follow-ups remain useful, but they should not displace the initial Tier-1 suite runs.
 
 ## First-day checklist
 
