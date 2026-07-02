@@ -441,7 +441,7 @@
   ],
   "config_dir": "configs/experiments/E003_qkv_architecture_gauntlet",
   "experiment_id": "E003_qkv_architecture_gauntlet",
-  "generated_from_commit": "6aca6f3eb39334f04c380bb09c57f6ec8342eaa0",
+  "generated_from_commit": "a736422deb0f4dcd0e7a17d8a0fdfb2c967fe835",
   "repo_root_relative": true,
   "report_dir": "reports/experiments/E003_qkv_architecture_gauntlet",
   "run_dir": "runs/experiments/E003_qkv_architecture_gauntlet",
