@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 
 @dataclass(frozen=True)
@@ -12,6 +16,10 @@ class SitePreset:
     control_site: str | None
     continuous: bool = True
     full_layer_site: str | None = "attn_out"
+    canonical: bool = True
+    noncanonical_reason: str | None = None
+    no_control_reason: str | None = None
+    no_full_layer_comparator_reason: str | None = None
 
     @property
     def key(self) -> str:
@@ -201,15 +209,115 @@ def resolve_preset(experiment_id: str, candidate: str) -> MechanismProbePreset:
     raise ValueError(f"unknown mechanism probe candidate {candidate!r} for {experiment_id}; known: {known}")
 
 
-def site_presets_for_names(preset: MechanismProbePreset, names: list[str] | None) -> tuple[SitePreset, ...]:
+def site_presets_for_names(
+    preset: MechanismProbePreset,
+    names: list[str] | None,
+    *,
+    exploratory: bool = False,
+    site_spec_file: str | Path | None = None,
+) -> tuple[SitePreset, ...]:
     if not names:
         return preset.target_sites
     by_name = {site.site: site for site in preset.target_sites}
+    by_key = {site.key: site for site in preset.target_sites}
+    exploratory_specs = _load_exploratory_site_specs(site_spec_file) if site_spec_file else {}
     selected = []
     for name in names:
-        base = name.split("[", 1)[0]
-        if base in by_name:
+        base, layer = _parse_requested_site(name)
+        key = f"{base}[{layer}]" if layer is not None else None
+        if key is not None and key in by_key:
+            selected.append(by_key[key])
+        elif layer is None and base in by_name:
             selected.append(by_name[base])
+        elif layer is not None and base in by_name:
+            raise ValueError(
+                f"unknown confirmatory site {name!r} for {preset.candidate}; "
+                f"declared layer for {base!r} is {by_name[base].layer}"
+            )
+        elif exploratory:
+            if base not in exploratory_specs:
+                raise ValueError(
+                    f"unknown exploratory site {base!r} requires explicit metadata via --site-spec-file"
+                )
+            if layer is not None and exploratory_specs[base].layer != layer:
+                raise ValueError(
+                    f"exploratory site {name!r} does not match --site-spec-file layer {exploratory_specs[base].layer}"
+                )
+            selected.append(exploratory_specs[base])
         else:
-            selected.append(SitePreset(base, 0, "activation", "attn_out"))
+            known = ", ".join(sorted(by_name))
+            raise ValueError(
+                f"unknown confirmatory site {base!r} for {preset.candidate}; declared Tier-1 sites: {known}"
+            )
     return tuple(selected)
+
+
+def _parse_requested_site(name: str) -> tuple[str, int | None]:
+    if "[" not in name:
+        return name, None
+    base, rest = name.split("[", 1)
+    if not rest.endswith("]"):
+        raise ValueError(f"invalid site specifier {name!r}")
+    raw_layer = rest[:-1]
+    if not raw_layer.isdigit():
+        raise ValueError(f"invalid site layer in {name!r}")
+    return base, int(raw_layer)
+
+
+def _load_exploratory_site_specs(path: str | Path) -> dict[str, SitePreset]:
+    spec_path = Path(path)
+    raw = spec_path.read_text(encoding="utf-8")
+    payload = json.loads(raw) if spec_path.suffix.lower() == ".json" else yaml.safe_load(raw)
+    if not isinstance(payload, dict):
+        raise ValueError("--site-spec-file must contain a mapping")
+    rows = payload.get("sites")
+    if not isinstance(rows, list):
+        raise ValueError("--site-spec-file must contain a sites list")
+    specs: dict[str, SitePreset] = {}
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"site-spec row {index} must be a mapping")
+        specs[_required_site_field(row, "site", index)] = _site_preset_from_spec(row, index)
+    return specs
+
+
+def _site_preset_from_spec(row: dict[str, Any], index: int) -> SitePreset:
+    site = _required_site_field(row, "site", index)
+    layer = row.get("layer")
+    if isinstance(layer, bool) or not isinstance(layer, int):
+        raise ValueError(f"site-spec row {index} requires integer layer")
+    tensor_kind = _required_site_field(row, "tensor_kind", index)
+    continuous = row.get("continuous")
+    if not isinstance(continuous, bool):
+        raise ValueError(f"site-spec row {index} requires boolean continuous")
+    control_site = row.get("control_site")
+    no_control_reason = row.get("no_control_reason")
+    if control_site is None and not no_control_reason:
+        raise ValueError(f"site-spec row {index} requires control_site or no_control_reason")
+    if control_site is not None and not isinstance(control_site, str):
+        raise ValueError(f"site-spec row {index} control_site must be a string when present")
+    full_layer_site = row.get("full_layer_site")
+    no_full_layer_reason = row.get("no_full_layer_comparator_reason")
+    if full_layer_site is None and not no_full_layer_reason:
+        raise ValueError(f"site-spec row {index} requires full_layer_site or no_full_layer_comparator_reason")
+    if full_layer_site is not None and not isinstance(full_layer_site, str):
+        raise ValueError(f"site-spec row {index} full_layer_site must be a string when present")
+    return SitePreset(
+        site=site,
+        layer=layer,
+        tensor_kind=tensor_kind,
+        control_site=control_site,
+        continuous=continuous,
+        full_layer_site=full_layer_site,
+        canonical=False,
+        noncanonical_reason="exploratory site metadata supplied outside Tier-1 preset registry",
+        no_control_reason=str(no_control_reason) if no_control_reason else None,
+        no_full_layer_comparator_reason=str(no_full_layer_reason) if no_full_layer_reason else None,
+    )
+
+
+def _required_site_field(row: dict[str, Any], field_name: str, index: int) -> str:
+    value = row.get(field_name)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"site-spec row {index} requires non-empty {field_name}")
+    return value

@@ -8,6 +8,8 @@ KILL_CONDITION:
   - Decoy specificity fails after bootstrap confidence intervals and FDR-BH correction.
   - The canonical seed1 matched control is unavailable, overridden noncanonically, or seed-mismatched.
   - A random-site null is unavailable or not beaten for the specific site x layer x family cell claiming evidence.
+  - Feature pooling is not task-aligned to answer or patch positions in a confirmatory full run.
+  - Restoration patching lacks valid clean/corrupt token alignment metadata.
   - Restoration or mediation metrics are unavailable, invalid, or have invalid denominators.
   - Results only support controlled_probe_signal when causal restoration/mediation fails but probe/null/control gates pass.
 MECHANISM_PROOF: >
@@ -51,7 +53,7 @@ FDR_SCOPE: >
   Every computed site x layer x task_family x metric cell in the run, including
   linear_probe_auc_minus_0_5, auc_minus_shuffled_auc, auc_minus_random_site_auc,
   auc_minus_matched_control_auc, target_vs_decoy_specificity,
-  component_patch_restoration, and mediation_fraction when valid; not only the
+  component_patch_restoration, full_layer_patch_restoration, and mediation_fraction when valid; not only the
   pre-registered target site and not only the primary metric.
 EXPECTED_DIRECTION: positive
 CHECKPOINT_EXPECTATIONS:
@@ -69,9 +71,16 @@ SPECIFICITY_GATE: >
   The bootstrap confidence interval for target_vs_decoy_specificity must exclude zero in the
   expected positive direction after FDR-BH correction.
 RESTORATION_AND_MEDIATION_REQUIREMENTS: >
-  component_patch_restoration, full_layer_patch_restoration, and mediation_fraction must be valid.
+  component_patch_restoration, full_layer_patch_restoration, and mediation_fraction must be valid
+  and must pass FDR-BH correction. Task records must provide single-token GPT-2 target/foil
+  metadata, valid clean/corrupt answer positions, and explicit patch token alignment when
+  clean and corrupted prompts have different token lengths.
   Invalid restoration or mediation denominators force controlled_probe_signal or insufficient_evidence,
   not candidate_mechanism_evidence.
+FEATURE_POOLING_RULE: >
+  Confirmatory candidate_mechanism_evidence requires task-aligned feature pooling
+  (`patch_positions_mean` by default, or `answer_position`). Mean-sequence pooling is allowed
+  only as exploratory/diagnostic evidence and caps the top claim.
 DISALLOWED_CLAIMS:
   - replicated finding
   - universal mechanism

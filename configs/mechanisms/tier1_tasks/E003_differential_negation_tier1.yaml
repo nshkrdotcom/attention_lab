@@ -26,6 +26,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: confirm
     object: the memo
@@ -49,6 +58,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 26
+    corrupted_answer_position: 24
+    patch_token_indices:
+    - 24
+    clean_patch_token_indices:
+    - 26
+    corrupted_patch_token_indices:
+    - 24
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: deliver
     object: the package
@@ -72,6 +90,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: publish
     object: the checklist
@@ -95,6 +122,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 29
+    corrupted_answer_position: 27
+    patch_token_indices:
+    - 27
+    clean_patch_token_indices:
+    - 29
+    corrupted_patch_token_indices:
+    - 27
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The pilot
     verb: verify
     object: the report
@@ -118,6 +154,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: accept
     object: the report
@@ -141,6 +186,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 32
+    corrupted_answer_position: 30
+    patch_token_indices:
+    - 30
+    clean_patch_token_indices:
+    - 32
+    corrupted_patch_token_indices:
+    - 30
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: release
     object: the invoice
@@ -164,6 +218,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The planner
     verb: deliver
     object: the invoice
@@ -187,6 +250,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: deliver
     object: the checklist
@@ -210,6 +282,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 31
+    corrupted_answer_position: 29
+    patch_token_indices:
+    - 29
+    clean_patch_token_indices:
+    - 31
+    corrupted_patch_token_indices:
+    - 29
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The auditor
     verb: revise
     object: the invoice
@@ -233,6 +314,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The pilot
     verb: accept
     object: the design
@@ -256,6 +346,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The engineer
     verb: deliver
     object: the update
@@ -279,6 +378,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 26
+    corrupted_answer_position: 24
+    patch_token_indices:
+    - 24
+    clean_patch_token_indices:
+    - 26
+    corrupted_patch_token_indices:
+    - 24
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The nurse
     verb: deliver
     object: the dataset
@@ -302,6 +410,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: approve
     object: the dataset
@@ -325,6 +442,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 29
+    corrupted_answer_position: 27
+    patch_token_indices:
+    - 27
+    clean_patch_token_indices:
+    - 29
+    corrupted_patch_token_indices:
+    - 27
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: release
     object: the package
@@ -348,6 +474,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: confirm
     object: the checklist
@@ -371,6 +506,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 32
+    corrupted_answer_position: 30
+    patch_token_indices:
+    - 30
+    clean_patch_token_indices:
+    - 32
+    corrupted_patch_token_indices:
+    - 30
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The nurse
     verb: release
     object: the report
@@ -394,6 +538,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The teacher
     verb: deliver
     object: the schedule
@@ -417,6 +570,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The pilot
     verb: revise
     object: the package
@@ -440,6 +602,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 31
+    corrupted_answer_position: 29
+    patch_token_indices:
+    - 29
+    clean_patch_token_indices:
+    - 31
+    corrupted_patch_token_indices:
+    - 29
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The planner
     verb: accept
     object: the design
@@ -463,6 +634,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The auditor
     verb: approve
     object: the invoice
@@ -486,6 +666,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: archive
     object: the report
@@ -509,6 +698,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 26
+    corrupted_answer_position: 24
+    patch_token_indices:
+    - 24
+    clean_patch_token_indices:
+    - 26
+    corrupted_patch_token_indices:
+    - 24
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: archive
     object: the invoice
@@ -532,6 +730,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The auditor
     verb: confirm
     object: the dataset
@@ -555,6 +762,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 29
+    corrupted_answer_position: 27
+    patch_token_indices:
+    - 27
+    clean_patch_token_indices:
+    - 29
+    corrupted_patch_token_indices:
+    - 27
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: deliver
     object: the report
@@ -578,6 +794,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The teacher
     verb: publish
     object: the update
@@ -601,6 +826,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 32
+    corrupted_answer_position: 30
+    patch_token_indices:
+    - 30
+    clean_patch_token_indices:
+    - 32
+    corrupted_patch_token_indices:
+    - 30
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: deliver
     object: the schedule
@@ -624,6 +858,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: accept
     object: the schedule
@@ -647,6 +890,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: release
     object: the checklist
@@ -670,6 +922,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 31
+    corrupted_answer_position: 29
+    patch_token_indices:
+    - 29
+    clean_patch_token_indices:
+    - 31
+    corrupted_patch_token_indices:
+    - 29
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The engineer
     verb: release
     object: the checklist
@@ -693,6 +954,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: revise
     object: the invoice
@@ -716,6 +986,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The engineer
     verb: approve
     object: the dataset
@@ -739,6 +1018,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 26
+    corrupted_answer_position: 24
+    patch_token_indices:
+    - 24
+    clean_patch_token_indices:
+    - 26
+    corrupted_patch_token_indices:
+    - 24
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The engineer
     verb: release
     object: the schedule
@@ -762,6 +1050,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: release
     object: the schedule
@@ -785,6 +1082,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 29
+    corrupted_answer_position: 27
+    patch_token_indices:
+    - 27
+    clean_patch_token_indices:
+    - 29
+    corrupted_patch_token_indices:
+    - 27
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The planner
     verb: accept
     object: the report
@@ -808,6 +1114,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The auditor
     verb: confirm
     object: the update
@@ -831,6 +1146,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 32
+    corrupted_answer_position: 30
+    patch_token_indices:
+    - 30
+    clean_patch_token_indices:
+    - 32
+    corrupted_patch_token_indices:
+    - 30
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The planner
     verb: archive
     object: the proposal
@@ -854,6 +1178,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The nurse
     verb: confirm
     object: the schedule
@@ -877,6 +1210,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The auditor
     verb: verify
     object: the design
@@ -900,6 +1242,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 31
+    corrupted_answer_position: 29
+    patch_token_indices:
+    - 29
+    clean_patch_token_indices:
+    - 31
+    corrupted_patch_token_indices:
+    - 29
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: inspect
     object: the dataset
@@ -923,6 +1274,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: deliver
     object: the invoice
@@ -946,6 +1306,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: revise
     object: the invoice
@@ -969,6 +1338,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 26
+    corrupted_answer_position: 24
+    patch_token_indices:
+    - 24
+    clean_patch_token_indices:
+    - 26
+    corrupted_patch_token_indices:
+    - 24
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: release
     object: the update
@@ -992,6 +1370,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The curator
     verb: confirm
     object: the proposal
@@ -1015,6 +1402,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 29
+    corrupted_answer_position: 27
+    patch_token_indices:
+    - 27
+    clean_patch_token_indices:
+    - 29
+    corrupted_patch_token_indices:
+    - 27
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The planner
     verb: archive
     object: the checklist
@@ -1038,6 +1434,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: inspect
     object: the report
@@ -1061,6 +1466,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 32
+    corrupted_answer_position: 30
+    patch_token_indices:
+    - 30
+    clean_patch_token_indices:
+    - 32
+    corrupted_patch_token_indices:
+    - 30
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The editor
     verb: inspect
     object: the package
@@ -1084,6 +1498,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The teacher
     verb: verify
     object: the update
@@ -1107,6 +1530,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 28
+    corrupted_answer_position: 26
+    patch_token_indices:
+    - 26
+    clean_patch_token_indices:
+    - 28
+    corrupted_patch_token_indices:
+    - 26
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The coach
     verb: archive
     object: the invoice
@@ -1130,6 +1562,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 31
+    corrupted_answer_position: 29
+    patch_token_indices:
+    - 29
+    clean_patch_token_indices:
+    - 31
+    corrupted_patch_token_indices:
+    - 29
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The engineer
     verb: approve
     object: the proposal
@@ -1153,6 +1594,15 @@ records:
     foil_token_text: ' false'
     target_token_id: 2081
     foil_token_id: 3991
+    clean_answer_position: 27
+    corrupted_answer_position: 25
+    patch_token_indices:
+    - 25
+    clean_patch_token_indices:
+    - 27
+    corrupted_patch_token_indices:
+    - 25
+    clean_corrupt_token_alignment: explicit_patch_indices
     subject: The analyst
     verb: approve
     object: the invoice

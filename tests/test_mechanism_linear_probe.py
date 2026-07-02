@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
+import torch
 
+from attention_lab.mechanisms.activations import tensor_to_feature_matrix
 from attention_lab.mechanisms.linear_probe import (
     grouped_train_test_split,
     train_linear_probe,
     train_shuffled_label_null,
 )
 from attention_lab.mechanisms.statistics import auc_score, bootstrap_mean_difference, fdr_bh
+from attention_lab.mechanisms.task_schema import TaskExample
 
 
 def _toy_probe_data(n_pairs: int = 24) -> tuple[np.ndarray, np.ndarray, list[str], list[str]]:
@@ -83,3 +87,55 @@ def test_auc_bootstrap_and_fdr_bh_behavior():
     fdr = fdr_bh({"primary": 0.001, "secondary": 0.04, "weak": 0.5}, alpha=0.05)
     assert fdr["primary"].rejected
     assert not fdr["weak"].rejected
+
+
+def test_answer_position_pooling_uses_declared_position():
+    tensor = torch.arange(2 * 4 * 3, dtype=torch.float32).reshape(2, 4, 3)
+    examples = [
+        TaskExample("a", 1, "pos", "p0", "t0", "f", {"clean_answer_position": 1}),
+        TaskExample("b", 0, "neg", "p0", "t0", "f", {"corrupted_answer_position": 2}),
+    ]
+
+    pooled = tensor_to_feature_matrix(
+        tensor,
+        expected_batch=2,
+        lengths=[4, 4],
+        examples=examples,
+        feature_pooling="answer_position",
+    )
+
+    assert np.allclose(pooled[0], tensor[0, 1].numpy())
+    assert np.allclose(pooled[1], tensor[1, 2].numpy())
+
+
+def test_patch_position_pooling_uses_declared_aligned_positions_only():
+    tensor = torch.arange(2 * 5 * 2, dtype=torch.float32).reshape(2, 5, 2)
+    examples = [
+        TaskExample("a", 1, "pos", "p0", "t0", "f", {"clean_patch_token_indices": [1, 3]}),
+        TaskExample("b", 0, "neg", "p0", "t0", "f", {"corrupted_patch_token_indices": [2, 4]}),
+    ]
+
+    pooled = tensor_to_feature_matrix(
+        tensor,
+        expected_batch=2,
+        lengths=[5, 5],
+        examples=examples,
+        feature_pooling="patch_positions_mean",
+    )
+
+    assert np.allclose(pooled[0], tensor[0, [1, 3]].mean(dim=0).numpy())
+    assert np.allclose(pooled[1], tensor[1, [2, 4]].mean(dim=0).numpy())
+
+
+def test_invalid_pooling_metadata_blocks_task_aligned_pooling():
+    tensor = torch.zeros(1, 3, 2)
+    examples = [TaskExample("a", 1, "pos", "p0", "t0", "f", {"clean_answer_position": 99})]
+
+    with pytest.raises(ValueError, match="out of range"):
+        tensor_to_feature_matrix(
+            tensor,
+            expected_batch=1,
+            lengths=[3],
+            examples=examples,
+            feature_pooling="answer_position",
+        )

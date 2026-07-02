@@ -16,6 +16,10 @@
       "decoy_auc": 1.0,
       "family_id": "negation_scope",
       "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "mean_sequence",
+        "task_aligned": false
+      },
       "layer": 0,
       "linear_probe_auc": 1.0,
       "matched_control": {
@@ -36,6 +40,37 @@
       "random_site_null": {
         "candidate_feature_dim": 384,
         "candidate_site": "branch_delta[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
         "random_site_null_available": true,
         "reason": null,
         "selected_feature_dim": 384,
@@ -43,6 +78,14 @@
       },
       "shuffled_label_auc": 0.5555555555555556,
       "site": "branch_delta",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
       "split": {
         "group_field": "template_id",
         "grouped_split_discipline": true,
@@ -82,6 +125,10 @@
       "decoy_auc": 1.0,
       "family_id": "negation_scope",
       "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "mean_sequence",
+        "task_aligned": false
+      },
       "layer": 0,
       "linear_probe_auc": 1.0,
       "matched_control": {
@@ -102,6 +149,37 @@
       "random_site_null": {
         "candidate_feature_dim": 384,
         "candidate_site": "neg_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
         "random_site_null_available": true,
         "reason": null,
         "selected_feature_dim": 384,
@@ -109,6 +187,14 @@
       },
       "shuffled_label_auc": 0.4,
       "site": "neg_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
       "split": {
         "group_field": "template_id",
         "grouped_split_discipline": true,
@@ -148,6 +234,10 @@
       "decoy_auc": 1.0,
       "family_id": "negation_scope",
       "feature_dim": 384,
+      "feature_pooling": {
+        "strategy": "mean_sequence",
+        "task_aligned": false
+      },
       "layer": 0,
       "linear_probe_auc": 1.0,
       "matched_control": {
@@ -168,6 +258,37 @@
       "random_site_null": {
         "candidate_feature_dim": 384,
         "candidate_site": "pos_out[0]",
+        "candidate_tensor_kind": "activation",
+        "considered_sites": [
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "attn_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_mid[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "mlp_out[0]",
+            "tensor_kind": "activation"
+          },
+          {
+            "accepted": true,
+            "feature_dim": 384,
+            "reason": "matched dimensionality and compatible tensor kind",
+            "site": "resid_post[0]",
+            "tensor_kind": "activation"
+          }
+        ],
         "random_site_null_available": true,
         "reason": null,
         "selected_feature_dim": 384,
@@ -175,6 +296,14 @@
       },
       "shuffled_label_auc": 0.5288888888888889,
       "site": "pos_out",
+      "site_metadata": {
+        "canonical": true,
+        "continuous": true,
+        "control_site": "attn_out",
+        "full_layer_site": "attn_out",
+        "noncanonical_reason": null,
+        "tensor_kind": "activation"
+      },
       "split": {
         "group_field": "template_id",
         "grouped_split_discipline": true,
@@ -215,6 +344,71 @@
   "fdr_bh": {
     "alpha": 0.05,
     "comparison_family": "every computed (site x layer x task_family x metric) cell in the run",
+    "invalid_or_unavailable_cells": [
+      {
+        "cell_id": "branch_delta[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "component_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "branch_delta[0]"
+      },
+      {
+        "cell_id": "branch_delta[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "full_layer_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "branch_delta[0]"
+      },
+      {
+        "cell_id": "branch_delta[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "mediation_fraction",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "branch_delta[0]"
+      },
+      {
+        "cell_id": "pos_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "component_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "pos_out[0]"
+      },
+      {
+        "cell_id": "pos_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "full_layer_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "pos_out[0]"
+      },
+      {
+        "cell_id": "pos_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "mediation_fraction",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "pos_out[0]"
+      },
+      {
+        "cell_id": "neg_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "component_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "neg_out[0]"
+      },
+      {
+        "cell_id": "neg_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "full_layer_patch_restoration",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "neg_out[0]"
+      },
+      {
+        "cell_id": "neg_out[0]|family=negation_scope",
+        "family_id": "negation_scope",
+        "metric": "mediation_fraction",
+        "reason": "probe-only mode skips patching/restoration",
+        "site": "neg_out[0]"
+      }
+    ],
     "results": {
       "branch_delta[0]|family=negation_scope|metric=auc_minus_matched_control_auc": {
         "p_value": 1.0,
@@ -310,6 +504,10 @@
       "pos_out[0]|family=negation_scope|metric=target_vs_decoy_specificity"
     ]
   },
+  "feature_pooling": {
+    "strategy": "mean_sequence",
+    "task_aligned": false
+  },
   "hypothesis": {
     "claim_cap": "exploratory_probe_signal",
     "mode": "exploratory",
@@ -318,6 +516,77 @@
   "mode": {
     "exploratory": true,
     "probe_only": true
+  },
+  "preflight": {
+    "actual_control_checkpoint_path": "runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt",
+    "actual_control_config_path": "configs/experiments/E003_qkv_architecture_gauntlet/standard_refactor_control_30m_seed1_rung500.yaml",
+    "allow_diagnostic_with_missing_control": false,
+    "candidate_checkpoint_exists": true,
+    "candidate_checkpoint_path": "runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt",
+    "candidate_config_exists": true,
+    "candidate_config_path": "configs/experiments/E003_qkv_architecture_gauntlet/differential_qkv_anti_value_30m_seed1_rung500.yaml",
+    "canonical_control_checkpoint_path": "runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt",
+    "canonical_control_config_path": "configs/experiments/E003_qkv_architecture_gauntlet/standard_refactor_control_30m_seed1_rung500.yaml",
+    "control_available": true,
+    "control_override_used": false,
+    "control_reason": null,
+    "control_seed_matches_expected": true,
+    "feature_pooling": {
+      "confirmatory_candidate_evidence_cap": "candidate_mechanism_evidence requires task-aligned pooling",
+      "strategy": "mean_sequence",
+      "task_aligned": false
+    },
+    "force_noncanonical_control": false,
+    "hypothesis_doc_validation": {
+      "valid": true
+    },
+    "patching_metadata_validation": {
+      "required": false,
+      "valid": true
+    },
+    "selected_site_validation": {
+      "sites": [
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "branch_delta",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "pos_out",
+          "tensor_kind": "activation"
+        },
+        {
+          "canonical": true,
+          "continuous": true,
+          "control_site": "attn_out",
+          "full_layer_site": "attn_out",
+          "layer": 0,
+          "noncanonical_reason": null,
+          "site": "neg_out",
+          "tensor_kind": "activation"
+        }
+      ],
+      "valid": true
+    },
+    "task_suite_validation": {
+      "confirmatory_floor_met": true,
+      "deterministic_provenance": true,
+      "errors": [],
+      "restoration_token_metadata_valid": true,
+      "valid": true,
+      "warnings": []
+    }
   },
   "run": {
     "attention_type": "differential_qkv_anti_value",

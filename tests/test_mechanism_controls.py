@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 
 from attention_lab.mechanisms.controls import is_seed_mismatched, resolve_control, select_random_site_null
-from attention_lab.mechanisms.presets import resolve_preset
+from attention_lab.mechanisms.presets import resolve_preset, site_presets_for_names
 
 
 def test_tier1_presets_resolve_seed_matched_controls():
@@ -94,6 +94,7 @@ def test_random_site_null_requires_matched_dimension_and_excludes_candidate():
     assert selected.selected_site == "attn_out[0]"
     assert selected.selected_site != "branch_delta[0]"
     assert selected.selected_feature_dim == 4
+    assert any(item["site"] == "mlp_out[0]" and not item["accepted"] for item in selected.considered_sites)
 
 
 def test_missing_random_site_null_reports_feasibility_limit_for_low_dim_probability_site():
@@ -114,8 +115,30 @@ def test_missing_random_site_null_reports_feasibility_limit_for_low_dim_probabil
 
     assert not selected.available
     assert selected.candidate_feature_dim == 5
+    assert selected.candidate_tensor_kind == "probability"
     assert "feasibility limit" in (selected.reason or "")
+    assert any("dimension mismatch" in str(item["reason"]) for item in selected.considered_sites)
     assert np.isfinite(selected.candidate_feature_dim)
+
+
+def test_random_site_null_rejects_same_site_and_incompatible_tensor_kind():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_probs = preset.target_sites[0]
+    shapes = {
+        "operator_probs[0]": (8, 5),
+        "attn_out[0]": (8, 5),
+    }
+    selected = select_random_site_null(
+        candidate=operator_probs,
+        candidate_key="operator_probs[0]",
+        feature_shapes=shapes,
+        pool=(operator_probs, *preset.random_site_pool[:1]),
+        seed=0,
+    )
+
+    assert not selected.available
+    assert any("own random-site null" in str(item["reason"]) for item in selected.considered_sites)
+    assert any("incompatible tensor kind" in str(item["reason"]) for item in selected.considered_sites)
 
 
 def test_e004_full_width_operator_output_can_select_matched_random_site():
@@ -148,3 +171,14 @@ def test_tier2_tier3_presets_are_not_executable():
     assert not scope.executable
     assert q3.status == "stub_not_executable"
     assert not q3.executable
+
+
+def test_confirmatory_site_selection_rejects_wrong_explicit_layer():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+
+    try:
+        site_presets_for_names(preset, ["branch_delta[1]"], exploratory=False)
+    except ValueError as exc:
+        assert "declared layer" in str(exc)
+    else:
+        raise AssertionError("explicit wrong layer should not resolve to layer 0")

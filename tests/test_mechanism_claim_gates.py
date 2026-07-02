@@ -85,6 +85,27 @@ def test_valid_controlled_probe_without_patching_stops_below_candidate_evidence(
     assert any("patching" in blocker for blocker in result.blockers)
 
 
+def test_candidate_mechanism_evidence_requires_full_layer_restoration_fdr():
+    result = evaluate_cell_claim_gate(_passing_inputs(full_layer_patching_fdr_passed=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("restoration/mediation" in blocker for blocker in result.blockers)
+
+
+def test_candidate_mechanism_evidence_requires_task_aligned_pooling():
+    result = evaluate_cell_claim_gate(_passing_inputs(task_aligned_pooling=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("task-aligned" in blocker for blocker in result.blockers)
+
+
+def test_candidate_mechanism_evidence_requires_valid_restoration_alignment():
+    result = evaluate_cell_claim_gate(_passing_inputs(restoration_alignment_valid=False, patching_valid=False))
+
+    assert result.status == CONTROLLED_PROBE_SIGNAL
+    assert any("alignment" in blocker for blocker in result.blockers)
+
+
 def test_min_n_floor_grouping_and_decoy_specificity_block_gates():
     for kwargs in (
         {"min_n_passed": False},
@@ -94,6 +115,30 @@ def test_min_n_floor_grouping_and_decoy_specificity_block_gates():
         {"specificity_ci_passed": False},
     ):
         assert evaluate_cell_claim_gate(_passing_inputs(**kwargs)).status == INSUFFICIENT_EVIDENCE
+
+
+def test_controlled_probe_signal_requires_random_null_and_fdr_not_raw_auc():
+    missing_random = evaluate_cell_claim_gate(_passing_inputs(random_site_null_available=False, random_site_null_passed=False))
+    raw_auc_only = evaluate_cell_claim_gate(_passing_inputs(primary_fdr_passed=False, primary_ci_passed=True))
+
+    assert missing_random.status == INSUFFICIENT_EVIDENCE
+    assert raw_auc_only.status == INSUFFICIENT_EVIDENCE
+
+
+def test_specificity_ci_without_fdr_cannot_pass_candidate_evidence():
+    result = evaluate_cell_claim_gate(_passing_inputs(specificity_fdr_passed=False, specificity_ci_passed=True))
+
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("specificity" in blocker for blocker in result.blockers)
+
+
+def test_noncanonical_forced_control_still_blocks_candidate_mechanism_evidence():
+    result = evaluate_cell_claim_gate(
+        _passing_inputs(canonical_control=False, noncanonical_control=True, force_noncanonical_control=True)
+    )
+
+    assert result.status == INSUFFICIENT_EVIDENCE
+    assert any("noncanonical" in cap for cap in result.caps)
 
 
 def test_hand_authored_or_small_task_suite_blocks_confirmatory_gate():

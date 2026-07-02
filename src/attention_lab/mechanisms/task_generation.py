@@ -122,6 +122,12 @@ def generate_tier1_negation_suite(
         x_neg = prompt_template.format(sentence=f"{subject} {verb} {obj}.")
         x_para = prompt_template.format(sentence=f"{subject} never {verb} {obj}.")
         x_decoy = prompt_template.format(sentence=f"{subject} {decoy_adverb} {verb} {obj}.")
+        restoration_metadata = _restoration_alignment_metadata(
+            x_pos=x_pos,
+            x_neg=x_neg,
+            target_token_id=target_id,
+            foil_token_id=foil_id,
+        )
         records.append(
             {
                 "pair_id": pair_id,
@@ -133,10 +139,7 @@ def generate_tier1_negation_suite(
                 "x_decoy": x_decoy,
                 "metadata": {
                     "phenomenon": "explicit_negation",
-                    "target_token_text": TARGET_TOKEN_TEXT,
-                    "foil_token_text": FOIL_TOKEN_TEXT,
-                    "target_token_id": target_id,
-                    "foil_token_id": foil_id,
+                    **restoration_metadata,
                     "subject": subject,
                     "verb": verb,
                     "object": obj,
@@ -191,6 +194,36 @@ def gpt2_single_token_id(token_text: str) -> int:
     if len(encoded) != 1:
         raise ValueError(f"{token_text!r} is not a single GPT-2 token")
     return int(encoded[0])
+
+
+def _restoration_alignment_metadata(
+    *,
+    x_pos: str,
+    x_neg: str,
+    target_token_id: int,
+    foil_token_id: int,
+) -> dict[str, Any]:
+    import tiktoken
+
+    enc = tiktoken.get_encoding("gpt2")
+    clean_tokens = enc.encode(x_pos)
+    corrupted_tokens = enc.encode(x_neg)
+    clean_answer_position = len(clean_tokens) - 1
+    corrupted_answer_position = len(corrupted_tokens) - 1
+    alignment = "same_length" if len(clean_tokens) == len(corrupted_tokens) else "explicit_patch_indices"
+    shared_index = min(clean_answer_position, corrupted_answer_position)
+    return {
+        "target_token_text": TARGET_TOKEN_TEXT,
+        "foil_token_text": FOIL_TOKEN_TEXT,
+        "target_token_id": target_token_id,
+        "foil_token_id": foil_token_id,
+        "clean_answer_position": clean_answer_position,
+        "corrupted_answer_position": corrupted_answer_position,
+        "patch_token_indices": [shared_index],
+        "clean_patch_token_indices": [clean_answer_position],
+        "corrupted_patch_token_indices": [corrupted_answer_position],
+        "clean_corrupt_token_alignment": alignment,
+    }
 
 
 def _prompt_templates(candidate: str) -> list[str]:

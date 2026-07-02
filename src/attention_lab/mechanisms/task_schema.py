@@ -20,6 +20,13 @@ PROVENANCE_FIELDS = (
 CONFIRMATORY_MIN_PAIRS_PER_FAMILY = 50
 RESTORATION_TOKEN_ID_FIELDS = ("target_token_id", "foil_token_id")
 RESTORATION_TOKEN_TEXT_FIELDS = ("target_token_text", "foil_token_text")
+RESTORATION_ALIGNMENT_FIELDS = (
+    "clean_answer_position",
+    "corrupted_answer_position",
+    "patch_token_indices",
+    "clean_corrupt_token_alignment",
+)
+RESTORATION_ALIGNMENT_MODES = ("same_length", "explicit_patch_indices")
 
 
 @dataclass(frozen=True)
@@ -259,7 +266,7 @@ def validate_restoration_token_metadata(
         metadata = record.metadata
         missing = [
             field
-            for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS)
+            for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS, *RESTORATION_ALIGNMENT_FIELDS)
             if field not in metadata
         ]
         if missing:
@@ -308,8 +315,177 @@ def validate_restoration_token_metadata(
             errors.append(
                 f"pair {record.pair_id} in family {record.family_id} uses identical target and foil token ids"
             )
+        errors.extend(_validate_restoration_alignment(record, enc, vocab_size=vocab_size))
     return errors
 
 
 def _has_any_restoration_token_field(metadata: dict[str, Any]) -> bool:
-    return any(field in metadata for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS))
+    return any(
+        field in metadata
+        for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS, *RESTORATION_ALIGNMENT_FIELDS)
+    )
+
+
+def _validate_restoration_alignment(record: TaskRecord, enc: Any, *, vocab_size: int) -> list[str]:
+    _ = vocab_size
+    metadata = record.metadata
+    errors: list[str] = []
+    clean_tokens = enc.encode(record.x_pos)
+    corrupted_tokens = enc.encode(record.x_neg)
+    clean_position = metadata.get("clean_answer_position")
+    corrupted_position = metadata.get("corrupted_answer_position")
+    alignment_mode = metadata.get("clean_corrupt_token_alignment")
+    patch_indices = metadata.get("patch_token_indices")
+    clean_patch_indices = metadata.get("clean_patch_token_indices", patch_indices)
+    corrupted_patch_indices = metadata.get("corrupted_patch_token_indices", patch_indices)
+
+    if isinstance(clean_position, bool) or not isinstance(clean_position, int):
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has invalid clean_answer_position"
+        )
+    elif clean_position < 0 or clean_position >= len(clean_tokens):
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has out-of-range clean_answer_position"
+        )
+
+    if isinstance(corrupted_position, bool) or not isinstance(corrupted_position, int):
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has invalid corrupted_answer_position"
+        )
+    elif corrupted_position < 0 or corrupted_position >= len(corrupted_tokens):
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has out-of-range corrupted_answer_position"
+        )
+
+    if alignment_mode not in RESTORATION_ALIGNMENT_MODES:
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has invalid clean_corrupt_token_alignment"
+        )
+    elif alignment_mode == "same_length" and len(clean_tokens) != len(corrupted_tokens):
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} declares same_length alignment but "
+            f"clean/corrupted token lengths differ ({len(clean_tokens)} != {len(corrupted_tokens)})"
+        )
+    elif alignment_mode == "explicit_patch_indices" and len(clean_tokens) == len(corrupted_tokens):
+        # Same-length prompts may still use explicit indices, but this note keeps the metadata honest.
+        pass
+
+    errors.extend(
+        _validate_index_list(
+            record=record,
+            field_name="patch_token_indices",
+            values=patch_indices,
+            max_len=min(len(clean_tokens), len(corrupted_tokens)),
+        )
+    )
+    errors.extend(
+        _validate_index_list(
+            record=record,
+            field_name="clean_patch_token_indices",
+            values=clean_patch_indices,
+            max_len=len(clean_tokens),
+        )
+    )
+    errors.extend(
+        _validate_index_list(
+            record=record,
+            field_name="corrupted_patch_token_indices",
+            values=corrupted_patch_indices,
+            max_len=len(corrupted_tokens),
+        )
+    )
+    if isinstance(clean_patch_indices, list) and isinstance(corrupted_patch_indices, list):
+        if len(clean_patch_indices) != len(corrupted_patch_indices):
+            errors.append(
+                f"pair {record.pair_id} in family {record.family_id} has mismatched clean/corrupted "
+                "patch index counts"
+            )
+    if len(clean_tokens) != len(corrupted_tokens) and alignment_mode != "explicit_patch_indices":
+        errors.append(
+            f"pair {record.pair_id} in family {record.family_id} has different clean/corrupted token lengths "
+            "without explicit_patch_indices alignment"
+        )
+    return errors
+
+
+def _validate_index_list(
+    *,
+    record: TaskRecord,
+    field_name: str,
+    values: Any,
+    max_len: int,
+) -> list[str]:
+    if not isinstance(values, list) or not values:
+        return [f"pair {record.pair_id} in family {record.family_id} has invalid {field_name}"]
+    errors: list[str] = []
+    for index, value in enumerate(values):
+        if isinstance(value, bool) or not isinstance(value, int):
+            errors.append(
+                f"pair {record.pair_id} in family {record.family_id} has non-integer "
+                f"{field_name}[{index}]"
+            )
+        elif value < 0 or value >= max_len:
+            errors.append(
+                f"pair {record.pair_id} in family {record.family_id} has out-of-range "
+                f"{field_name}[{index}]={value}"
+            )
+    return errors
+
+
+def restoration_alignment_metadata(
+    record: TaskRecord,
+    *,
+    tokenizer_name: str,
+    block_size: int,
+    vocab_size: int,
+) -> dict[str, Any]:
+    """Return validated restoration alignment metadata for one task record.
+
+    This helper is intentionally strict because full-suite patching must not
+    silently patch whole clean caches into corrupted prompts when token positions
+    are not aligned.
+    """
+    if tokenizer_name != "gpt2":
+        raise ValueError(f"restoration alignment only supports GPT-2 tokenizer, got {tokenizer_name!r}")
+    import tiktoken
+
+    enc = tiktoken.get_encoding("gpt2")
+    errors = validate_restoration_token_metadata(
+        TaskSuite(records=(record,), metadata={field: "x" for field in PROVENANCE_FIELDS}),
+        require=True,
+        tokenizer_name=tokenizer_name,
+        vocab_size=vocab_size,
+    )
+    if errors:
+        raise ValueError("; ".join(errors))
+    clean_tokens = enc.encode(record.x_pos)[:block_size] or [0]
+    corrupted_tokens = enc.encode(record.x_neg)[:block_size] or [0]
+    metadata = record.metadata
+    patch_indices = list(metadata["patch_token_indices"])
+    clean_patch_indices = list(metadata.get("clean_patch_token_indices", patch_indices))
+    corrupted_patch_indices = list(metadata.get("corrupted_patch_token_indices", patch_indices))
+    if len(clean_tokens) != len(corrupted_tokens) and metadata["clean_corrupt_token_alignment"] != "explicit_patch_indices":
+        raise ValueError("different clean/corrupted token lengths require explicit_patch_indices alignment")
+    if len(clean_patch_indices) != len(corrupted_patch_indices):
+        raise ValueError("clean_patch_token_indices and corrupted_patch_token_indices must have matching lengths")
+    for field_name, indices, length in (
+        ("clean_patch_token_indices", clean_patch_indices, len(clean_tokens)),
+        ("corrupted_patch_token_indices", corrupted_patch_indices, len(corrupted_tokens)),
+    ):
+        for value in indices:
+            if value < 0 or value >= length:
+                raise ValueError(f"{field_name} contains out-of-range index {value}")
+    return {
+        "target_token_id": int(metadata["target_token_id"]),
+        "foil_token_id": int(metadata["foil_token_id"]),
+        "target_token_text": metadata["target_token_text"],
+        "foil_token_text": metadata["foil_token_text"],
+        "clean_answer_position": int(metadata["clean_answer_position"]),
+        "corrupted_answer_position": int(metadata["corrupted_answer_position"]),
+        "clean_patch_token_indices": clean_patch_indices,
+        "corrupted_patch_token_indices": corrupted_patch_indices,
+        "patch_token_indices": patch_indices,
+        "clean_corrupt_token_alignment": metadata["clean_corrupt_token_alignment"],
+        "clean_token_length": len(clean_tokens),
+        "corrupted_token_length": len(corrupted_tokens),
+    }

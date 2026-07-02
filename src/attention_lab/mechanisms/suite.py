@@ -7,7 +7,12 @@ from typing import Any
 import numpy as np
 import torch
 
-from attention_lab.mechanisms.activations import collect_activation_features, encode_texts, load_mechanism_model
+from attention_lab.mechanisms.activations import (
+    TASK_ALIGNED_FEATURE_POOLING,
+    collect_activation_features,
+    encode_texts,
+    load_mechanism_model,
+)
 from attention_lab.mechanisms.alignment import probe_direction_alignment
 from attention_lab.mechanisms.claim_gates import (
     CellGateInputs,
@@ -41,6 +46,7 @@ from attention_lab.mechanisms.task_schema import (
     TaskRecord,
     examples_for_probe,
     load_task_suite,
+    restoration_alignment_metadata,
     validate_task_suite,
 )
 
@@ -67,6 +73,9 @@ def run_probe_suite(
     device: str = "cpu",
     batch_size: int = 16,
     force_noncanonical_control: bool = False,
+    feature_pooling: str = "auto",
+    site_spec_file: str | Path | None = None,
+    allow_diagnostic_with_missing_control: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     preset = resolve_preset(experiment_id, candidate)
     if not preset.executable:
@@ -116,14 +125,41 @@ def run_probe_suite(
         force_noncanonical=force_noncanonical_control,
     )
     control_seed_mismatched = is_seed_mismatched(preset, control)
-    selected_sites = site_presets_for_names(preset, sites)
+    selected_sites = site_presets_for_names(
+        preset,
+        sites,
+        exploratory=exploratory,
+        site_spec_file=site_spec_file,
+    )
+    resolved_feature_pooling = _resolve_feature_pooling(feature_pooling, exploratory=exploratory)
 
     candidate_config = Path(config) if config is not None else preset.config_path
     candidate_checkpoint = Path(checkpoint)
+    preflight = _preflight_report(
+        preset=preset,
+        candidate_config=candidate_config,
+        candidate_checkpoint=candidate_checkpoint,
+        control=control,
+        control_seed_mismatched=control_seed_mismatched,
+        task_validation=task_validation,
+        hypothesis_valid=hypothesis_valid,
+        selected_sites=selected_sites,
+        feature_pooling=resolved_feature_pooling,
+        task_aligned_pooling=resolved_feature_pooling in TASK_ALIGNED_FEATURE_POOLING,
+        exploratory=exploratory,
+        probe_only=probe_only,
+        allow_diagnostic_with_missing_control=allow_diagnostic_with_missing_control,
+    )
     if not candidate_config.exists():
         raise ValueError(f"candidate config does not exist: {candidate_config}")
     if not candidate_checkpoint.exists():
         raise ValueError(f"candidate checkpoint does not exist: {candidate_checkpoint}")
+    if not exploratory and not control.available and not allow_diagnostic_with_missing_control:
+        reason = control.reason or "matched control unavailable"
+        raise ValueError(
+            "confirmatory runs require a matched control before model loading; "
+            f"use --allow-diagnostic-with-missing-control for capped diagnostics ({reason})"
+        )
 
     metrics: dict[str, Any] = {
         "schema_version": 1,
@@ -139,6 +175,7 @@ def run_probe_suite(
             "hypothesis_doc": str(hypothesis_doc) if hypothesis_doc else None,
         },
         "mode": {"exploratory": exploratory, "probe_only": probe_only},
+        "preflight": preflight,
         "hypothesis": hypothesis_payload,
         "control": _control_metrics(control, control_seed_mismatched),
         "task_suite": {
@@ -152,6 +189,10 @@ def run_probe_suite(
             "min_n": min_n,
         },
         "sites_evaluated": [site.key for site in selected_sites],
+        "feature_pooling": {
+            "strategy": resolved_feature_pooling,
+            "task_aligned": resolved_feature_pooling in TASK_ALIGNED_FEATURE_POOLING,
+        },
         "cells": {},
     }
 
@@ -161,6 +202,7 @@ def run_probe_suite(
         control_model = load_mechanism_model(control.config_path, control.checkpoint_path, device=device)
 
     fdr_inputs: dict[str, BootstrapResult] = {}
+    fdr_invalid_cells: list[dict[str, Any]] = []
     cell_gate_inputs: dict[str, CellGateInputs] = {}
     split_by_family: dict[str, GroupedSplit] = {}
     for family in suite.families():
@@ -202,6 +244,8 @@ def run_probe_suite(
             checkpoint_path=candidate_checkpoint,
             device=device,
             batch_size=batch_size,
+            examples=examples,
+            feature_pooling=resolved_feature_pooling,
         )
         control_features = None
         if control_model is not None and control.checkpoint_path is not None:
@@ -214,6 +258,8 @@ def run_probe_suite(
                     checkpoint_path=control.checkpoint_path,
                     device=device,
                     batch_size=batch_size,
+                    examples=examples,
+                    feature_pooling=resolved_feature_pooling,
                 )
 
         feature_shapes = {key: value.shape for key, value in candidate_features.features.items()}
@@ -250,19 +296,33 @@ def run_probe_suite(
                 seed=seed,
                 device=device,
                 batch_size=batch_size,
+                feature_pooling=resolved_feature_pooling,
+                task_aligned_pooling=resolved_feature_pooling in TASK_ALIGNED_FEATURE_POOLING,
             )
             metrics["cells"][cell_id] = cell_metrics
             cell_gate_inputs[cell_id] = gate_inputs
             for metric_name, result in cell_metrics.get("_bootstrap_results", {}).items():
                 if result["valid"]:
                     fdr_inputs[f"{cell_id}|metric={metric_name}"] = _bootstrap_from_dict(result)
+                else:
+                    fdr_invalid_cells.append(
+                        {
+                            "cell_id": cell_id,
+                            "metric": metric_name,
+                            "reason": result.get("reason") or "bootstrap metric invalid",
+                        }
+                    )
+            for invalid in cell_metrics.get("_fdr_invalid", []):
+                fdr_invalid_cells.append({"cell_id": cell_id, **invalid})
             cell_metrics.pop("_bootstrap_results", None)
+            cell_metrics.pop("_fdr_invalid", None)
 
     fdr_results = fdr_bh({metric_id: result.p_value for metric_id, result in fdr_inputs.items()}, alpha=fdr_alpha)
     metrics["fdr_bh"] = {
         "alpha": fdr_alpha,
         "comparison_family": "every computed (site x layer x task_family x metric) cell in the run",
         "tested_cells": sorted(fdr_results),
+        "invalid_or_unavailable_cells": fdr_invalid_cells,
         "results": {
             metric_id: {
                 "p_value": result.p_value,
@@ -325,6 +385,8 @@ def _evaluate_site_cell(
     seed: int,
     device: str,
     batch_size: int,
+    feature_pooling: str,
+    task_aligned_pooling: bool,
 ) -> tuple[dict[str, Any], CellGateInputs]:
     cell_seed = seed + 1009 * site_index
     key = site.key
@@ -339,12 +401,25 @@ def _evaluate_site_cell(
         "target_vs_decoy_specificity": None,
         "bootstrap_alpha": fdr_alpha,
         "bootstrap_samples": bootstrap_samples,
+        "feature_pooling": {
+            "strategy": feature_pooling,
+            "task_aligned": task_aligned_pooling,
+        },
+        "site_metadata": {
+            "tensor_kind": site.tensor_kind,
+            "continuous": site.continuous,
+            "canonical": site.canonical,
+            "noncanonical_reason": site.noncanonical_reason,
+            "control_site": site.control_site,
+            "full_layer_site": site.full_layer_site,
+        },
         "random_site_null": {},
         "matched_control": {},
         "alignment_to_control": {},
         "patching": {"valid": False, "reason": "probe-only mode" if probe_only else "not computed by this probe cell"},
         "mediation_fraction": {"valid": False, "reason": "not computed by this probe cell"},
         "_bootstrap_results": {},
+        "_fdr_invalid": [],
     }
     blockers = []
     if split is None:
@@ -363,6 +438,8 @@ def _evaluate_site_cell(
             control=control,
             control_seed_mismatched=control_seed_mismatched,
             random_available=False,
+            task_aligned_pooling=task_aligned_pooling,
+            canonical_site=site.canonical,
             extra_blockers=tuple(blockers),
         )
 
@@ -397,6 +474,8 @@ def _evaluate_site_cell(
             control=control,
             control_seed_mismatched=control_seed_mismatched,
             random_available=False,
+            task_aligned_pooling=task_aligned_pooling,
+            canonical_site=site.canonical,
             extra_blockers=(str(exc),),
         )
 
@@ -455,22 +534,55 @@ def _evaluate_site_cell(
         )
         base_metrics["_bootstrap_results"]["auc_minus_random_site_auc"] = asdict(random_ci)
         random_pass = ci_excludes_null(random_ci)
+    else:
+        base_metrics["_fdr_invalid"].append(
+            {
+                "metric": "auc_minus_random_site_auc",
+                "reason": random_selection.reason or "random-site null unavailable",
+                "site": site.key,
+                "family_id": family,
+            }
+        )
 
     control_pass = False
     control_probe: LinearProbeResult | None = None
     if site.control_site is None:
         base_metrics["matched_control"] = {"available": False, "reason": "site has no matched control site metadata"}
+        base_metrics["_fdr_invalid"].append(
+            {
+                "metric": "auc_minus_matched_control_auc",
+                "reason": site.no_control_reason or "site has no matched control site metadata",
+                "site": site.key,
+                "family_id": family,
+            }
+        )
     else:
         control_key = f"{site.control_site}[{site.layer}]"
         control_matrix = control_features.get(control_key)
         if control_matrix is None:
             base_metrics["matched_control"] = {"available": False, "control_site": control_key, "reason": "control site features unavailable"}
+            base_metrics["_fdr_invalid"].append(
+                {
+                    "metric": "auc_minus_matched_control_auc",
+                    "reason": "control site features unavailable",
+                    "site": site.key,
+                    "family_id": family,
+                }
+            )
         elif control_matrix.shape[1] != features.shape[1]:
             base_metrics["matched_control"] = {
                 "available": False,
                 "control_site": control_key,
                 "reason": f"shape mismatch: candidate_dim={features.shape[1]}, control_dim={control_matrix.shape[1]}",
             }
+            base_metrics["_fdr_invalid"].append(
+                {
+                    "metric": "auc_minus_matched_control_auc",
+                    "reason": base_metrics["matched_control"]["reason"],
+                    "site": site.key,
+                    "family_id": family,
+                }
+            )
         else:
             control_probe = train_linear_probe(
                 control_matrix[primary_indices],
@@ -532,6 +644,14 @@ def _evaluate_site_cell(
         )
     except ValueError as exc:
         base_metrics["decoy_specificity_error"] = str(exc)
+        base_metrics["_fdr_invalid"].append(
+            {
+                "metric": "target_vs_decoy_specificity",
+                "reason": str(exc),
+                "site": site.key,
+                "family_id": family,
+            }
+        )
 
     if not probe_only:
         patching = _compute_patching_metrics(
@@ -552,6 +672,17 @@ def _evaluate_site_cell(
         base_metrics["mediation_fraction"] = patching["mediation_fraction"]
         for metric_name, result in patching.get("_bootstrap_results", {}).items():
             base_metrics["_bootstrap_results"][metric_name] = result
+        base_metrics["_fdr_invalid"].extend(patching.get("_fdr_invalid", []))
+    elif probe_only:
+        for metric_name in ("component_patch_restoration", "full_layer_patch_restoration", "mediation_fraction"):
+            base_metrics["_fdr_invalid"].append(
+                {
+                    "metric": metric_name,
+                    "reason": "probe-only mode skips patching/restoration",
+                    "site": site.key,
+                    "family_id": family,
+                }
+            )
 
     primary_ci = _bootstrap_from_dict(base_metrics["_bootstrap_results"]["linear_probe_auc_minus_0_5"])
     shuffled_ci = _bootstrap_from_dict(base_metrics["_bootstrap_results"]["auc_minus_shuffled_auc"])
@@ -589,6 +720,9 @@ def _evaluate_site_cell(
         specificity_ci_pass=ci_excludes_null(specificity_ci),
         patching_valid=bool(base_metrics["patching"].get("valid")),
         mediation_valid=bool(base_metrics["mediation_fraction"].get("valid")),
+        restoration_alignment_valid=bool(base_metrics["patching"].get("restoration_alignment_valid", probe_only)),
+        task_aligned_pooling=task_aligned_pooling,
+        canonical_site=site.canonical,
     )
 
 
@@ -609,68 +743,36 @@ def _compute_patching_metrics(
 ) -> dict[str, Any]:
     _ = batch_size
     if is_discrete_hook_site(attention_type, site.site):
-        return {
-            "patching": {"valid": False, "reason": "discrete route/index sites are capture-only"},
-            "mediation_fraction": mediation_fraction(
-                component_patch_restoration=None,
-                full_layer_patch_restoration=None,
-            ).to_dict(),
-            "_bootstrap_results": {},
-        }
+        return _invalid_patching_result(site, "discrete route/index sites are capture-only")
     if not site.continuous:
-        return {
-            "patching": {"valid": False, "reason": "site metadata marks this site as non-continuous"},
-            "mediation_fraction": mediation_fraction(
-                component_patch_restoration=None,
-                full_layer_patch_restoration=None,
-            ).to_dict(),
-            "_bootstrap_results": {},
-        }
+        return _invalid_patching_result(site, "site metadata marks this site as non-continuous")
     if site.full_layer_site is None:
-        return {
-            "patching": {"valid": False, "reason": "site preset has no valid full-layer comparator"},
-            "mediation_fraction": mediation_fraction(
-                component_patch_restoration=None,
-                full_layer_patch_restoration=None,
-            ).to_dict(),
-            "_bootstrap_results": {},
-        }
+        return _invalid_patching_result(
+            site,
+            site.no_full_layer_comparator_reason or "site preset has no valid full-layer comparator",
+        )
 
-    token_pairs = []
+    alignments = []
     for record in records:
-        target = record.metadata.get("target_token_id")
-        foil = record.metadata.get("foil_token_id")
-        if target is None or foil is None:
-            return {
-                "patching": {
-                    "valid": False,
-                    "reason": "task records lack explicit target_token_id/foil_token_id patching metadata",
-                },
-                "mediation_fraction": mediation_fraction(
-                    component_patch_restoration=None,
-                    full_layer_patch_restoration=None,
-                ).to_dict(),
-                "_bootstrap_results": {},
-            }
-        if isinstance(target, bool) or not isinstance(target, int) or isinstance(foil, bool) or not isinstance(foil, int):
-            return {
-                "patching": {
-                    "valid": False,
-                    "reason": "target_token_id and foil_token_id must be integer GPT-2 token ids",
-                },
-                "mediation_fraction": mediation_fraction(
-                    component_patch_restoration=None,
-                    full_layer_patch_restoration=None,
-                ).to_dict(),
-                "_bootstrap_results": {},
-            }
-        token_pairs.append((int(target), int(foil)))
+        try:
+            alignments.append(
+                restoration_alignment_metadata(
+                    record,
+                    tokenizer_name=tokenizer_name,
+                    block_size=block_size,
+                    vocab_size=vocab_size,
+                )
+            )
+        except ValueError as exc:
+            return _invalid_patching_result(site, f"invalid restoration alignment metadata: {exc}", alignment_valid=False)
 
     component_scores: list[float] = []
     full_layer_scores: list[float] = []
     pair_ids: list[str] = []
     with torch.no_grad():
-        for record, (target_id, foil_id) in zip(records, token_pairs, strict=True):
+        for record, alignment in zip(records, alignments, strict=True):
+            target_id = int(alignment["target_token_id"])
+            foil_id = int(alignment["foil_token_id"])
             encoded = encode_texts(
                 [record.x_pos, record.x_neg],
                 tokenizer_name=tokenizer_name,
@@ -679,8 +781,8 @@ def _compute_patching_metrics(
             )
             clean_ids = encoded.input_ids[:1].to(device)
             corrupt_ids = encoded.input_ids[1:2].to(device)
-            clean_len = encoded.lengths[0]
-            corrupt_len = encoded.lengths[1]
+            clean_answer_position = int(alignment["clean_answer_position"])
+            corrupt_answer_position = int(alignment["corrupted_answer_position"])
             clean_capture = capture_activations(
                 model,
                 clean_ids,
@@ -691,32 +793,60 @@ def _compute_patching_metrics(
                 schedule_mode="eval",
             )
             corrupt_logits, _ = model(corrupt_ids, schedule_mode="eval")
-            clean_logitdiff = _logitdiff(clean_capture.logits, target_id, foil_id, clean_len)
-            corrupted_logitdiff = _logitdiff(corrupt_logits, target_id, foil_id, corrupt_len)
+            clean_logitdiff = _logitdiff_at_position(
+                clean_capture.logits,
+                target_id,
+                foil_id,
+                clean_answer_position,
+            )
+            corrupted_logitdiff = _logitdiff_at_position(
+                corrupt_logits,
+                target_id,
+                foil_id,
+                corrupt_answer_position,
+            )
+            clean_patch_indices = list(alignment["clean_patch_token_indices"])
+            corrupted_patch_indices = list(alignment["corrupted_patch_token_indices"])
 
             component = run_with_interventions(
                 model,
                 corrupt_ids,
-                [make_cache_patch(clean_capture.cache, site=site.site, layer=site.layer)],
+                [
+                    make_cache_patch(
+                        clean_capture.cache,
+                        site=site.site,
+                        layer=site.layer,
+                        token_indices=corrupted_patch_indices,
+                        source_token_indices=clean_patch_indices,
+                    )
+                ],
                 capture_sites=[site.site],
                 schedule_mode="eval",
             )
             component_result = restoration_score(
                 clean_logitdiff=clean_logitdiff,
                 corrupted_logitdiff=corrupted_logitdiff,
-                patched_logitdiff=_logitdiff(component.logits, target_id, foil_id, corrupt_len),
+                patched_logitdiff=_logitdiff_at_position(component.logits, target_id, foil_id, corrupt_answer_position),
             )
             full_layer = run_with_interventions(
                 model,
                 corrupt_ids,
-                [make_cache_patch(clean_capture.cache, site=site.full_layer_site, layer=site.layer)],
+                [
+                    make_cache_patch(
+                        clean_capture.cache,
+                        site=site.full_layer_site,
+                        layer=site.layer,
+                        token_indices=corrupted_patch_indices,
+                        source_token_indices=clean_patch_indices,
+                    )
+                ],
                 capture_sites=[site.full_layer_site],
                 schedule_mode="eval",
             )
             full_result = restoration_score(
                 clean_logitdiff=clean_logitdiff,
                 corrupted_logitdiff=corrupted_logitdiff,
-                patched_logitdiff=_logitdiff(full_layer.logits, target_id, foil_id, corrupt_len),
+                patched_logitdiff=_logitdiff_at_position(full_layer.logits, target_id, foil_id, corrupt_answer_position),
             )
             if component_result.valid and full_result.valid:
                 component_scores.append(float(component_result.restoration_score))
@@ -724,14 +854,7 @@ def _compute_patching_metrics(
                 pair_ids.append(record.pair_id)
 
     if not component_scores:
-        return {
-            "patching": {"valid": False, "reason": "no valid restoration denominators"},
-            "mediation_fraction": mediation_fraction(
-                component_patch_restoration=None,
-                full_layer_patch_restoration=None,
-            ).to_dict(),
-            "_bootstrap_results": {},
-        }
+        return _invalid_patching_result(site, "no valid restoration denominators")
 
     component_array = np.asarray(component_scores, dtype=float)
     full_array = np.asarray(full_layer_scores, dtype=float)
@@ -749,36 +872,86 @@ def _compute_patching_metrics(
         seed=seed,
         expected_direction="positive",
     )
-    mediation_values = component_array / np.where(np.abs(full_array) < 1e-6, np.nan, full_array)
-    mediation_bootstrap = bootstrap_metric(
-        mediation_values,
+    full_layer_bootstrap = bootstrap_metric(
+        full_array,
         pair_ids,
-        lambda values: float(np.nanmean(values)),
+        lambda values: float(np.mean(values)),
         samples=bootstrap_samples,
         seed=seed + 1,
         expected_direction="positive",
     )
+    mediation_values = component_array / np.where(np.abs(full_array) < 1e-6, np.nan, full_array)
+    bootstrap_results = {
+        "component_patch_restoration": asdict(component_bootstrap),
+        "full_layer_patch_restoration": asdict(full_layer_bootstrap),
+    }
+    invalid_fdr: list[dict[str, Any]] = []
+    if mediation.valid:
+        mediation_bootstrap = bootstrap_metric(
+            mediation_values,
+            pair_ids,
+            lambda values: float(np.nanmean(values)),
+            samples=bootstrap_samples,
+            seed=seed + 2,
+            expected_direction="positive",
+        )
+        bootstrap_results["mediation_fraction"] = asdict(mediation_bootstrap)
+    else:
+        invalid_fdr.append(
+            {
+                "metric": "mediation_fraction",
+                "reason": mediation.reason or "mediation_fraction invalid",
+                "site": site.key,
+            }
+        )
     return {
         "patching": {
             "valid": True,
+            "restoration_alignment_valid": True,
             "component_patch_restoration": component_mean,
             "full_layer_patch_restoration": full_mean,
             "component_site": site.site,
             "full_layer_comparator": site.full_layer_site,
             "valid_pairs": len(component_scores),
+            "alignment_modes": sorted({str(alignment["clean_corrupt_token_alignment"]) for alignment in alignments}),
             "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
         },
         "mediation_fraction": mediation.to_dict(),
-        "_bootstrap_results": {
-            "component_patch_restoration": asdict(component_bootstrap),
-            "mediation_fraction": asdict(mediation_bootstrap),
-        },
+        "_bootstrap_results": bootstrap_results,
+        "_fdr_invalid": invalid_fdr,
     }
 
 
 def _logitdiff(logits: torch.Tensor, target_id: int, foil_id: int, length: int) -> float:
     position = max(0, min(length - 1, logits.shape[1] - 1))
     return float((logits[0, position, target_id] - logits[0, position, foil_id]).detach().cpu().item())
+
+
+def _logitdiff_at_position(logits: torch.Tensor, target_id: int, foil_id: int, position: int) -> float:
+    if position < 0 or position >= logits.shape[1]:
+        raise ValueError(f"logit-difference position {position} out of range for sequence length {logits.shape[1]}")
+    return float((logits[0, position, target_id] - logits[0, position, foil_id]).detach().cpu().item())
+
+
+def _invalid_patching_result(site: SitePreset, reason: str, *, alignment_valid: bool = True) -> dict[str, Any]:
+    invalid = [
+        {"metric": "component_patch_restoration", "reason": reason, "site": site.key},
+        {"metric": "full_layer_patch_restoration", "reason": reason, "site": site.key},
+        {"metric": "mediation_fraction", "reason": reason, "site": site.key},
+    ]
+    return {
+        "patching": {
+            "valid": False,
+            "restoration_alignment_valid": alignment_valid,
+            "reason": reason,
+        },
+        "mediation_fraction": mediation_fraction(
+            component_patch_restoration=None,
+            full_layer_patch_restoration=None,
+        ).to_dict(),
+        "_bootstrap_results": {},
+        "_fdr_invalid": invalid,
+    }
 
 
 def _bootstrap_auc(
@@ -873,6 +1046,7 @@ def _inputs_with_fdr(cell_id: str, inputs: CellGateInputs, fdr_results: dict[str
             "matched_control_passed": inputs.matched_control_passed and rejected("auc_minus_matched_control_auc"),
             "specificity_fdr_passed": rejected("target_vs_decoy_specificity"),
             "patching_fdr_passed": inputs.patching_valid and rejected("component_patch_restoration"),
+            "full_layer_patching_fdr_passed": inputs.patching_valid and rejected("full_layer_patch_restoration"),
             "mediation_fdr_passed": inputs.mediation_valid and rejected("mediation_fraction"),
         }
     )
@@ -897,6 +1071,9 @@ def _gate_inputs(
     specificity_ci_pass: bool = False,
     patching_valid: bool = False,
     mediation_valid: bool = False,
+    restoration_alignment_valid: bool = True,
+    task_aligned_pooling: bool = True,
+    canonical_site: bool = True,
     extra_blockers: tuple[str, ...] = (),
 ) -> CellGateInputs:
     return CellGateInputs(
@@ -921,7 +1098,11 @@ def _gate_inputs(
         patching_valid=patching_valid,
         mediation_valid=mediation_valid,
         patching_fdr_passed=False,
+        full_layer_patching_fdr_passed=False,
         mediation_fdr_passed=False,
+        restoration_alignment_valid=restoration_alignment_valid,
+        task_aligned_pooling=task_aligned_pooling,
+        canonical_site=canonical_site,
         force_noncanonical_control=control.force_noncanonical,
         extra_blockers=extra_blockers,
     )
@@ -941,6 +1122,84 @@ def _control_metrics(control: ControlResolution, seed_mismatched: bool) -> dict[
         "force_noncanonical": control.force_noncanonical,
         "seed_mismatched": seed_mismatched,
         "reason": control.reason,
+    }
+
+
+def _resolve_feature_pooling(requested: str, *, exploratory: bool) -> str:
+    if requested == "auto":
+        return "mean_sequence" if exploratory else "patch_positions_mean"
+    valid = {"mean_sequence", "final_token", "answer_position", "patch_positions_mean"}
+    if requested not in valid:
+        raise ValueError(f"--feature-pooling must be one of auto, {', '.join(sorted(valid))}")
+    return requested
+
+
+def _preflight_report(
+    *,
+    preset: MechanismProbePreset,
+    candidate_config: Path,
+    candidate_checkpoint: Path,
+    control: ControlResolution,
+    control_seed_mismatched: bool,
+    task_validation,
+    hypothesis_valid: bool,
+    selected_sites: tuple[SitePreset, ...],
+    feature_pooling: str,
+    task_aligned_pooling: bool,
+    exploratory: bool,
+    probe_only: bool,
+    allow_diagnostic_with_missing_control: bool,
+) -> dict[str, Any]:
+    expected = control.expected_control
+    site_rows = [
+        {
+            "site": site.site,
+            "layer": site.layer,
+            "tensor_kind": site.tensor_kind,
+            "continuous": site.continuous,
+            "canonical": site.canonical,
+            "control_site": site.control_site,
+            "full_layer_site": site.full_layer_site,
+            "noncanonical_reason": site.noncanonical_reason,
+        }
+        for site in selected_sites
+    ]
+    return {
+        "candidate_config_path": str(candidate_config),
+        "candidate_config_exists": candidate_config.exists(),
+        "candidate_checkpoint_path": str(candidate_checkpoint),
+        "candidate_checkpoint_exists": candidate_checkpoint.exists(),
+        "canonical_control_config_path": str(expected.config_path) if expected else None,
+        "canonical_control_checkpoint_path": str(expected.checkpoint_path) if expected else None,
+        "actual_control_config_path": str(control.config_path) if control.config_path else None,
+        "actual_control_checkpoint_path": str(control.checkpoint_path) if control.checkpoint_path else None,
+        "control_override_used": control.override_used,
+        "force_noncanonical_control": control.force_noncanonical,
+        "control_seed_matches_expected": not control_seed_mismatched,
+        "control_available": control.available,
+        "control_reason": control.reason,
+        "allow_diagnostic_with_missing_control": allow_diagnostic_with_missing_control,
+        "task_suite_validation": {
+            "valid": task_validation.valid,
+            "errors": list(task_validation.errors),
+            "warnings": list(task_validation.warnings),
+            "deterministic_provenance": task_validation.deterministic_provenance,
+            "confirmatory_floor_met": task_validation.confirmatory_floor_met,
+            "restoration_token_metadata_valid": task_validation.restoration_token_metadata_valid,
+        },
+        "hypothesis_doc_validation": {"valid": hypothesis_valid or exploratory},
+        "selected_site_validation": {"valid": all(site.canonical or exploratory for site in selected_sites), "sites": site_rows},
+        "patching_metadata_validation": {
+            "required": not exploratory and not probe_only,
+            "valid": task_validation.restoration_token_metadata_valid,
+        },
+        "feature_pooling": {
+            "strategy": feature_pooling,
+            "task_aligned": task_aligned_pooling,
+            "confirmatory_candidate_evidence_cap": (
+                None if task_aligned_pooling else "candidate_mechanism_evidence requires task-aligned pooling"
+            ),
+        },
     }
 
 

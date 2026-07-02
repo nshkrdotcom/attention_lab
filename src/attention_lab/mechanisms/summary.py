@@ -20,6 +20,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
     mode = metrics.get("mode", {})
     fdr = metrics.get("fdr_bh", {})
     cells = metrics.get("cells", {})
+    pooling = metrics.get("feature_pooling", {})
     overall = claim_gates.get("overall_status", "insufficient_evidence")
 
     lines = [
@@ -35,6 +36,8 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         f"- task_file: `{run.get('task_file')}`",
         f"- mode: `{'exploratory' if mode.get('exploratory') else 'confirmatory'}`",
         f"- probe_only: `{mode.get('probe_only')}`",
+        f"- feature_pooling: `{pooling.get('strategy')}`",
+        f"- task_aligned_pooling: `{pooling.get('task_aligned')}`",
         f"- overall_mechanism_probe_status: `{overall}`",
         "",
         "## Control",
@@ -58,6 +61,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         "including probe, null, matched-control, specificity, restoration, and mediation metrics when present.",
         f"- alpha: `{fdr.get('alpha')}`",
         f"- tested_cells: `{fdr.get('tested_cells')}`",
+        f"- invalid_or_unavailable_cells: `{fdr.get('invalid_or_unavailable_cells')}`",
         "",
         "## Site Results",
     ]
@@ -70,11 +74,14 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         random_status = _random_site_status(cell, gate)
         patching = cell.get("patching", {})
         mediation = cell.get("mediation_fraction", {})
+        cell_pooling = cell.get("feature_pooling", {})
         lines.extend(
             [
                 f"### `{cell_id}`",
                 f"- claim_gate: `{gate.get('status')}`",
                 f"- blockers: `{gate.get('blockers')}`",
+                f"- feature_pooling: `{cell_pooling.get('strategy')}`",
+                f"- task_aligned_pooling: `{cell_pooling.get('task_aligned')}`",
                 f"- linear_probe_auc: `{cell.get('linear_probe_auc')}`",
                 f"- auc_minus_shuffled_auc: `{cell.get('auc_minus_shuffled_auc')}`",
                 f"- auc_minus_random_site_auc: `{cell.get('auc_minus_random_site_auc')}`",
@@ -85,6 +92,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
                 f"- selected_random_site: `{random_site.get('selected_site')}`",
                 f"- random_site_reason: {random_site.get('reason') or 'none'}",
                 f"- patching_valid: `{patching.get('valid')}`",
+                f"- restoration_alignment_valid: `{patching.get('restoration_alignment_valid')}`",
                 f"- patching_reason: {patching.get('reason') or 'none'}",
                 f"- mediation_fraction_valid: `{mediation.get('valid')}`",
                 f"- mediation_fraction: `{mediation.get('mediation_fraction')}`",
@@ -102,6 +110,10 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
             "or noncanonical controls cap the affected claim gates.",
             "- Missing random-site nulls are feasibility limits for the affected `(site x layer)` cell, "
             "not automatic implementation failures and not a run-wide cap.",
+            "- Mean-sequence pooling is exploratory/diagnostic for Tier-1 and cannot support "
+            "`candidate_mechanism_evidence`; confirmatory claims require task-aligned pooling.",
+            "- FDR-BH reports both tested metric cells and invalid/unavailable cells with reasons; unavailable "
+            "cells are not assigned meaningful p-values.",
             "- Candidate-to-control alignment is not cross-architecture universality evidence.",
             "- Low alignment is not representational novelty evidence by itself.",
             "- This Tier-1 status is single-seed, checkpoint-backed, statistically controlled evidence when gates pass; "
@@ -135,3 +147,57 @@ def load_suite_artifacts(output_dir: str | Path) -> tuple[dict[str, Any], dict[s
     metrics = json.loads((out / "metrics.json").read_text(encoding="utf-8"))
     claim_gates = json.loads((out / "claim_gates.json").read_text(encoding="utf-8"))
     return metrics, claim_gates
+
+
+def validate_suite_artifacts(output_dir: str | Path) -> list[str]:
+    out = Path(output_dir)
+    errors: list[str] = []
+    metrics_path = out / "metrics.json"
+    gates_path = out / "claim_gates.json"
+    summary_path = out / "summary.md"
+    for path in (metrics_path, gates_path, summary_path):
+        if not path.exists():
+            errors.append(f"missing artifact: {path.name}")
+    if errors:
+        return errors
+    metrics, claim_gates = load_suite_artifacts(out)
+    for key in ("schema_version", "run", "mode", "control", "task_suite", "sites_evaluated", "cells", "fdr_bh"):
+        if key not in metrics:
+            errors.append(f"metrics.json missing {key}")
+    for key in ("overall_status", "status_vocabulary", "status_vocabulary_scope", "cells"):
+        if key not in claim_gates:
+            errors.append(f"claim_gates.json missing {key}")
+    if not isinstance(metrics.get("cells"), dict):
+        errors.append("metrics.json cells must be a mapping")
+    else:
+        required_cell_keys = (
+            "site",
+            "layer",
+            "family_id",
+            "feature_pooling",
+            "linear_probe_auc",
+            "random_site_null",
+            "matched_control",
+            "alignment_to_control",
+            "patching",
+            "mediation_fraction",
+        )
+        for cell_id, cell in metrics["cells"].items():
+            if not isinstance(cell, dict):
+                errors.append(f"cell {cell_id} must be a mapping")
+                continue
+            for key in required_cell_keys:
+                if key not in cell:
+                    errors.append(f"cell {cell_id} missing {key}")
+    fdr = metrics.get("fdr_bh", {})
+    if isinstance(fdr, dict):
+        for key in ("comparison_family", "tested_cells", "invalid_or_unavailable_cells", "results"):
+            if key not in fdr:
+                errors.append(f"fdr_bh missing {key}")
+    try:
+        regenerated = render_summary(metrics, claim_gates)
+        if not regenerated.strip():
+            errors.append("summary.md regeneration produced empty output")
+    except Exception as exc:  # pragma: no cover - defensive artifact validation
+        errors.append(f"summary.md could not be regenerated: {exc}")
+    return errors

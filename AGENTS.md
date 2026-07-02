@@ -421,6 +421,7 @@ The Tier-1 mechanism probe suite is implemented under:
 src/attention_lab/mechanisms/
 scripts/run_mechanism_probe_suite.py
 scripts/summarize_mechanism_probe_suite.py
+scripts/verify_tier1_mechanism_probe_suite.py
 docs/mechanism_probe_framework.md
 ```
 
@@ -479,11 +480,19 @@ bootstrap CIs
 FDR-BH over every computed site x layer x task_family x metric cell
 target-vs-decoy specificity
 valid patch/restoration and mediation metrics for candidate_mechanism_evidence
+task-aligned feature pooling for candidate_mechanism_evidence
+valid clean/corrupt restoration token alignment metadata for full patching
 ```
 
 Non-exploratory `--probe-only` is not confirmatory. Cheap probe-only staging must use `--exploratory --probe-only` and cannot reach `candidate_mechanism_evidence`.
 
 Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
+
+Confirmatory `--sites` values must be declared in the Tier-1 preset. Unknown exploratory sites require explicit `--site-spec-file` metadata and remain noncanonical. Do not invent tensor kinds, control sites, or full-layer comparators for unknown sites.
+
+Full-run restoration must patch only validated aligned token positions. Do not patch whole clean sequence caches into corrupted prompts when token lengths differ. Mean-sequence feature pooling is exploratory/diagnostic for Tier-1; confirmatory candidate evidence requires `answer_position` or `patch_positions_mean` pooling.
+
+Use `scripts/verify_tier1_mechanism_probe_suite.py --preflight-only` to check local checkpoint availability and input validity without fabricating artifacts. Use `scripts/summarize_mechanism_probe_suite.py --validate` to validate produced `metrics.json`, `claim_gates.json`, and `summary.md`.
 
 Do not make Tier-2/Tier-3 presets executable, do not build SAE purity infrastructure in Tier-1, and do not handwrite fake `metrics.json`, `claim_gates.json`, or `summary.md` artifacts.
 

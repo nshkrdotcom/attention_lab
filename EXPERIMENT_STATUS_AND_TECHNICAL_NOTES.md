@@ -2,9 +2,9 @@
 
 This document is the current dynamic status page for Attention Lab experiments. It is intentionally both an experiment-status ledger and a technical interpretation note. Keep `README.md` and `AGENTS.md` short by pointing to this file instead of duplicating fast-changing run state.
 
-Last updated from local Tier-1 mechanism-probe artifacts: 2026-07-01 UTC.
+Last updated from local Tier-1 mechanism-probe artifacts: 2026-07-01 UTC after hardened Tier-1 rerun.
 
-Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; Tier-1 E003/E004 mechanism-probe hypothesis docs, deterministic task suites, and real suite artifacts now exist; the E003/E004 confirmatory Tier-1 runs completed but remained `insufficient_evidence`; route-index probe semantics were fixed for E002 position rotation; QC passed with ruff and pytest; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
+Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; Tier-1 E003/E004 mechanism-probe hypothesis docs, deterministic task suites, and real suite artifacts now exist. The hardened Tier-1 rerun added restoration token-alignment validation, task-aligned feature pooling, strict preset site resolution, preflight reporting, artifact schema validation, and explicit FDR-BH invalid/unavailable cells; the E003/E004 confirmatory Tier-1 runs still completed as `insufficient_evidence`, not `candidate_mechanism_evidence`. Current QC passed with ruff, targeted mechanism tests, full pytest, integration-mode pytest, E001-E004 experiment validation, data verification, and E001-E004 queue doctors.
 
 ## Current Bottom Line
 
@@ -321,7 +321,7 @@ reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path/
 reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path/
 ```
 
-The confirmatory Tier-1 run used the canonical seed1 matched control and deterministic 50-pair negation task suite. It completed as `insufficient_evidence`: random-site comparisons, matched-control comparisons, and target-vs-decoy specificity did not clear the gates. This is not `candidate_mechanism_evidence`.
+The confirmatory Tier-1 run used the canonical seed1 matched control, deterministic 50-pair negation task suite, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: random-site comparisons, matched-control comparisons, target-vs-decoy specificity, and/or corrected restoration gates did not clear the full claim ladder. This is not `candidate_mechanism_evidence`.
 
 Current best E003 candidates:
 
@@ -394,7 +394,7 @@ reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path/
 reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path/
 ```
 
-The confirmatory Tier-1 run used the canonical seed2 matched control and deterministic 50-pair negation task suite. It completed as `insufficient_evidence`: full-width operator output sites did not beat random-site/matched-control/specificity gates, and `operator_probs` had the expected low-dimensional random-site feasibility cap. This is not `candidate_mechanism_evidence`.
+The confirmatory Tier-1 run used the canonical seed2 matched control, deterministic 50-pair negation task suite, task-aligned `patch_positions_mean` pooling, and validated restoration alignment metadata. It completed as `insufficient_evidence`: full-width operator output sites did not clear the full probe/null/control/specificity/restoration gate family, and `operator_probs` had the expected low-dimensional random-site feasibility cap plus no matched-control site. This is not `candidate_mechanism_evidence`.
 
 Historical partial probe artifact:
 
@@ -429,13 +429,14 @@ uv run ruff check .
 All checks passed.
 
 uv run pytest
-429 passed, 1 skipped in 34.39s
+452 passed, 1 skipped in 44.97s
 
 uv run pytest --run-integration
-430 passed in 34.32s
+453 passed in 43.31s
 ```
 
-Targeted tests also passed:
+Targeted mechanism tests, E001-E004 `validate_experiment`, FineWeb-Edu hash verification,
+and E001-E004 `attn-queue doctor` also passed in the hardened Tier-1 follow-up.
 
 ```text
 uv run pytest tests/test_mechanism_backfill.py

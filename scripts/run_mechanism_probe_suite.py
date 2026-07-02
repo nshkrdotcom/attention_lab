@@ -19,10 +19,21 @@ def main() -> None:
     parser.add_argument("--exploratory", action="store_true")
     parser.add_argument("--probe-only", action="store_true")
     parser.add_argument("--sites", help="Comma-separated candidate site bases. Defaults to preset Tier-1 sites.")
+    parser.add_argument("--site-spec-file", help="Exploratory-only metadata for non-preset sites.")
+    parser.add_argument(
+        "--feature-pooling",
+        default="auto",
+        choices=("auto", "mean_sequence", "final_token", "answer_position", "patch_positions_mean"),
+    )
     parser.add_argument("--control-mode", default="matched", choices=("matched", "none"))
     parser.add_argument("--control-checkpoint")
     parser.add_argument("--control-config")
     parser.add_argument("--force-noncanonical-control", action="store_true")
+    parser.add_argument(
+        "--allow-diagnostic-with-missing-control",
+        action="store_true",
+        help="Allow a confirmatory-shaped run to complete as insufficient-evidence diagnostics when matched controls are missing.",
+    )
     parser.add_argument("--min-n", type=int, default=50)
     parser.add_argument("--bootstrap-samples", type=int, default=1000)
     parser.add_argument("--fdr-alpha", type=float, default=0.05)
@@ -54,6 +65,9 @@ def main() -> None:
             device=args.device,
             batch_size=args.batch_size,
             force_noncanonical_control=args.force_noncanonical_control,
+            feature_pooling=args.feature_pooling,
+            site_spec_file=Path(args.site_spec_file) if args.site_spec_file else None,
+            allow_diagnostic_with_missing_control=args.allow_diagnostic_with_missing_control,
         )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc

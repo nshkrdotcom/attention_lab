@@ -7,10 +7,12 @@
       ],
       "inputs": {
         "canonical_control": true,
+        "canonical_site": true,
         "confirmatory_floor_met": true,
         "exploratory": true,
         "extra_blockers": [],
         "force_noncanonical_control": false,
+        "full_layer_patching_fdr_passed": false,
         "grouped_split": true,
         "hypothesis_doc_valid": false,
         "matched_control_available": true,
@@ -27,9 +29,11 @@
         "random_site_null_available": true,
         "random_site_null_passed": false,
         "real_probe_metrics": true,
+        "restoration_alignment_valid": true,
         "shuffled_null_passed": true,
         "specificity_ci_passed": false,
-        "specificity_fdr_passed": false
+        "specificity_fdr_passed": false,
+        "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
@@ -41,10 +45,12 @@
       ],
       "inputs": {
         "canonical_control": true,
+        "canonical_site": true,
         "confirmatory_floor_met": true,
         "exploratory": true,
         "extra_blockers": [],
         "force_noncanonical_control": false,
+        "full_layer_patching_fdr_passed": false,
         "grouped_split": true,
         "hypothesis_doc_valid": false,
         "matched_control_available": true,
@@ -61,9 +67,11 @@
         "random_site_null_available": true,
         "random_site_null_passed": false,
         "real_probe_metrics": true,
+        "restoration_alignment_valid": true,
         "shuffled_null_passed": true,
         "specificity_ci_passed": false,
-        "specificity_fdr_passed": false
+        "specificity_fdr_passed": false,
+        "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
@@ -75,10 +83,12 @@
       ],
       "inputs": {
         "canonical_control": true,
+        "canonical_site": true,
         "confirmatory_floor_met": true,
         "exploratory": true,
         "extra_blockers": [],
         "force_noncanonical_control": false,
+        "full_layer_patching_fdr_passed": false,
         "grouped_split": true,
         "hypothesis_doc_valid": false,
         "matched_control_available": true,
@@ -95,9 +105,11 @@
         "random_site_null_available": true,
         "random_site_null_passed": false,
         "real_probe_metrics": true,
+        "restoration_alignment_valid": true,
         "shuffled_null_passed": true,
         "specificity_ci_passed": false,
-        "specificity_fdr_passed": false
+        "specificity_fdr_passed": false,
+        "task_aligned_pooling": false
       },
       "status": "exploratory_probe_signal",
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"

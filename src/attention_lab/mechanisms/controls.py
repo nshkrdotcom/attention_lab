@@ -29,6 +29,8 @@ class RandomSiteSelection:
     selected_feature_dim: int | None
     candidate_site: str
     candidate_feature_dim: int
+    candidate_tensor_kind: str
+    considered_sites: tuple[dict[str, object], ...] = ()
     reason: str | None = None
 
     def to_dict(self) -> dict[str, object]:
@@ -38,6 +40,8 @@ class RandomSiteSelection:
             "selected_feature_dim": self.selected_feature_dim,
             "candidate_site": self.candidate_site,
             "candidate_feature_dim": self.candidate_feature_dim,
+            "candidate_tensor_kind": self.candidate_tensor_kind,
+            "considered_sites": list(self.considered_sites),
             "reason": self.reason,
         }
 
@@ -133,21 +137,69 @@ def select_random_site_null(
             selected_feature_dim=None,
             candidate_site=candidate_key,
             candidate_feature_dim=0,
+            candidate_tensor_kind=candidate.tensor_kind,
+            considered_sites=(),
             reason="candidate site features are unavailable",
         )
     candidate_dim = candidate_shape[1]
     compatible = []
+    considered: list[dict[str, object]] = []
     for site in pool:
         key = site.key
         if key == candidate_key or site.site == candidate.site:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": candidate_dim if key == candidate_key else None,
+                    "accepted": False,
+                    "reason": "candidate site cannot be its own random-site null",
+                }
+            )
             continue
         shape = feature_shapes.get(key)
         if shape is None:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": None,
+                    "accepted": False,
+                    "reason": "features unavailable",
+                }
+            )
             continue
         if shape[1] != candidate_dim:
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": int(shape[1]),
+                    "accepted": False,
+                    "reason": f"feature dimension mismatch: candidate={candidate_dim}, random={shape[1]}",
+                }
+            )
             continue
         if not _compatible_site_type(candidate.tensor_kind, site.tensor_kind):
+            considered.append(
+                {
+                    "site": key,
+                    "tensor_kind": site.tensor_kind,
+                    "feature_dim": int(shape[1]),
+                    "accepted": False,
+                    "reason": f"incompatible tensor kind: candidate={candidate.tensor_kind}, random={site.tensor_kind}",
+                }
+            )
             continue
+        considered.append(
+            {
+                "site": key,
+                "tensor_kind": site.tensor_kind,
+                "feature_dim": int(shape[1]),
+                "accepted": True,
+                "reason": "matched dimensionality and compatible tensor kind",
+            }
+        )
         compatible.append((key, shape[1]))
     if not compatible:
         return RandomSiteSelection(
@@ -156,6 +208,8 @@ def select_random_site_null(
             selected_feature_dim=None,
             candidate_site=candidate_key,
             candidate_feature_dim=candidate_dim,
+            candidate_tensor_kind=candidate.tensor_kind,
+            considered_sites=tuple(considered),
             reason=(
                 "no non-candidate random-site null with matched dimensionality and compatible site type; "
                 "this is a null-feasibility limit, not an implementation failure"
@@ -170,6 +224,8 @@ def select_random_site_null(
         selected_feature_dim=selected_dim,
         candidate_site=candidate_key,
         candidate_feature_dim=candidate_dim,
+        candidate_tensor_kind=candidate.tensor_kind,
+        considered_sites=tuple(considered),
     )
 
 

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import yaml
 
+from attention_lab.mechanisms.task_schema import load_task_suite, validate_task_suite
+
 
 def test_tier1_task_generation_is_deterministic_for_same_seed(tmp_path):
     first = tmp_path / "first.yaml"
@@ -112,3 +114,52 @@ def test_tier1_task_validate_only_rejects_missing_provenance_too_small_and_missi
     assert "deterministic generator provenance" in result.stderr
     assert "below --min-n=50" in result.stderr
     assert "lacks restoration token metadata" in result.stderr
+
+
+def test_committed_tier1_task_suites_validate_with_restoration_alignment_metadata():
+    for path in (
+        Path("configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml"),
+        Path("configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml"),
+    ):
+        suite = load_task_suite(path)
+        result = validate_task_suite(
+            suite,
+            confirmatory=True,
+            exploratory=False,
+            min_n=50,
+            require_restoration_tokens=True,
+        )
+
+        assert result.valid, result.errors
+        assert result.deterministic_provenance
+        assert result.confirmatory_floor_met
+        for record in suite.records:
+            assert record.x_pos
+            assert record.x_neg
+            assert record.x_para
+            assert record.x_decoy
+            assert record.pair_id
+            assert record.template_id
+            assert record.family_id
+            assert isinstance(record.metadata["target_token_id"], int)
+            assert isinstance(record.metadata["foil_token_id"], int)
+            assert isinstance(record.metadata["clean_answer_position"], int)
+            assert isinstance(record.metadata["corrupted_answer_position"], int)
+            assert isinstance(record.metadata["patch_token_indices"], list)
+
+
+def test_tier1_verify_script_preflight_only_does_not_require_execution():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/verify_tier1_mechanism_probe_suite.py",
+            "--preflight-only",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "preflight complete" in result.stdout

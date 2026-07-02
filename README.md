@@ -1354,7 +1354,7 @@ configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
 configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
 ```
 
-Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`.
+Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`. The committed suites include GPT-2 single-token target/foil metadata plus clean/corrupt answer positions and explicit patch-token alignment for restoration.
 
 Executable Tier-1 presets:
 
@@ -1374,6 +1374,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
+  --feature-pooling mean_sequence \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -1391,6 +1392,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
   --hypothesis-doc docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -1409,6 +1411,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
+  --feature-pooling mean_sequence \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -1426,6 +1429,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
   --hypothesis-doc docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -1441,9 +1445,23 @@ claim_gates.json
 summary.md
 ```
 
+Validate generated suite artifacts with:
+
+```bash
+uv run scripts/summarize_mechanism_probe_suite.py \
+  --output-dir reports/mechanisms/probes/<suite-output-dir> \
+  --validate
+```
+
+Preflight local checkpoint availability without fabricating artifacts:
+
+```bash
+uv run scripts/verify_tier1_mechanism_probe_suite.py --preflight-only
+```
+
 `candidate_mechanism_evidence` is mechanism-probe scoped and means single-seed, checkpoint-backed, statistically controlled evidence. It is not replication and not a global experiment status.
 
-E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides are recorded but cap claims below `candidate_mechanism_evidence`.
+Confirmatory runs use strict preset site resolution. Unknown confirmatory `--sites` values fail before model execution; exploratory unknown sites require explicit `--site-spec-file` metadata and remain noncanonical. E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides and missing-control diagnostic runs are recorded but cap claims below evidence statuses.
 
 ### Strict capture mode
 
@@ -1552,7 +1570,8 @@ Latest recorded QC in the dynamic status note:
 
 ```text
 ruff: passed
-pytest: 388 passed, 1 skipped
+pytest: 452 passed, 1 skipped
+pytest --run-integration: 453 passed
 targeted tests: passed
 ```
 

@@ -28,6 +28,7 @@ class InterventionSpec:
     source_site: str | None = None
     batch_indices: list[int] | None = None
     token_indices: list[int] | None = None
+    source_token_indices: list[int] | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

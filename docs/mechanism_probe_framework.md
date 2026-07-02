@@ -136,6 +136,14 @@ docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
 
 Malformed confirmatory inputs fail before model/checkpoint loading. This includes a missing or invalid hypothesis doc, a task suite below 50 pairs per family, missing deterministic provenance, missing decoys, and invalid restoration token metadata for full runs.
 
+## Confirmatory Preflight And Sites
+
+Before model loading, the suite records a preflight block in `metrics.json` with candidate/config/checkpoint paths, canonical and actual control paths, task-suite validation, hypothesis validation, selected site metadata, patching metadata validation, and feature-pooling strategy.
+
+Confirmatory `--sites` values must be declared in the Tier-1 preset for that candidate. Unknown confirmatory sites fail before model execution. Exploratory unknown sites are allowed only with explicit `--site-spec-file` metadata containing the site, layer, tensor kind, continuity, matched-control site or no-control reason, and full-layer comparator or no-comparator reason. Such sites are noncanonical and cannot support `candidate_mechanism_evidence`.
+
+Confirmatory runs require a candidate checkpoint path that exists. Missing matched controls fail before execution unless `--allow-diagnostic-with-missing-control` is used; that flag creates capped diagnostic artifacts only and cannot reach `controlled_probe_signal` or `candidate_mechanism_evidence`.
+
 ## Probe Metrics
 
 The suite trains real linear probes with grouped train/test splitting. The stricter default groups by `template_id`; all variants from a `pair_id` stay in the same fold. This prevents leakage from shared surface structure across `x_pos`, `x_neg`, `x_para`, and `x_decoy`.
@@ -155,6 +163,19 @@ Shuffled-label nulls retrain the same probe after shuffling train labels. Random
 Random-site null selection inspects actual captured feature shapes. It never pads, truncates, projects, or coerces mismatched sites. Missing random-site nulls are feasibility limits for that `(site x layer)` cell, not automatic implementation failures and not run-wide caps.
 
 Low-dimensional E004 `operator_probs` sites are not coerced into d_model-shaped comparisons.
+
+## Feature Pooling
+
+Captured sequence tensors are pooled explicitly and every cell records the strategy:
+
+```text
+mean_sequence
+final_token
+answer_position
+patch_positions_mean
+```
+
+`auto` resolves to `mean_sequence` for exploratory runs and to `patch_positions_mean` for confirmatory runs. Confirmatory `candidate_mechanism_evidence` requires task-aligned pooling (`answer_position` or `patch_positions_mean`). `mean_sequence` is allowed as exploratory/diagnostic pooling but caps the top claim because it can wash out localized mechanism behavior.
 
 ## Matched Controls
 
@@ -178,9 +199,11 @@ The suite computes bootstrap CIs for primary effects and target-vs-decoy specifi
 every computed site x layer x task_family x metric cell in the run
 ```
 
-This includes primary probe metrics, shuffled-label contrasts, random-site contrasts, matched-control contrasts, specificity metrics, and restoration/mediation metrics when present.
+This includes primary probe metrics, shuffled-label contrasts, random-site contrasts, matched-control contrasts, specificity metrics, `component_patch_restoration`, `full_layer_patch_restoration`, and `mediation_fraction` when present.
 
 Do not narrow FDR-BH to only the pre-registered target site or only the primary metric unless no other tested cells were computed.
+
+`metrics.json` separates `fdr_bh.tested_cells` from `fdr_bh.invalid_or_unavailable_cells`. Invalid or unavailable cells record a reason and do not receive meaningful p-values.
 
 Target-vs-decoy specificity uses a bootstrap CI on:
 
@@ -201,9 +224,15 @@ metadata.target_token_text
 metadata.foil_token_text
 metadata.target_token_id
 metadata.foil_token_id
+metadata.clean_answer_position
+metadata.corrupted_answer_position
+metadata.patch_token_indices
+metadata.clean_patch_token_indices
+metadata.corrupted_patch_token_indices
+metadata.clean_corrupt_token_alignment
 ```
 
-The committed suites use `" true"` and `" false"` as single GPT-2 next-token labels. Multi-token labels are rejected; the suite never silently uses the first subtoken. Missing token metadata or invalid denominators makes restoration invalid and blocks gates depending on it.
+The committed suites use `" true"` and `" false"` as single GPT-2 next-token labels. Multi-token labels are rejected; the suite never silently uses the first subtoken. Clean and corrupted prompts are patched only at validated aligned positions. If token lengths differ, explicit clean/corrupted patch indices are required. The suite does not patch whole sequence tensors across unaligned clean/corrupt prompts. Missing token metadata, invalid patch alignment, or invalid denominators makes restoration invalid and blocks gates depending on it.
 
 Restoration formula:
 
@@ -269,6 +298,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
+  --feature-pooling mean_sequence \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -286,6 +316,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
   --hypothesis-doc docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -304,6 +335,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
+  --feature-pooling mean_sequence \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -321,6 +353,7 @@ uv run scripts/run_mechanism_probe_suite.py \
   --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
   --hypothesis-doc docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path \
+  --feature-pooling patch_positions_mean \
   --control-mode matched \
   --min-n 50 \
   --bootstrap-samples 1000 \
@@ -342,7 +375,15 @@ Regenerate a summary from existing suite artifacts:
 
 ```bash
 uv run scripts/summarize_mechanism_probe_suite.py \
-  --output-dir reports/mechanisms/probes/<suite-output-dir>
+  --output-dir reports/mechanisms/probes/<suite-output-dir> \
+  --validate
+```
+
+Check preflight and run real suites only when local checkpoints exist:
+
+```bash
+uv run scripts/verify_tier1_mechanism_probe_suite.py --preflight-only
+uv run scripts/verify_tier1_mechanism_probe_suite.py --device cuda
 ```
 
 ## Disallowed Claims

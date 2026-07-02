@@ -34,6 +34,10 @@ They pair with deterministic task suites under:
 configs/mechanisms/tier1_tasks/
 ```
 
+Confirmatory task suites must include GPT-2 single-token target/foil metadata plus clean/corrupt
+answer positions, patch-token indices, and `clean_corrupt_token_alignment`. If clean and corrupted
+prompts differ in token length, explicit clean and corrupted patch indices are required.
+
 Validate the task suites with:
 
 ```bash
@@ -47,4 +51,6 @@ uv run scripts/generate_tier1_mechanism_tasks.py \
 The hypothesis docs intentionally do not claim replication, universality, architecture superiority,
 solved negation, lower superposition, or representational novelty. Noncanonical controls, missing
 matched controls, missing random-site nulls for an affected cell, invalid restoration metadata, and
-exploratory/probe-only mode cap the mechanism-probe claim ladder.
+exploratory/probe-only mode cap the mechanism-probe claim ladder. Confirmatory candidate evidence
+also requires task-aligned pooling and FDR-BH pass for component restoration, full-layer restoration,
+and mediation_fraction.

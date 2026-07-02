@@ -57,6 +57,7 @@ def make_cache_patch(
     source_site: str | None = None,
     batch_indices: list[int] | None = None,
     token_indices: list[int] | None = None,
+    source_token_indices: list[int] | None = None,
 ) -> InterventionSpec:
     return InterventionSpec(
         site=site,
@@ -66,6 +67,7 @@ def make_cache_patch(
         source_site=source_site,
         batch_indices=batch_indices,
         token_indices=token_indices,
+        source_token_indices=source_token_indices,
     )
 
 
