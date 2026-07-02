@@ -2,10 +2,15 @@
   "cells": {
     "operator_add_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -42,10 +47,15 @@
     },
     "operator_bind_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -82,10 +92,15 @@
     },
     "operator_combined_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -122,10 +137,15 @@
     },
     "operator_gate_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -162,10 +182,15 @@
     },
     "operator_probs[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -202,10 +227,15 @@
     },
     "operator_suppress_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -242,10 +272,15 @@
     },
     "operator_transform_out[0]|family=negation_scope": {
       "blockers": [],
+      "candidate_mechanism_gate_passed": false,
       "caps": [
         "exploratory mode caps claims below confirmatory evidence"
       ],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": true,
+      "highest_status": "exploratory_probe_signal",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -281,7 +316,11 @@
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     }
   },
+  "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use overall_controlled_probe_gate_passed or overall_candidate_mechanism_gate_passed for precise consumers",
+  "overall_candidate_mechanism_gate_passed": false,
   "overall_claim_gate_passed": false,
+  "overall_controlled_probe_gate_passed": false,
+  "overall_exploratory_signal": true,
   "overall_status": "exploratory_probe_signal",
   "status_vocabulary": [
     "insufficient_evidence",

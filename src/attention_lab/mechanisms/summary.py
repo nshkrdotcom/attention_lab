@@ -25,6 +25,11 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
     overall = claim_gates.get("overall_status", "insufficient_evidence")
     overall_claim_gate_passed = bool(claim_gates.get("overall_claim_gate_passed", False))
     random_pool = preflight.get("random_site_null_pool", {})
+    overall_exploratory_signal = bool(claim_gates.get("overall_exploratory_signal", False))
+    overall_controlled_probe_gate_passed = bool(claim_gates.get("overall_controlled_probe_gate_passed", False))
+    overall_candidate_mechanism_gate_passed = bool(
+        claim_gates.get("overall_candidate_mechanism_gate_passed", overall_claim_gate_passed)
+    )
 
     lines = [
         "# Tier-1 Mechanism Probe Suite Summary",
@@ -43,7 +48,11 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         f"- feature_pooling: `{pooling.get('strategy')}`",
         f"- task_aligned_pooling: `{pooling.get('task_aligned')}`",
         f"- overall_mechanism_probe_status: `{overall}`",
+        f"- overall_exploratory_signal: `{overall_exploratory_signal}`",
+        f"- overall_controlled_probe_gate_passed: `{overall_controlled_probe_gate_passed}`",
+        f"- overall_candidate_mechanism_gate_passed: `{overall_candidate_mechanism_gate_passed}`",
         f"- overall_claim_gate_passed: `{overall_claim_gate_passed}`",
+        "- claim_gate_passed_semantics: `candidate_mechanism_gate_passed compatibility alias`",
         "",
         "## Control",
         f"- expected_control_checkpoint: `{control.get('expected_control_checkpoint')}`",
@@ -91,6 +100,10 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
             [
                 f"### `{cell_id}`",
                 f"- claim_gate: `{gate.get('status')}`",
+                f"- exploratory_signal: `{gate.get('exploratory_signal')}`",
+                f"- controlled_probe_gate_passed: `{gate.get('controlled_probe_gate_passed')}`",
+                f"- candidate_mechanism_gate_passed: `{gate.get('candidate_mechanism_gate_passed')}`",
+                f"- highest_status: `{gate.get('highest_status')}`",
                 f"- claim_gate_passed: `{gate.get('claim_gate_passed')}`",
                 f"- status_kind: `{gate.get('status_kind')}`",
                 f"- blockers: `{gate.get('blockers')}`",
@@ -178,7 +191,15 @@ def validate_suite_artifacts(output_dir: str | Path) -> list[str]:
     for key in ("schema_version", "run", "mode", "control", "task_suite", "sites_evaluated", "cells", "fdr_bh"):
         if key not in metrics:
             errors.append(f"metrics.json missing {key}")
-    for key in ("overall_status", "status_vocabulary", "status_vocabulary_scope", "cells"):
+    for key in (
+        "overall_status",
+        "overall_exploratory_signal",
+        "overall_controlled_probe_gate_passed",
+        "overall_candidate_mechanism_gate_passed",
+        "status_vocabulary",
+        "status_vocabulary_scope",
+        "cells",
+    ):
         if key not in claim_gates:
             errors.append(f"claim_gates.json missing {key}")
     if not isinstance(metrics.get("cells"), dict):
@@ -208,6 +229,25 @@ def validate_suite_artifacts(output_dir: str | Path) -> list[str]:
         for key in ("comparison_family", "tested_cells", "invalid_or_unavailable_cells", "results"):
             if key not in fdr:
                 errors.append(f"fdr_bh missing {key}")
+    gates = claim_gates.get("cells", {})
+    if isinstance(gates, dict):
+        required_gate_keys = (
+            "status",
+            "exploratory_signal",
+            "controlled_probe_gate_passed",
+            "candidate_mechanism_gate_passed",
+            "highest_status",
+            "claim_gate_passed",
+            "status_kind",
+            "blockers",
+        )
+        for cell_id, gate in gates.items():
+            if not isinstance(gate, dict):
+                errors.append(f"claim gate {cell_id} must be a mapping")
+                continue
+            for key in required_gate_keys:
+                if key not in gate:
+                    errors.append(f"claim gate {cell_id} missing {key}")
     try:
         regenerated = render_summary(metrics, claim_gates)
         if not regenerated.strip():

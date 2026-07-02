@@ -447,7 +447,7 @@ Regenerate or validate them with:
 scripts/generate_tier1_mechanism_tasks.py
 ```
 
-Confirmatory Tier-1 task suites must carry deterministic provenance plus `metadata.content_sha256`. The validate-only path for the built-in Tier-1 generator regenerates from metadata and rejects files whose records do not match deterministic generator output.
+Confirmatory Tier-1 task suites must carry deterministic provenance plus `metadata.content_sha256`. The fingerprint is an integrity check, not standalone provenance. Confirmatory suite execution and the validate-only path for the built-in Tier-1 generator regenerate from metadata and reject files whose records do not match deterministic generator output. Future generators need an equivalent regeneration validator before supporting confirmatory claims.
 
 Executable Tier-1 presets are:
 
@@ -469,7 +469,7 @@ candidate_mechanism_evidence
 
 Do not confuse `candidate_mechanism_evidence` with the broader project status vocabulary. It means single-seed, checkpoint-backed, statistically controlled mechanism evidence, not replication.
 
-`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. Machine-readable outputs include `claim_gate_passed` and `status_kind`; only confirmatory `controlled_probe_signal` and `candidate_mechanism_evidence` may have `claim_gate_passed=true`.
+`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. Machine-readable outputs include `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, `status_kind`, and the compatibility `claim_gate_passed` field. Treat `claim_gate_passed` as an alias for `candidate_mechanism_gate_passed`; controlled-probe evidence has its own boolean and does not imply causal mechanism evidence.
 
 Confirmatory Tier-1 runs require:
 
@@ -492,7 +492,7 @@ Non-exploratory `--probe-only` is not confirmatory. Cheap probe-only staging mus
 
 Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
 
-Random-site null pools are the complete preset-declared Tier-1 null family, not an unrestricted hook sweep. The suite must still inspect actual captured shapes and tensor kinds before selecting a random-site null.
+Random-site null pools are the complete preset-declared Tier-1 null family, not an unrestricted hook sweep and not proof that every plausible null site was tested. The suite must still inspect actual captured shapes and tensor kinds before selecting a random-site null.
 
 Confirmatory `--sites` values must be declared in the Tier-1 preset. Unknown exploratory sites require explicit `--site-spec-file` metadata and remain noncanonical. Do not invent tensor kinds, control sites, or full-layer comparators for unknown sites.
 

@@ -59,11 +59,18 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
         "overall_claim_gate_passed": False,
+        "overall_exploratory_signal": True,
+        "overall_controlled_probe_gate_passed": False,
+        "overall_candidate_mechanism_gate_passed": False,
         "cells": {
             "branch_delta[0]|family=negation": {
                 "status": "exploratory_probe_signal",
                 "blockers": [],
                 "claim_gate_passed": False,
+                "exploratory_signal": True,
+                "controlled_probe_gate_passed": False,
+                "candidate_mechanism_gate_passed": False,
+                "highest_status": "exploratory_probe_signal",
                 "status_kind": "exploratory_signal",
             }
         },
@@ -81,6 +88,8 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     assert "Probe-only mode skipped" in summary
     assert "Exploratory mode capped" in summary
     assert "exploratory signal is not a passed confirmatory claim gate" in summary
+    assert "overall_controlled_probe_gate_passed" in summary
+    assert "candidate_mechanism_gate_passed" in summary
 
 
 def test_suite_artifact_validation_checks_required_schema(tmp_path):
@@ -116,6 +125,9 @@ def test_suite_artifact_validation_checks_required_schema(tmp_path):
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
         "overall_claim_gate_passed": False,
+        "overall_exploratory_signal": True,
+        "overall_controlled_probe_gate_passed": False,
+        "overall_candidate_mechanism_gate_passed": False,
         "status_vocabulary": ["insufficient_evidence", "exploratory_probe_signal"],
         "status_vocabulary_scope": "mechanism-probe scoped",
         "cells": {
@@ -123,6 +135,10 @@ def test_suite_artifact_validation_checks_required_schema(tmp_path):
                 "status": "exploratory_probe_signal",
                 "blockers": [],
                 "claim_gate_passed": False,
+                "exploratory_signal": True,
+                "controlled_probe_gate_passed": False,
+                "candidate_mechanism_gate_passed": False,
+                "highest_status": "exploratory_probe_signal",
                 "status_kind": "exploratory_signal",
             }
         },

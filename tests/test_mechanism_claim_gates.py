@@ -42,6 +42,12 @@ def test_candidate_mechanism_evidence_requires_all_gates():
     result = evaluate_cell_claim_gate(_passing_inputs())
 
     assert result.status == CANDIDATE_MECHANISM_EVIDENCE
+    assert result.exploratory_signal is False
+    assert result.controlled_probe_gate_passed is True
+    assert result.candidate_mechanism_gate_passed is True
+    assert result.claim_gate_passed is True
+    assert result.highest_status == CANDIDATE_MECHANISM_EVIDENCE
+    assert result.to_dict()["status_kind"] == "candidate_mechanism_claim"
 
 
 def test_raw_delta_or_missing_stats_cannot_pass_gate():
@@ -57,8 +63,16 @@ def test_probe_only_and_exploratory_modes_are_capped():
 
     assert probe_only.status == EXPLORATORY_PROBE_SIGNAL
     assert exploratory.status == EXPLORATORY_PROBE_SIGNAL
+    assert probe_only.exploratory_signal is True
+    assert exploratory.exploratory_signal is True
+    assert not probe_only.controlled_probe_gate_passed
+    assert not exploratory.controlled_probe_gate_passed
+    assert not probe_only.candidate_mechanism_gate_passed
+    assert not exploratory.candidate_mechanism_gate_passed
     assert not probe_only.claim_gate_passed
     assert not exploratory.claim_gate_passed
+    assert probe_only.to_dict()["highest_status"] == EXPLORATORY_PROBE_SIGNAL
+    assert exploratory.to_dict()["highest_status"] == EXPLORATORY_PROBE_SIGNAL
     assert probe_only.to_dict()["status_kind"] == "exploratory_signal"
     assert exploratory.to_dict()["status_kind"] == "exploratory_signal"
 
@@ -89,8 +103,11 @@ def test_valid_controlled_probe_without_patching_stops_below_candidate_evidence(
     result = evaluate_cell_claim_gate(_passing_inputs(patching_valid=False, mediation_valid=False))
 
     assert result.status == CONTROLLED_PROBE_SIGNAL
-    assert result.claim_gate_passed
-    assert result.to_dict()["status_kind"] == "confirmatory_claim"
+    assert result.controlled_probe_gate_passed
+    assert not result.candidate_mechanism_gate_passed
+    assert not result.claim_gate_passed
+    assert result.to_dict()["status_kind"] == "controlled_probe_claim"
+    assert result.to_dict()["highest_status"] == CONTROLLED_PROBE_SIGNAL
     assert any("patching" in blocker for blocker in result.blockers)
 
 

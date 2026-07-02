@@ -608,13 +608,13 @@ configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_train_rotation_
 configs/experiments/E002_multitrack_qkv_shift_register/multi_qkv_position_rotation_3track_global_30m_seed1.yaml
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the canonical E002 standard/candidate checkpoints are present locally.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the canonical E002 standard/candidate checkpoints are present locally. These are local reconciliation facts for generated artifacts; a fresh clone may not contain the checkpoint files.
 
 ```text
-standard_refactor_control_30m_seed1                  checkpoint available in this working copy
-multi_qkv_static_3track_global_30m_seed1             checkpoint available in this working copy
-multi_qkv_train_rotation_3track_global_30m_seed1     checkpoint available in this working copy
-multi_qkv_position_rotation_3track_global_30m_seed1  checkpoint available in this working copy
+standard_refactor_control_30m_seed1                  checkpoint_available_at_last_local_reconciliation: true
+multi_qkv_static_3track_global_30m_seed1             checkpoint_available_at_last_local_reconciliation: true
+multi_qkv_train_rotation_3track_global_30m_seed1     checkpoint_available_at_last_local_reconciliation: true
+multi_qkv_position_rotation_3track_global_30m_seed1  checkpoint_available_at_last_local_reconciliation: true
 ```
 
 Validate:
@@ -734,20 +734,20 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 screen checkpoints listed here are present locally. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E003 screen checkpoints listed here are present locally. These are local reconciliation facts for generated artifacts; a fresh clone may not contain the checkpoint files. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
 
 ```text
-differential_qkv_anti_value_30m_seed1_rung020       checkpoint available in this working copy
-differential_qkv_anti_value_30m_seed1_rung150       checkpoint available in this working copy
-differential_qkv_anti_value_30m_seed1_rung500       checkpoint available in this working copy
+differential_qkv_anti_value_30m_seed1_rung020       checkpoint_available_at_last_local_reconciliation: true
+differential_qkv_anti_value_30m_seed1_rung150       checkpoint_available_at_last_local_reconciliation: true
+differential_qkv_anti_value_30m_seed1_rung500       checkpoint_available_at_last_local_reconciliation: true
 
-scope_gated_qkv_30m_seed1_rung020                   checkpoint available in this working copy
-scope_gated_qkv_30m_seed1_rung150                   checkpoint available in this working copy
-scope_gated_qkv_30m_seed1_rung500                   checkpoint available in this working copy
+scope_gated_qkv_30m_seed1_rung020                   checkpoint_available_at_last_local_reconciliation: true
+scope_gated_qkv_30m_seed1_rung150                   checkpoint_available_at_last_local_reconciliation: true
+scope_gated_qkv_30m_seed1_rung500                   checkpoint_available_at_last_local_reconciliation: true
 
-standard_refactor_control_30m_seed1_rung020         checkpoint available in this working copy
-standard_refactor_control_30m_seed1_rung150         checkpoint available in this working copy
-standard_refactor_control_30m_seed1_rung500         checkpoint available in this working copy
+standard_refactor_control_30m_seed1_rung020         checkpoint_available_at_last_local_reconciliation: true
+standard_refactor_control_30m_seed1_rung150         checkpoint_available_at_last_local_reconciliation: true
+standard_refactor_control_30m_seed1_rung500         checkpoint_available_at_last_local_reconciliation: true
 ```
 
 Canonical current post-hoc probes:
@@ -833,22 +833,22 @@ The gauntlet uses staged screen rungs:
 rung020 -> rung150 -> rung500
 ```
 
-Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 screen checkpoints listed here are present locally. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
+Current local state is reconciled in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`. In this working copy, the E004 screen checkpoints listed here are present locally. These are local reconciliation facts for generated artifacts; a fresh clone may not contain the checkpoint files. A checkpoint makes recomputation possible; it does not prove a mechanism claim.
 
 ```text
-operator_valued_attention_30m_seed2_rung020                    checkpoint available in this working copy
-operator_valued_attention_30m_seed2_rung150                    checkpoint available in this working copy
-operator_valued_attention_30m_seed2_rung500                    checkpoint available in this working copy
+operator_valued_attention_30m_seed2_rung020                    checkpoint_available_at_last_local_reconciliation: true
+operator_valued_attention_30m_seed2_rung150                    checkpoint_available_at_last_local_reconciliation: true
+operator_valued_attention_30m_seed2_rung500                    checkpoint_available_at_last_local_reconciliation: true
 
-dynamic_value_query_conditioned_attention_30m_seed2_rung020    checkpoint available in this working copy
-dynamic_value_query_conditioned_attention_30m_seed2_rung150    checkpoint available in this working copy
-dynamic_value_query_conditioned_attention_30m_seed2_rung500    checkpoint available in this working copy
+dynamic_value_query_conditioned_attention_30m_seed2_rung020    checkpoint_available_at_last_local_reconciliation: true
+dynamic_value_query_conditioned_attention_30m_seed2_rung150    checkpoint_available_at_last_local_reconciliation: true
+dynamic_value_query_conditioned_attention_30m_seed2_rung500    checkpoint_available_at_last_local_reconciliation: true
 
-q3k3v3_role_routed_attention_30m_seed2_rung020                 checkpoint available in this working copy
+q3k3v3_role_routed_attention_30m_seed2_rung020                 checkpoint_available_at_last_local_reconciliation: true
 
-standard_refactor_control_30m_seed2_rung020                    checkpoint available in this working copy
-standard_refactor_control_30m_seed2_rung150                    checkpoint available in this working copy
-standard_refactor_control_30m_seed2_rung500                    checkpoint available in this working copy
+standard_refactor_control_30m_seed2_rung020                    checkpoint_available_at_last_local_reconciliation: true
+standard_refactor_control_30m_seed2_rung150                    checkpoint_available_at_last_local_reconciliation: true
+standard_refactor_control_30m_seed2_rung500                    checkpoint_available_at_last_local_reconciliation: true
 ```
 
 Canonical current E004 operator-valued probe:
@@ -1355,7 +1355,7 @@ configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
 ```
 
 Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`. The committed suites include GPT-2 single-token target/foil metadata plus clean/corrupt answer positions and explicit patch-token alignment for restoration.
-They also include `metadata.content_sha256`; validate-only checks the fingerprint and, for the built-in Tier-1 generator, regenerates from metadata to reject tampered suites.
+They also include `metadata.content_sha256`; the fingerprint checks file integrity. Confirmatory suite execution and validate-only also regenerate built-in Tier-1 suites from metadata to reject tampered suites whose hash was recomputed. Future task generators need equivalent regeneration validation before their suites can support confirmatory claims.
 
 Executable Tier-1 presets:
 
@@ -1461,11 +1461,11 @@ uv run scripts/verify_tier1_mechanism_probe_suite.py --preflight-only
 ```
 
 `candidate_mechanism_evidence` is mechanism-probe scoped and means single-seed, checkpoint-backed, statistically controlled evidence. It is not replication and not a global experiment status.
-`exploratory_probe_signal` is a capped exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records `claim_gate_passed` and `status_kind` for each cell.
+`exploratory_probe_signal` is a capped exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, `status_kind`, and the compatibility `claim_gate_passed` field for each cell. Treat `claim_gate_passed` as an alias for `candidate_mechanism_gate_passed`; a controlled-probe pass has its own boolean and does not imply causal mechanism evidence.
 
 Confirmatory runs use strict preset site resolution. Unknown confirmatory `--sites` values fail before model execution; exploratory unknown sites require explicit `--site-spec-file` metadata and remain noncanonical. E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides and missing-control diagnostic runs are recorded but cap claims below evidence statuses.
 For patch/restoration, E004 `operator_probs` is capture/probe-only until a validated probability-site intervention exists; full-width operator output sites remain continuous patch candidates.
-The random-site null pool is the complete preset-declared Tier-1 null family and is recorded in `metrics.json` preflight metadata; actual selection still requires matched dimensionality and compatible tensor kind from captured tensors.
+The random-site null pool is the complete preset-declared Tier-1 null family and is recorded in `metrics.json` preflight metadata; it is not an unrestricted hook sweep. Actual selection still requires matched dimensionality and compatible tensor kind from captured tensors.
 
 ### Strict capture mode
 

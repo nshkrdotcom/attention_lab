@@ -70,7 +70,7 @@ created_at
 content_sha256
 ```
 
-`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It uses a local seeded RNG for filler assignment, writes fixed provenance, writes a `content_sha256` fingerprint over metadata and records, and validates GPT-2 single-token restoration labels. The built-in Tier-1 validate-only path also regenerates from `candidate`, `generation_seed`, `created_at`, and pair count metadata, then rejects files that do not match deterministic generator output.
+`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It uses a local seeded RNG for filler assignment, writes fixed provenance, writes a `content_sha256` fingerprint over metadata and records, and validates GPT-2 single-token restoration labels. The fingerprint is an integrity check for the file contents; it is not by itself a provenance proof. Confirmatory runs and the built-in Tier-1 validate-only path also regenerate from `candidate`, `generation_seed`, `created_at`, and pair count metadata, then reject files that do not match deterministic generator output. Future non-built-in generators must add an equivalent regeneration validator before their suites can support confirmatory claims.
 
 Committed confirmatory suites live in:
 
@@ -292,7 +292,16 @@ No claim gate can pass without minimum N, grouped split discipline, bootstrap CI
 
 Full confirmatory mode is the only path that can reach `candidate_mechanism_evidence`. Non-exploratory `--probe-only` is rejected; cheap scans must use `--exploratory --probe-only`.
 
-`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records `claim_gate_passed` and `status_kind` for every cell. `claim_gate_passed=true` is reserved for confirmatory `controlled_probe_signal` or `candidate_mechanism_evidence` statuses after the controlled probe prerequisites have cleared.
+`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. `claim_gates.json` records explicit booleans for every cell:
+
+```text
+exploratory_signal
+controlled_probe_gate_passed
+candidate_mechanism_gate_passed
+highest_status
+```
+
+`controlled_probe_gate_passed=true` means the controlled probe threshold cleared. It does not imply valid causal patching/restoration. `candidate_mechanism_gate_passed=true` is the mechanism-evidence threshold and requires the full causal/restoration/mediation gate family. `claim_gate_passed` is retained as a compatibility alias for `candidate_mechanism_gate_passed`; new consumers should use the explicit booleans.
 
 ## Commands
 
@@ -378,7 +387,7 @@ claim_gates.json
 summary.md
 ```
 
-`metrics.json` contains task-suite validation, content fingerprint validation, declared random-site pool scope, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps, `claim_gate_passed`, `status_kind`, and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
+`metrics.json` contains task-suite validation, content fingerprint validation, declared random-site pool scope, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps, `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, the compatibility `claim_gate_passed` field, `status_kind`, and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
 
 Regenerate a summary from existing suite artifacts:
 

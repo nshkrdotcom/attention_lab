@@ -310,6 +310,64 @@ def test_confirmatory_missing_provenance_fails_before_checkpoint_loading(tmp_pat
     assert "candidate checkpoint does not exist" not in result.stderr
 
 
+def test_confirmatory_builtin_suite_regeneration_fails_even_if_hash_recomputed(tmp_path):
+    task_file = tmp_path / "generated_tasks.yaml"
+
+    generated = subprocess.run(
+        [
+            sys.executable,
+            "scripts/generate_tier1_mechanism_tasks.py",
+            "--output",
+            str(task_file),
+            "--candidate",
+            "e003_differential",
+            "--pairs-per-family",
+            "50",
+            "--seed",
+            "7",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert generated.returncode == 0, generated.stderr
+
+    payload = yaml.safe_load(task_file.read_text(encoding="utf-8"))
+    payload["records"][0]["x_pos"] = payload["records"][0]["x_pos"].replace("did not", "definitely did not")
+    payload = attach_suite_content_sha256(payload)
+    task_file.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mechanism_probe_suite.py",
+            "--experiment-id",
+            "E003_qkv_architecture_gauntlet",
+            "--candidate",
+            "differential",
+            "--checkpoint",
+            "missing.pt",
+            "--task-file",
+            str(task_file),
+            "--hypothesis-doc",
+            "docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml",
+            "--output-dir",
+            str(tmp_path / "out"),
+            "--min-n",
+            "50",
+        ],
+        cwd=Path.cwd(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "deterministic generator output" in result.stderr
+    assert "candidate checkpoint does not exist" not in result.stderr
+
+
 def test_confirmatory_missing_restoration_tokens_fails_before_checkpoint_loading(tmp_path):
     task_file = tmp_path / "missing_tokens.yaml"
     _write_task_file(task_file, pairs=50, provenance=True, restoration_tokens=False)

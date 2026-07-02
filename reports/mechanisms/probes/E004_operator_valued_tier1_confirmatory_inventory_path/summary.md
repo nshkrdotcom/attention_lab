@@ -13,7 +13,11 @@ An exploratory signal is not a passed confirmatory claim gate.
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
 - overall_mechanism_probe_status: `insufficient_evidence`
+- overall_exploratory_signal: `False`
+- overall_controlled_probe_gate_passed: `False`
+- overall_candidate_mechanism_gate_passed: `False`
 - overall_claim_gate_passed: `False`
+- claim_gate_passed_semantics: `candidate_mechanism_gate_passed compatibility alias`
 
 ## Control
 - expected_control_checkpoint: `runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt`
@@ -47,6 +51,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 ## Site Results
 ### `operator_add_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -71,6 +79,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_bind_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -95,6 +107,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_combined_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -119,6 +135,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_gate_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -143,6 +163,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_probs[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['shuffled-label null comparison failed', 'random-site null unavailable for this site-layer cell', 'matched-control comparison failed']`
@@ -167,6 +191,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_suppress_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -191,6 +219,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `operator_transform_out[0]|family=negation_scope`
 - claim_gate: `insufficient_evidence`
+- exploratory_signal: `False`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `insufficient_evidence`
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`

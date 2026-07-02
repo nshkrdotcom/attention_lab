@@ -6,8 +6,13 @@
         "matched-control comparison failed",
         "target-vs-decoy specificity gate failed"
       ],
+      "candidate_mechanism_gate_passed": false,
       "caps": [],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": false,
+      "highest_status": "insufficient_evidence",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -47,8 +52,13 @@
         "matched-control comparison failed",
         "target-vs-decoy specificity gate failed"
       ],
+      "candidate_mechanism_gate_passed": false,
       "caps": [],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": false,
+      "highest_status": "insufficient_evidence",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -89,8 +99,13 @@
         "matched-control comparison failed",
         "target-vs-decoy specificity gate failed"
       ],
+      "candidate_mechanism_gate_passed": false,
       "caps": [],
       "claim_gate_passed": false,
+      "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers",
+      "controlled_probe_gate_passed": false,
+      "exploratory_signal": false,
+      "highest_status": "insufficient_evidence",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -126,7 +141,11 @@
       "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
     }
   },
+  "claim_gate_passed_semantics": "candidate_mechanism_gate_passed compatibility alias; use overall_controlled_probe_gate_passed or overall_candidate_mechanism_gate_passed for precise consumers",
+  "overall_candidate_mechanism_gate_passed": false,
   "overall_claim_gate_passed": false,
+  "overall_controlled_probe_gate_passed": false,
+  "overall_exploratory_signal": false,
   "overall_status": "insufficient_evidence",
   "status_vocabulary": [
     "insufficient_evidence",

@@ -13,7 +13,11 @@ An exploratory signal is not a passed confirmatory claim gate.
 - feature_pooling: `mean_sequence`
 - task_aligned_pooling: `False`
 - overall_mechanism_probe_status: `exploratory_probe_signal`
+- overall_exploratory_signal: `True`
+- overall_controlled_probe_gate_passed: `False`
+- overall_candidate_mechanism_gate_passed: `False`
 - overall_claim_gate_passed: `False`
+- claim_gate_passed_semantics: `candidate_mechanism_gate_passed compatibility alias`
 
 ## Control
 - expected_control_checkpoint: `runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt`
@@ -47,6 +51,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 ## Site Results
 ### `branch_delta[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- exploratory_signal: `True`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `exploratory_probe_signal`
 - claim_gate_passed: `False`
 - status_kind: `exploratory_signal`
 - blockers: `[]`
@@ -71,6 +79,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `neg_out[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- exploratory_signal: `True`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `exploratory_probe_signal`
 - claim_gate_passed: `False`
 - status_kind: `exploratory_signal`
 - blockers: `[]`
@@ -95,6 +107,10 @@ An exploratory signal is not a passed confirmatory claim gate.
 
 ### `pos_out[0]|family=negation_scope`
 - claim_gate: `exploratory_probe_signal`
+- exploratory_signal: `True`
+- controlled_probe_gate_passed: `False`
+- candidate_mechanism_gate_passed: `False`
+- highest_status: `exploratory_probe_signal`
 - claim_gate_passed: `False`
 - status_kind: `exploratory_signal`
 - blockers: `[]`

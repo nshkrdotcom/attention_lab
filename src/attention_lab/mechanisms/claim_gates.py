@@ -54,6 +54,10 @@ class CellGateResult:
     status: str
     blockers: tuple[str, ...]
     caps: tuple[str, ...]
+    exploratory_signal: bool
+    controlled_probe_gate_passed: bool
+    candidate_mechanism_gate_passed: bool
+    highest_status: str
     claim_gate_passed: bool
     status_kind: str
     inputs: dict[str, Any] = field(default_factory=dict)
@@ -63,7 +67,15 @@ class CellGateResult:
             "status": self.status,
             "blockers": list(self.blockers),
             "caps": list(self.caps),
+            "exploratory_signal": self.exploratory_signal,
+            "controlled_probe_gate_passed": self.controlled_probe_gate_passed,
+            "candidate_mechanism_gate_passed": self.candidate_mechanism_gate_passed,
+            "highest_status": self.highest_status,
             "claim_gate_passed": self.claim_gate_passed,
+            "claim_gate_passed_semantics": (
+                "candidate_mechanism_gate_passed compatibility alias; "
+                "use controlled_probe_gate_passed or candidate_mechanism_gate_passed for precise consumers"
+            ),
             "status_kind": self.status_kind,
             "inputs": self.inputs,
             "status_vocabulary_scope": (
@@ -146,14 +158,26 @@ def overall_status(cell_results: list[CellGateResult]) -> str:
 
 
 def _result(status: str, blockers: list[str], caps: list[str], inputs: CellGateInputs) -> CellGateResult:
-    claim_gate_passed = status in {CONTROLLED_PROBE_SIGNAL, CANDIDATE_MECHANISM_EVIDENCE}
-    status_kind = "confirmatory_claim" if claim_gate_passed else "exploratory_signal"
-    if status == INSUFFICIENT_EVIDENCE:
+    exploratory_signal = status == EXPLORATORY_PROBE_SIGNAL
+    controlled_probe_gate_passed = status in {CONTROLLED_PROBE_SIGNAL, CANDIDATE_MECHANISM_EVIDENCE}
+    candidate_mechanism_gate_passed = status == CANDIDATE_MECHANISM_EVIDENCE
+    claim_gate_passed = candidate_mechanism_gate_passed
+    if candidate_mechanism_gate_passed:
+        status_kind = "candidate_mechanism_claim"
+    elif controlled_probe_gate_passed:
+        status_kind = "controlled_probe_claim"
+    elif exploratory_signal:
+        status_kind = "exploratory_signal"
+    else:
         status_kind = "insufficient_evidence"
     return CellGateResult(
         status=status,
         blockers=tuple(dict.fromkeys(blockers)),
         caps=tuple(dict.fromkeys(caps)),
+        exploratory_signal=exploratory_signal,
+        controlled_probe_gate_passed=controlled_probe_gate_passed,
+        candidate_mechanism_gate_passed=candidate_mechanism_gate_passed,
+        highest_status=status,
         claim_gate_passed=claim_gate_passed,
         status_kind=status_kind,
         inputs=inputs.__dict__,

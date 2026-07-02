@@ -49,6 +49,7 @@ from attention_lab.mechanisms.task_schema import (
     restoration_alignment_metadata,
     validate_task_suite,
 )
+from attention_lab.mechanisms.task_generation import validate_tier1_suite_file
 
 
 def run_probe_suite(
@@ -117,6 +118,11 @@ def run_probe_suite(
     )
     if not exploratory and not task_validation.valid:
         raise ValueError("confirmatory task suite invalid: " + "; ".join(task_validation.errors))
+    if not exploratory:
+        try:
+            validate_tier1_suite_file(task_file, min_n=min_n)
+        except ValueError as exc:
+            raise ValueError(f"confirmatory task suite invalid: {exc}") from exc
     control = resolve_control(
         preset,
         control_mode=control_mode,
@@ -342,7 +348,18 @@ def run_probe_suite(
         cell_gate_results[cell_id] = result
     claim_gates = {
         "overall_status": overall_status(list(cell_gate_results.values())),
+        "overall_exploratory_signal": any(result.exploratory_signal for result in cell_gate_results.values()),
+        "overall_controlled_probe_gate_passed": any(
+            result.controlled_probe_gate_passed for result in cell_gate_results.values()
+        ),
+        "overall_candidate_mechanism_gate_passed": any(
+            result.candidate_mechanism_gate_passed for result in cell_gate_results.values()
+        ),
         "overall_claim_gate_passed": any(result.claim_gate_passed for result in cell_gate_results.values()),
+        "claim_gate_passed_semantics": (
+            "candidate_mechanism_gate_passed compatibility alias; "
+            "use overall_controlled_probe_gate_passed or overall_candidate_mechanism_gate_passed for precise consumers"
+        ),
         "cells": {cell_id: result.to_dict() for cell_id, result in sorted(cell_gate_results.items())},
         "status_vocabulary": [
             "insufficient_evidence",
