@@ -1,0 +1,61 @@
+run:
+  name: q3k3v3_role_routed_attention_30m_seed2_rung020
+  out_dir: runs/experiments/E004_operator_binding_qkv_gauntlet/q3k3v3_role_routed_attention_30m_seed2_rung020
+  seed: 1338
+data:
+  data_root: data/fineweb_edu_100m
+  tokenizer: gpt2
+  vocab_size: 50304
+  train_tokens: 100000000
+  val_tokens: 4000000
+model:
+  attention_type: q3k3v3_role_routed_attention
+  q3k3v3_role_dim_mode: equal
+  q3k3v3_cross_role_grid: false
+  q3k3v3_include_pair_products: true
+  block_size: 1024
+  n_layer: 6
+  n_head: 6
+  n_embd: 384
+  dropout: 0.0
+  bias: false
+train:
+  device: cuda
+  dtype: bfloat16
+  compile: false
+  eval_at_start: true
+  B: 4
+  T: 1024
+  total_batch_size: 262144
+  max_steps: 20
+  grad_clip: 1.0
+  weight_decay: 0.1
+  learning_rate: 0.0006
+  min_lr: 6.0e-05
+  warmup_steps: 100
+  val_every: 10
+  val_steps: 20
+  save_every: 20
+  log_every: 10
+sample:
+  sample_every: 1000
+  prompt: The history of mathematics
+  num_samples: 4
+  max_new_tokens: 96
+  top_k: 50
+  temperature: 1.0
+  seed: 42
+diagnostics:
+  attention_diagnostics_every: 10
+queue:
+  family: operator_binding_qkv_gauntlet
+  hypothesis_doc: docs/experiments/E004_operator_binding_qkv_gauntlet/hypothesis_q3k3v3_role_routed_attention_30m_seed2.md
+  requires_run: standard_refactor_control_30m_seed2
+  full_run_approved: false
+  allow_overwrite_existing_run_dir: false
+  allow_missing_diagnostics: false
+  mechanism_check: q3k3v3_role_activity
+  screen_steps: 20
+  screen_val_every: 10
+  screen_save_every: 20
+  screen_diagnostics_every: 10
