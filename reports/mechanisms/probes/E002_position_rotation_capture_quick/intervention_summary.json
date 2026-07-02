@@ -1,0 +1,19 @@
+{
+  "capture_sites": [
+    "selected_track",
+    "track_q",
+    "track_k",
+    "track_v",
+    "track_out"
+  ],
+  "intervention_sites": [],
+  "interventions": {},
+  "invalid_interventions": [],
+  "schema_version": 1,
+  "tokenizer": {
+    "block_size": 1024,
+    "pad_token_id": 0,
+    "tokenizer": "gpt2",
+    "vocab_size": 50304
+  }
+}

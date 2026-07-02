@@ -1,0 +1,69 @@
+{
+  "capture_sites": [
+    "selected_track",
+    "track_q",
+    "track_k",
+    "track_v",
+    "track_out"
+  ],
+  "intervention_sites": [
+    "track_q",
+    "track_k",
+    "track_v",
+    "track_out"
+  ],
+  "interventions": {
+    "scale": {
+      "applied": [
+        {
+          "kind": "scale",
+          "site": "track_q[0,0]"
+        },
+        {
+          "kind": "scale",
+          "site": "track_k[0,0]"
+        },
+        {
+          "kind": "scale",
+          "site": "track_v[0,0]"
+        },
+        {
+          "kind": "scale",
+          "site": "track_out[0]"
+        }
+      ],
+      "logit_delta_norm": 2011.2208251953125,
+      "missing_or_failed": []
+    },
+    "zero": {
+      "applied": [
+        {
+          "kind": "zero",
+          "site": "track_q[0,0]"
+        },
+        {
+          "kind": "zero",
+          "site": "track_k[0,0]"
+        },
+        {
+          "kind": "zero",
+          "site": "track_v[0,0]"
+        },
+        {
+          "kind": "zero",
+          "site": "track_out[0]"
+        }
+      ],
+      "logit_delta_norm": 2011.2208251953125,
+      "missing_or_failed": []
+    }
+  },
+  "invalid_interventions": [],
+  "schema_version": 1,
+  "tokenizer": {
+    "block_size": 1024,
+    "pad_token_id": 0,
+    "tokenizer": "gpt2",
+    "vocab_size": 50304
+  }
+}
