@@ -74,22 +74,16 @@ A few hard rules:
 
 ## Current high-level status
 
-As of the latest local artifacts summarized in `EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md`:
+README.md is not the live experiment ledger.
 
-| Experiment                         | Current status                                                                                                                                                 | Interpretation boundary                                                                                                                    |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| E001 CP trilinear attention        | Completed local full-run checkpoints exist for standard, CP-bilinear, and CP-trilinear. Quick probes exist for CP-bilinear and CP-trilinear.                   | Single-seed architecture/mechanism signal only. Not an architecture superiority claim.                                                     |
-| E002 Multi-QKV shift/register      | Completed local full-run checkpoints exist for canonical standard/static/train-rotation/position-rotation variants. Quick probes exist.                        | Route-specialization workbench is ready for deeper mechanism work.                                                                         |
-| E003 QKV architecture gauntlet     | Screen/rung checkpoints exist under `runs/screen` for differential, scope-gated, and standard controls. Rung500 probes exist for differential and scope-gated. | Rung survival and quick probes justify deeper mechanism investigation, not final claims.                                                   |
-| E004 operator/binding QKV gauntlet | Screen/rung checkpoints exist under `runs/screen` for operator-valued, dynamic-value, q3k3v3 rung020, and controls. Operator-valued rung500 probe exists.      | Operator-valued is the current strongest E004 mechanism candidate; dynamic-value needs diagnostic rescue; q3k3v3 needs profiling/redesign. |
+For current E001-E004 state, use:
 
-The current research framing is:
+- EXPERIMENT_STATUS_AND_TECHNICAL_NOTES.md
+- reports/mechanisms/backfill/
+- reports/mechanisms/probes/
+- reports/mechanisms/cross_experiment_candidate_report.md
 
-```text
-Attention Lab uses deliberately nonstandard attention architectures as interpretability instruments.
-The goal is to test whether architectural decomposition changes feature separation,
-causal locality, and superposition properties.
-```
+Keep this README focused on stable setup, workflow, and evidence-boundary rules.
 
 ## Repository map
 
@@ -1189,7 +1183,7 @@ checkpoint_unavailable
 Use this to ensure backfill availability is grounded in the actual filesystem:
 
 ```bash
-python - <<'PY'
+uv run python - <<'PY'
 import json
 from pathlib import Path
 
@@ -1466,35 +1460,30 @@ targeted tests: passed
 * The queue doctor is a readiness check only; it does not launch training.
 * Missing historical activations cannot be reconstructed unless tensors were saved or a checkpoint can recompute them.
 * Checkpoint availability means post-hoc probing is possible, not that the architecture hypothesis is supported.
+* Current quick probes are activation/intervention plumbing, not the full mechanism-probe framework.
 
 ## Current next work
 
-The next work should be mechanism-first, not architecture-generation-first.
+The E001-E004 backfill / quick-probe artifact phase is complete.
 
-Recommended order:
+Next implementation should be the Tier-1 mechanism-probe framework:
 
-1. Treat `reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/` as the canonical E004 operator-valued quick probe.
-2. Keep `reports/mechanisms/probes/E004_operator_valued_rung500/` as historical/partial evidence unless it causes report ambiguity.
-3. Run matched full mechanism probes for:
+- pre-registered hypothesis docs
+- minimum-size task contrast suites
+- trained linear-probe AUC
+- bootstrap confidence intervals
+- multiple-comparison correction
+- matched-control normalization
+- causal patching / restoration metrics
+- claim gates
+- summary report synthesis
 
-   * `differential_qkv_anti_value_30m_seed1_rung500`
-   * `scope_gated_qkv_30m_seed1_rung500`
-   * `operator_valued_attention_30m_seed2_rung500`
-4. Run diagnostic rescue for:
+Initial executable Tier-1 targets:
 
-   * `dynamic_value_query_conditioned_attention_30m_seed2_rung500`
-5. Run profiling/redesign analysis for:
+- E003 differential_qkv_anti_value_30m_seed1_rung500
+- E004 operator_valued_attention_30m_seed2_rung500
 
-   * `q3k3v3_role_routed_attention_30m_seed2_rung020`
-6. Run route-specialization follow-up for:
-
-   * `multi_qkv_position_rotation_3track_global_30m_seed1`
-   * `multi_qkv_static_3track_global_30m_seed1`
-7. Run CP diagnostic follow-up for:
-
-   * `cp_bilinear_r8_30m_seed1`
-   * `cp_trilinear_r8_30m_seed1`
-8. Defer broad scientific claims until component-level intervention locality, feature purity, matched controls, and cross-seed or cross-run stability are measured.
+Other E001-E004 follow-ups remain useful, but they should not replace the Tier-1 probe-framework implementation.
 
 ## First-day checklist
 

@@ -4,7 +4,7 @@ This document is the current dynamic status page for Attention Lab experiments. 
 
 Last updated from pasted local run artifacts: 2026-07-01 UTC.
 
-Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under `runs/screen`; mechanism backfill inventories have been regenerated; post-hoc mechanism probes now exist for E001, E002, E003 rung500, and E004 operator-valued rung500; route-index probe semantics were fixed for E002 position rotation; QC passed with `ruff` and `pytest`; latest commit recorded by the user is `ee7a9a32f11a81de2651309323c0c24a34ff196c`.
+Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; route-index probe semantics were fixed for E002 position rotation; QC passed with ruff and pytest; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
 
 ## Current Bottom Line
 
@@ -12,12 +12,12 @@ The project has moved from architecture/training setup into checkpoint-backed me
 
 The important current status is:
 
-| Experiment                         | Current status                                                                                                                          | Checkpoint evidence                                                                                                     | Mechanism probe status                                                                                                                                           | Interpretation boundary                                                                                                                   |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| E001 CP trilinear attention        | Completed local full runs for standard, CP-bilinear, and CP-trilinear; lambda-zero and standard-refactor remain incomplete/unavailable. | `runs/experiments/E001_cp_trilinear_attention/.../checkpoints/ckpt_last.pt` exists for three runs.                      | Quick probes exist for CP-bilinear and CP-trilinear.                                                                                                             | Local single-seed training result only; not a broad architecture claim.                                                                   |
-| E002 Multi-QKV shift/register      | Completed local full runs for standard refactor, static global, train-rotation global, and position-rotation global.                    | `runs/experiments/E002_multitrack_qkv_shift_register/.../checkpoints/ckpt_last.pt` exists for canonical completed runs. | Quick probes exist for static, train rotation, position rotation, and position-rotation capture-only.                                                            | Route specialization workbench is now probeable; route-index semantics require discrete/continuous separation.                            |
-| E003 QKV architecture gauntlet     | Screen/rung artifacts exist for differential, scope-gated, and standard controls.                                                       | `runs/screen/.../checkpoints/ckpt_last.pt` exists for rung020/rung150/rung500 candidates and controls.                  | Inventory-path rung500 probes exist for differential and scope-gated.                                                                                            | Rung survival and post-hoc probes support mechanism follow-up, not final scientific claims.                                               |
-| E004 operator/binding QKV gauntlet | Screen/rung artifacts exist for operator-valued, dynamic-value, q3k3v3 rung020, and standard controls.                                  | `runs/screen/.../checkpoints/ckpt_last.pt` exists for available E004 rung artifacts.                                    | Inventory-path rung500 probe exists for operator-valued; an older partial E004 operator-valued probe also exists and is retained as historical/partial evidence. | Operator-valued is ready for deeper mechanism probing; dynamic-value needs diagnostic rescue; q3k3v3 remains profiling/redesign-oriented. |
+| Experiment | Current status | Checkpoint evidence | Mechanism probe status | Interpretation boundary |
+| --- | --- | --- | --- | --- |
+| E001 CP trilinear attention | Completed local full runs for standard, CP-bilinear, and CP-trilinear; lambda-zero and standard-refactor remain incomplete/unavailable. | Three local full-run checkpoints exist under runs/experiments/E001_cp_trilinear_attention. | Quick probes exist for standard, CP-bilinear, and CP-trilinear. | Local single-seed training result only; not a broad architecture claim. |
+| E002 Multi-QKV shift/register | Completed local full runs for standard refactor, static global, train-rotation global, and position-rotation global. | Canonical completed checkpoints exist under runs/experiments/E002_multitrack_qkv_shift_register. | Quick probes exist for standard refactor control, static, train rotation, position rotation, and position-rotation capture-only. | Route specialization workbench is probeable; route-index semantics require discrete/continuous separation. |
+| E003 QKV architecture gauntlet | Screen/rung artifacts exist for differential, scope-gated, and standard controls. | Rung checkpoints exist under runs/screen. | Rung500 probes exist for standard control, differential, and scope-gated. | Rung survival and post-hoc probes support mechanism follow-up, not final scientific claims. |
+| E004 operator/binding QKV gauntlet | Screen/rung artifacts exist for operator-valued, dynamic-value, q3k3v3 rung020, and standard controls. | Available rung checkpoints exist under runs/screen. | Rung500 probes exist for standard control, operator-valued, and dynamic-value diagnostic rescue; q3k3v3 has a rung020 quick probe; historical partial operator-valued probe remains retained. | Operator-valued is ready for deeper mechanism probing; dynamic-value remains diagnostic rescue; q3k3v3 remains profiling/redesign-oriented. |
 
 ## Current Checkpoint Inventory
 
@@ -109,21 +109,22 @@ Missing historical activations cannot be reconstructed without saved tensors.
 
 Current probe outputs exist for:
 
-```text
-reports/mechanisms/probes/E001_cp_bilinear_quick/
-reports/mechanisms/probes/E001_cp_trilinear_quick/
-
-reports/mechanisms/probes/E002_static_global_quick/
-reports/mechanisms/probes/E002_train_rotation_quick/
-reports/mechanisms/probes/E002_position_rotation_quick/
-reports/mechanisms/probes/E002_position_rotation_capture_quick/
-
-reports/mechanisms/probes/E003_differential_rung500_inventory_path/
-reports/mechanisms/probes/E003_scope_gated_rung500_inventory_path/
-
-reports/mechanisms/probes/E004_operator_valued_rung500/
-reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/
-```
+- reports/mechanisms/probes/E001_standard_quick/
+- reports/mechanisms/probes/E001_cp_bilinear_quick/
+- reports/mechanisms/probes/E001_cp_trilinear_quick/
+- reports/mechanisms/probes/E002_standard_refactor_control_quick/
+- reports/mechanisms/probes/E002_static_global_quick/
+- reports/mechanisms/probes/E002_train_rotation_quick/
+- reports/mechanisms/probes/E002_position_rotation_quick/
+- reports/mechanisms/probes/E002_position_rotation_capture_quick/
+- reports/mechanisms/probes/E003_standard_rung500_quick/
+- reports/mechanisms/probes/E003_differential_rung500_inventory_path/
+- reports/mechanisms/probes/E003_scope_gated_rung500_inventory_path/
+- reports/mechanisms/probes/E004_standard_rung500_quick/
+- reports/mechanisms/probes/E004_operator_valued_rung500/
+- reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/
+- reports/mechanisms/probes/E004_dynamic_value_rung500_diagnostic_rescue/
+- reports/mechanisms/probes/E004_q3k3v3_rung020_quick/
 
 The canonical E004 operator-valued rung500 probe is:
 
@@ -237,14 +238,7 @@ multi_qkv_train_rotation_3track_global_30m_seed1
 multi_qkv_position_rotation_3track_global_30m_seed1
 ```
 
-Mechanism probe outputs exist for:
-
-```text
-E002_static_global_quick
-E002_train_rotation_quick
-E002_position_rotation_quick
-E002_position_rotation_capture_quick
-```
+Mechanism probe outputs exist for standard refactor control, static, train rotation, position rotation, and position-rotation capture-only.
 
 ### Route-Index Probe Semantics
 
@@ -314,12 +308,7 @@ standard_refactor_control_30m_seed1_rung150
 standard_refactor_control_30m_seed1_rung500
 ```
 
-Post-hoc mechanism probes now exist for:
-
-```text
-reports/mechanisms/probes/E003_differential_rung500_inventory_path/
-reports/mechanisms/probes/E003_scope_gated_rung500_inventory_path/
-```
+Post-hoc mechanism probes now exist for standard control, differential, and scope-gated rung500.
 
 Current best E003 candidates:
 
@@ -437,16 +426,16 @@ uv run pytest tests/test_attention_multi_qkv_global.py
 33 passed
 ```
 
-Latest commit recorded by the user:
+Latest committed status anchor:
 
 ```text
-ee7a9a32f11a81de2651309323c0c24a34ff196c
+8aa6add8b77a2c376c2194801a46d7e572dbd0ce
 ```
 
 Commit message:
 
 ```text
-Update experiment gauntlet results and backfill mechanism inventories
+Update mechanism backfill inventory commit hashes
 ```
 
 ## Evidence Boundary
@@ -493,28 +482,28 @@ Attention Lab is using deliberately nonstandard attention architectures as inter
 
 ## What To Do Next
 
-1. Treat `reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/` as the canonical E004 operator-valued quick probe.
-2. Keep `reports/mechanisms/probes/E004_operator_valued_rung500/` as historical/partial evidence unless it creates report ambiguity.
-3. Run matched full mechanism probes for:
+The E001-E004 backfill / quick-probe artifact phase is complete. Do not rerun broad quick-probe backfill just to refresh status docs.
 
-   * `differential_qkv_anti_value_30m_seed1_rung500`
-   * `scope_gated_qkv_30m_seed1_rung500`
-   * `operator_valued_attention_30m_seed2_rung500`
-4. Run diagnostic rescue for:
+Next implementation should build the Tier-1 mechanism-probe framework:
 
-   * `dynamic_value_query_conditioned_attention_30m_seed2_rung500`
-5. Run profiling/redesign analysis for:
+- pre-registered hypothesis docs
+- minimum-size task contrast suites
+- trained linear-probe AUC
+- bootstrap confidence intervals
+- multiple-comparison correction
+- matched-control normalization
+- causal patching / restoration metrics
+- claim gates
+- summary report synthesis
 
-   * `q3k3v3_role_routed_attention_30m_seed2_rung020`
-6. Run route-specialization follow-up for:
+Initial executable Tier-1 targets:
 
-   * `multi_qkv_position_rotation_3track_global_30m_seed1`
-   * `multi_qkv_static_3track_global_30m_seed1`
-7. Run CP diagnostic follow-up for:
+- E003 differential_qkv_anti_value_30m_seed1_rung500
+- E004 operator_valued_attention_30m_seed2_rung500
 
-   * `cp_bilinear_r8_30m_seed1`
-   * `cp_trilinear_r8_30m_seed1`
-8. Defer any broad scientific claims until component-level intervention locality, feature purity, matched controls, and cross-seed or cross-run stability are measured.
+Follow-up work remains useful for scope_gated_qkv_30m_seed1_rung500, E001 CP diagnostics, E002 route specialization, dynamic-value rescue, and q3k3v3 profiling, but those should not displace the Tier-1 probe-framework implementation.
+
+Defer broad scientific claims until component-level intervention locality, feature purity, trained-probe evidence, statistical controls, matched controls, and cross-seed or cross-run stability are measured.
 
 ## Suggested Status Verification Commands
 
@@ -530,7 +519,7 @@ jq -r '
   | @tsv
 ' reports/mechanisms/backfill/*/inventory.json | sort
 
-python - <<'PY'
+uv run python - <<'PY'
 import json
 from pathlib import Path
 

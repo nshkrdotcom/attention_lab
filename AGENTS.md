@@ -323,7 +323,7 @@ Backfill must only mark a checkpoint as available if the checkpoint exists in th
 Use this consistency check after regenerating inventories:
 
 ```bash
-python - <<'PY'
+uv run python - <<'PY'
 import json
 from pathlib import Path
 
@@ -930,13 +930,13 @@ Before presenting work as done:
 
 ## Current status anchor
 
-The latest known checkpoint/probe/report update recorded by the user ended at commit:
+The latest known committed status anchor is:
 
 ```text
-ee7a9a32f11a81de2651309323c0c24a34ff196c
+8aa6add8b77a2c376c2194801a46d7e572dbd0ce
 ```
 
-That commit added updated mechanism probe artifacts and regenerated mechanism inventories. Treat later local state as unknown until inspected.
+That commit is `Update mechanism backfill inventory commit hashes`. Treat later local state as unknown until inspected.
 
 Always re-check local state before claiming current status:
 
