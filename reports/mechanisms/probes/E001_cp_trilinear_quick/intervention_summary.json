@@ -3,17 +3,19 @@
     "attn_q",
     "attn_k",
     "attn_v",
+    "attn_out",
     "cp_score",
-    "cp_lambda",
-    "cp_output"
+    "cp_output",
+    "cp_lambda"
   ],
   "intervention_sites": [
     "attn_q",
     "attn_k",
     "attn_v",
+    "attn_out",
     "cp_score",
-    "cp_lambda",
-    "cp_output"
+    "cp_output",
+    "cp_lambda"
   ],
   "interventions": {
     "scale": {
@@ -41,6 +43,10 @@
         {
           "kind": "scale",
           "site": "cp_output[0]"
+        },
+        {
+          "kind": "scale",
+          "site": "attn_out[0]"
         }
       ],
       "logit_delta_norm": 2664.435546875,
@@ -71,6 +77,10 @@
         {
           "kind": "zero",
           "site": "cp_output[0]"
+        },
+        {
+          "kind": "zero",
+          "site": "attn_out[0]"
         }
       ],
       "logit_delta_norm": 2664.435546875,

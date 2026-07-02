@@ -57,13 +57,7 @@
         }
       ],
       "logit_delta_norm": 2436.036865234375,
-      "missing_or_failed": [
-        {
-          "kind": "scale",
-          "reason": "selected_track is a discrete route-index hook site. It is captured for diagnostics, but continuous activation interventions are only applied to continuous sites.",
-          "site": "selected_track"
-        }
-      ]
+      "missing_or_failed": []
     },
     "zero": {
       "applied": [
@@ -109,27 +103,10 @@
         }
       ],
       "logit_delta_norm": 2436.036865234375,
-      "missing_or_failed": [
-        {
-          "kind": "zero",
-          "reason": "selected_track is a discrete route-index hook site. It is captured for diagnostics, but continuous activation interventions are only applied to continuous sites.",
-          "site": "selected_track"
-        }
-      ]
+      "missing_or_failed": []
     }
   },
-  "invalid_interventions": [
-    {
-      "kind": "zero",
-      "reason": "selected_track is a discrete route-index hook site. It is captured for diagnostics, but continuous activation interventions are only applied to continuous sites.",
-      "site": "selected_track"
-    },
-    {
-      "kind": "scale",
-      "reason": "selected_track is a discrete route-index hook site. It is captured for diagnostics, but continuous activation interventions are only applied to continuous sites.",
-      "site": "selected_track"
-    }
-  ],
+  "invalid_interventions": [],
   "schema_version": 1,
   "tokenizer": {
     "block_size": 1024,

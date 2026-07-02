@@ -1,89 +1,79 @@
 {
   "capture_sites": [
-    "attn_q",
-    "attn_k",
-    "attn_v",
-    "attn_out",
-    "cp_score",
-    "cp_output",
-    "cp_lambda"
+    "content_out",
+    "operator_out",
+    "binding_out",
+    "content_operator_product",
+    "content_binding_product",
+    "operator_binding_product"
   ],
   "intervention_sites": [
-    "attn_q",
-    "attn_k",
-    "attn_v",
-    "attn_out",
-    "cp_score",
-    "cp_output",
-    "cp_lambda"
+    "content_out",
+    "operator_out",
+    "binding_out",
+    "content_operator_product",
+    "content_binding_product",
+    "operator_binding_product"
   ],
   "interventions": {
     "scale": {
       "applied": [
         {
           "kind": "scale",
-          "site": "attn_q[0]"
+          "site": "content_out[0]"
         },
         {
           "kind": "scale",
-          "site": "attn_k[0]"
+          "site": "operator_out[0]"
         },
         {
           "kind": "scale",
-          "site": "attn_v[0]"
+          "site": "binding_out[0]"
         },
         {
           "kind": "scale",
-          "site": "cp_score[0]"
+          "site": "content_operator_product[0]"
         },
         {
           "kind": "scale",
-          "site": "cp_lambda[0]"
+          "site": "content_binding_product[0]"
         },
         {
           "kind": "scale",
-          "site": "cp_output[0]"
-        },
-        {
-          "kind": "scale",
-          "site": "attn_out[0]"
+          "site": "operator_binding_product[0]"
         }
       ],
-      "logit_delta_norm": 1970.656005859375,
+      "logit_delta_norm": 97.26255798339844,
       "missing_or_failed": []
     },
     "zero": {
       "applied": [
         {
           "kind": "zero",
-          "site": "attn_q[0]"
+          "site": "content_out[0]"
         },
         {
           "kind": "zero",
-          "site": "attn_k[0]"
+          "site": "operator_out[0]"
         },
         {
           "kind": "zero",
-          "site": "attn_v[0]"
+          "site": "binding_out[0]"
         },
         {
           "kind": "zero",
-          "site": "cp_score[0]"
+          "site": "content_operator_product[0]"
         },
         {
           "kind": "zero",
-          "site": "cp_lambda[0]"
+          "site": "content_binding_product[0]"
         },
         {
           "kind": "zero",
-          "site": "cp_output[0]"
-        },
-        {
-          "kind": "zero",
-          "site": "attn_out[0]"
+          "site": "operator_binding_product[0]"
         }
       ],
-      "logit_delta_norm": 1970.656005859375,
+      "logit_delta_norm": 97.26255798339844,
       "missing_or_failed": []
     }
   },

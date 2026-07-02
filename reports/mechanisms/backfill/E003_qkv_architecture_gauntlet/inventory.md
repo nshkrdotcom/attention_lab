@@ -1,6 +1,6 @@
 # Mechanism Backfill Inventory: E003_qkv_architecture_gauntlet
 
-- generated_from_commit: `0437e163c222057da1606f01efe83bf48ccdd470`
+- generated_from_commit: `0b81cf2804733cb95688a45ff31f2556e38a3ce7`
 - repo_root_relative: `True`
 
 | run | attention | checkpoint | diagnostics | evidence | posthoc |

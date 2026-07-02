@@ -5,9 +5,9 @@
 - attention_type: `cp_bilinear`
 - tokenizer: `gpt2`
 - vocab_size: `50304`
-- captured_sites: 36
+- captured_sites: 42
 - missing_sites: 0
 - declared_but_unemitted_sites: 0
-- intervention_sites: attn_q, attn_k, attn_v, cp_score, cp_lambda, cp_output
+- intervention_sites: attn_q, attn_k, attn_v, attn_out, cp_score, cp_output, cp_lambda
 - invalid_interventions: 0
 - interventions: zero, scale

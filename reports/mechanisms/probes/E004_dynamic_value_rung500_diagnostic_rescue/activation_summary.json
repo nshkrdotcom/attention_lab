@@ -1,0 +1,493 @@
+{
+  "attention_type": "dynamic_value_query_conditioned_attention",
+  "batch_metadata": {
+    "prompts": [
+      "The history of mathematics",
+      "The dog is not friendly.",
+      "The dog is friendly.",
+      "The dog is not only friendly but loyal.",
+      "The patient is not stable.",
+      "The doctor did not say the patient was stable."
+    ],
+    "tokenizer": {
+      "block_size": 1024,
+      "pad_token_id": 0,
+      "tokenizer": "gpt2",
+      "vocab_size": 50304
+    }
+  },
+  "checkpoint_path": "runs/screen/dynamic_value_query_conditioned_attention_30m_seed2_rung500_99b5756e77ed/checkpoints/ckpt_last.pt",
+  "config_hash": "16435774712cad498130c981ed0e00c4ef989926b7e9f5e8ae1112351b535eb3",
+  "model_name": "GPT",
+  "records": {
+    "dynamic_delta[0]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 0,
+      "max": 1.1882058382034302,
+      "mean": 0.0053253378719091415,
+      "metadata": {},
+      "min": -1.1348694562911987,
+      "norm": 33.26892852783203,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[0]",
+      "std": 0.21911361813545227,
+      "tensor_saved": false
+    },
+    "dynamic_delta[1]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 1,
+      "max": 2.5650696754455566,
+      "mean": -0.0009564041974954307,
+      "metadata": {},
+      "min": -2.2343499660491943,
+      "norm": 62.2438850402832,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[1]",
+      "std": 0.41006654500961304,
+      "tensor_saved": false
+    },
+    "dynamic_delta[2]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 2,
+      "max": 2.097940683364868,
+      "mean": 0.013925725594162941,
+      "metadata": {},
+      "min": -1.6860431432724,
+      "norm": 63.40576934814453,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[2]",
+      "std": 0.41749003529548645,
+      "tensor_saved": false
+    },
+    "dynamic_delta[3]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 3,
+      "max": 1.2673771381378174,
+      "mean": 0.022987842559814453,
+      "metadata": {},
+      "min": -1.255220890045166,
+      "norm": 43.918643951416016,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[3]",
+      "std": 0.28842490911483765,
+      "tensor_saved": false
+    },
+    "dynamic_delta[4]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 4,
+      "max": 1.4294205904006958,
+      "mean": -0.014116340316832066,
+      "metadata": {},
+      "min": -1.2307865619659424,
+      "norm": 42.48077392578125,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[4]",
+      "std": 0.27951040863990784,
+      "tensor_saved": false
+    },
+    "dynamic_delta[5]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 5,
+      "max": 1.3705841302871704,
+      "mean": 0.001345512573607266,
+      "metadata": {},
+      "min": -1.1194696426391602,
+      "norm": 40.965213775634766,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_delta[5]",
+      "std": 0.26987865567207336,
+      "tensor_saved": false
+    },
+    "dynamic_gate[0]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 0,
+      "max": 0.9687928557395935,
+      "mean": 0.3512588143348694,
+      "metadata": {
+        "mean": 0.3512588441371918
+      },
+      "min": 0.017255105078220367,
+      "norm": 59.77773666381836,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[0]",
+      "std": 0.17807790637016296,
+      "tensor_saved": false
+    },
+    "dynamic_gate[1]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 1,
+      "max": 0.901767373085022,
+      "mean": 0.36313027143478394,
+      "metadata": {
+        "mean": 0.36313027143478394
+      },
+      "min": 0.02959257923066616,
+      "norm": 60.183719635009766,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[1]",
+      "std": 0.15920007228851318,
+      "tensor_saved": false
+    },
+    "dynamic_gate[2]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 2,
+      "max": 0.9380946159362793,
+      "mean": 0.36188048124313354,
+      "metadata": {
+        "mean": 0.36188051104545593
+      },
+      "min": 0.021186798810958862,
+      "norm": 62.25638198852539,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[2]",
+      "std": 0.19304275512695312,
+      "tensor_saved": false
+    },
+    "dynamic_gate[3]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 3,
+      "max": 0.9399285912513733,
+      "mean": 0.45402705669403076,
+      "metadata": {
+        "mean": 0.4540270268917084
+      },
+      "min": 0.035573456436395645,
+      "norm": 74.28619384765625,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[3]",
+      "std": 0.18268819153308868,
+      "tensor_saved": false
+    },
+    "dynamic_gate[4]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 4,
+      "max": 0.9397220015525818,
+      "mean": 0.3745233714580536,
+      "metadata": {
+        "mean": 0.3745233416557312
+      },
+      "min": 0.013645881786942482,
+      "norm": 62.99368667602539,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[4]",
+      "std": 0.17878274619579315,
+      "tensor_saved": false
+    },
+    "dynamic_gate[5]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 5,
+      "max": 0.9406826496124268,
+      "mean": 0.4139645993709564,
+      "metadata": {
+        "mean": 0.4139645993709564
+      },
+      "min": 0.013405916281044483,
+      "norm": 68.27117919921875,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_gate[5]",
+      "std": 0.1758739948272705,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[0]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 0,
+      "max": 0.8184541463851929,
+      "mean": -0.0002740553754847497,
+      "metadata": {},
+      "min": -0.7203959822654724,
+      "norm": 17.436309814453125,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[0]",
+      "std": 0.11487144976854324,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[1]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 1,
+      "max": 1.6536009311676025,
+      "mean": 0.007936915382742882,
+      "metadata": {},
+      "min": -1.1869996786117554,
+      "norm": 34.38864517211914,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[1]",
+      "std": 0.22641603648662567,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[2]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 2,
+      "max": 1.5384817123413086,
+      "mean": 0.009078070521354675,
+      "metadata": {},
+      "min": -1.220525860786438,
+      "norm": 38.76063537597656,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[2]",
+      "std": 0.2551967203617096,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[3]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 3,
+      "max": 1.403861165046692,
+      "mean": -0.014859049580991268,
+      "metadata": {},
+      "min": -1.452113389968872,
+      "norm": 38.244300842285156,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[3]",
+      "std": 0.2515179216861725,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[4]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 4,
+      "max": 1.1932629346847534,
+      "mean": 0.01148226112127304,
+      "metadata": {},
+      "min": -0.8184336423873901,
+      "norm": 27.218767166137695,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[4]",
+      "std": 0.17895136773586273,
+      "tensor_saved": false
+    },
+    "dynamic_value_output[5]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 5,
+      "max": 1.1772150993347168,
+      "mean": 0.0035799522884190083,
+      "metadata": {},
+      "min": -1.873740792274475,
+      "norm": 34.92391586303711,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "dynamic_value_output[5]",
+      "std": 0.2300536036491394,
+      "tensor_saved": false
+    },
+    "static_value_content[0]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 0,
+      "max": 1.635401725769043,
+      "mean": -0.0055993953719735146,
+      "metadata": {},
+      "min": -1.4766128063201904,
+      "norm": 47.50212097167969,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[0]",
+      "std": 0.312897652387619,
+      "tensor_saved": false
+    },
+    "static_value_content[1]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 1,
+      "max": 2.977393388748169,
+      "mean": 0.008893320336937904,
+      "metadata": {},
+      "min": -2.8290293216705322,
+      "norm": 91.45529174804688,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[1]",
+      "std": 0.6024491190910339,
+      "tensor_saved": false
+    },
+    "static_value_content[2]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 2,
+      "max": 2.1935532093048096,
+      "mean": -0.004847655072808266,
+      "metadata": {},
+      "min": -2.66961407661438,
+      "norm": 95.33927154541016,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[2]",
+      "std": 0.6280839443206787,
+      "tensor_saved": false
+    },
+    "static_value_content[3]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 3,
+      "max": 1.61544930934906,
+      "mean": -0.037846889346838,
+      "metadata": {},
+      "min": -1.8681124448776245,
+      "norm": 76.81233215332031,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[3]",
+      "std": 0.5046284794807434,
+      "tensor_saved": false
+    },
+    "static_value_content[4]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 4,
+      "max": 1.7340703010559082,
+      "mean": 0.025598600506782532,
+      "metadata": {},
+      "min": -1.5169618129730225,
+      "norm": 65.47232055664062,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[4]",
+      "std": 0.4305765628814697,
+      "tensor_saved": false
+    },
+    "static_value_content[5]": {
+      "device": "cpu",
+      "dtype": "float32",
+      "layer": 5,
+      "max": 1.6701693534851074,
+      "mean": 0.002234439831227064,
+      "metadata": {},
+      "min": -2.1261582374572754,
+      "norm": 70.45162963867188,
+      "requires_grad": false,
+      "shape": [
+        6,
+        10,
+        384
+      ],
+      "site": "static_value_content[5]",
+      "std": 0.4641354978084564,
+      "tensor_saved": false
+    }
+  },
+  "schema_version": 1
+}

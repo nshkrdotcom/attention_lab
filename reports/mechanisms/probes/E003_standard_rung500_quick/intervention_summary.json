@@ -3,19 +3,13 @@
     "attn_q",
     "attn_k",
     "attn_v",
-    "attn_out",
-    "cp_score",
-    "cp_output",
-    "cp_lambda"
+    "attn_out"
   ],
   "intervention_sites": [
     "attn_q",
     "attn_k",
     "attn_v",
-    "attn_out",
-    "cp_score",
-    "cp_output",
-    "cp_lambda"
+    "attn_out"
   ],
   "interventions": {
     "scale": {
@@ -34,22 +28,10 @@
         },
         {
           "kind": "scale",
-          "site": "cp_score[0]"
-        },
-        {
-          "kind": "scale",
-          "site": "cp_lambda[0]"
-        },
-        {
-          "kind": "scale",
-          "site": "cp_output[0]"
-        },
-        {
-          "kind": "scale",
           "site": "attn_out[0]"
         }
       ],
-      "logit_delta_norm": 1970.656005859375,
+      "logit_delta_norm": 1258.9332275390625,
       "missing_or_failed": []
     },
     "zero": {
@@ -68,22 +50,10 @@
         },
         {
           "kind": "zero",
-          "site": "cp_score[0]"
-        },
-        {
-          "kind": "zero",
-          "site": "cp_lambda[0]"
-        },
-        {
-          "kind": "zero",
-          "site": "cp_output[0]"
-        },
-        {
-          "kind": "zero",
           "site": "attn_out[0]"
         }
       ],
-      "logit_delta_norm": 1970.656005859375,
+      "logit_delta_norm": 1258.9332275390625,
       "missing_or_failed": []
     }
   },

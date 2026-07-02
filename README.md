@@ -1,5 +1,3 @@
-I rewrote it as a cleaner top-level README: less stale-status detail, clearer “what this repo is,” stronger evidence boundaries, updated E001–E004/mechanism sections, and current probe/backfill workflow. The old README already framed the repo as a local attention-architecture harness rather than a chat/API eval stack, so I preserved that core positioning while removing outdated “implemented/not run” implications. 
-
 # Attention Lab
 
 Attention Lab is a local GPT pretraining harness for controlled attention-architecture experiments.
@@ -33,6 +31,12 @@ Attention Lab is not:
 * a general distributed pretraining platform;
 * a production-efficient transformer proposal;
 * a benchmark-chasing leaderboard project.
+
+## Screen-first experiment workflow
+
+Attention Lab is screen-first for architecture exploration.
+Full 3000-step runs are promotion artifacts, not default exploration.
+A screen report is not a scientific result.
 
 ## Current evidence boundary
 

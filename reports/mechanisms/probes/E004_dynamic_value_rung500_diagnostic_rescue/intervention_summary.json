@@ -1,60 +1,59 @@
 {
   "capture_sites": [
-    "selected_track",
-    "track_q",
-    "track_k",
-    "track_v",
-    "track_out"
+    "static_value_content",
+    "dynamic_gate",
+    "dynamic_delta",
+    "dynamic_value_output"
   ],
   "intervention_sites": [
-    "track_q",
-    "track_k",
-    "track_v",
-    "track_out"
+    "static_value_content",
+    "dynamic_gate",
+    "dynamic_delta",
+    "dynamic_value_output"
   ],
   "interventions": {
     "scale": {
       "applied": [
         {
           "kind": "scale",
-          "site": "track_q[0,0]"
+          "site": "static_value_content[0]"
         },
         {
           "kind": "scale",
-          "site": "track_k[0,0]"
+          "site": "dynamic_gate[0]"
         },
         {
           "kind": "scale",
-          "site": "track_v[0,0]"
+          "site": "dynamic_delta[0]"
         },
         {
           "kind": "scale",
-          "site": "track_out[0]"
+          "site": "dynamic_value_output[0]"
         }
       ],
-      "logit_delta_norm": 2291.410400390625,
+      "logit_delta_norm": 1116.2939453125,
       "missing_or_failed": []
     },
     "zero": {
       "applied": [
         {
           "kind": "zero",
-          "site": "track_q[0,0]"
+          "site": "static_value_content[0]"
         },
         {
           "kind": "zero",
-          "site": "track_k[0,0]"
+          "site": "dynamic_gate[0]"
         },
         {
           "kind": "zero",
-          "site": "track_v[0,0]"
+          "site": "dynamic_delta[0]"
         },
         {
           "kind": "zero",
-          "site": "track_out[0]"
+          "site": "dynamic_value_output[0]"
         }
       ],
-      "logit_delta_norm": 2291.410400390625,
+      "logit_delta_norm": 1116.2939453125,
       "missing_or_failed": []
     }
   },
