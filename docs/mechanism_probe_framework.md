@@ -69,7 +69,34 @@ generation_seed
 created_at
 ```
 
-`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It iterates template families in sorted order, uses a local seeded RNG for filler choice, and writes provenance. Committed confirmatory suites must be generated or validated from that template/filler discipline.
+`src/attention_lab/mechanisms/task_generation.py` provides deterministic template/filler generation. It uses a local seeded RNG for filler assignment, writes fixed provenance, and validates GPT-2 single-token restoration labels. Committed confirmatory suites live in:
+
+```text
+configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
+```
+
+Regenerate or validate them with:
+
+```bash
+uv run scripts/generate_tier1_mechanism_tasks.py \
+  --output configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --candidate e003_differential \
+  --pairs-per-family 50 \
+  --seed 1
+
+uv run scripts/generate_tier1_mechanism_tasks.py \
+  --output configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --candidate e004_operator_valued \
+  --pairs-per-family 50 \
+  --seed 2
+
+uv run scripts/generate_tier1_mechanism_tasks.py \
+  --output configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --candidate e003_differential \
+  --pairs-per-family 50 \
+  --validate-only
+```
 
 Confirmatory runs enforce at least 50 contrast pairs per task family. `--min-n` may not be set below 50 for confirmatory evidence. Exploratory runs may use smaller or hand-authored files, but their claim ladder is capped.
 
@@ -99,6 +126,15 @@ EXPECTED_DIRECTION
 ```
 
 Without `--hypothesis-doc`, the run must use `--exploratory` and cannot make confirmatory claims.
+
+The committed Tier-1 hypothesis docs are:
+
+```text
+docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
+docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
+```
+
+Malformed confirmatory inputs fail before model/checkpoint loading. This includes a missing or invalid hypothesis doc, a task suite below 50 pairs per family, missing deterministic provenance, missing decoys, and invalid restoration token metadata for full runs.
 
 ## Probe Metrics
 
@@ -158,7 +194,16 @@ The CI must exclude zero in the expected direction under the same FDR-BH family.
 
 `--probe-only` skips interventions, causal patching, restoration, and mediation metrics.
 
-Full runs compute patching only when task records include explicit `target_token_id` and `foil_token_id` metadata for logit-difference measurement. Missing token metadata or invalid denominators makes restoration invalid and blocks gates depending on it.
+Full runs compute patching only when task records include explicit GPT-2 single-token restoration metadata:
+
+```text
+metadata.target_token_text
+metadata.foil_token_text
+metadata.target_token_id
+metadata.foil_token_id
+```
+
+The committed suites use `" true"` and `" false"` as single GPT-2 next-token labels. Multi-token labels are rejected; the suite never silently uses the first subtoken. Missing token metadata or invalid denominators makes restoration invalid and blocks gates depending on it.
 
 Restoration formula:
 
@@ -209,6 +254,8 @@ This vocabulary is scoped to mechanism probes and is distinct from the repositor
 
 No claim gate can pass without minimum N, grouped split discipline, bootstrap CI/statistical correction, matched control evidence, and non-decoy specificity evidence. Confirmatory evidence also requires the 50-pair task-suite floor and a valid hypothesis doc.
 
+Full confirmatory mode is the only path that can reach `candidate_mechanism_evidence`. Non-exploratory `--probe-only` is rejected; cheap scans must use `--exploratory --probe-only`.
+
 ## Commands
 
 Exploratory E003 cheap scan:
@@ -218,12 +265,12 @@ uv run scripts/run_mechanism_probe_suite.py \
   --experiment-id E003_qkv_architecture_gauntlet \
   --candidate differential \
   --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
   --control-mode matched \
-  --min-n 100 \
+  --min-n 50 \
   --bootstrap-samples 1000 \
   --fdr-alpha 0.05 \
   --seed 1
@@ -236,11 +283,11 @@ uv run scripts/run_mechanism_probe_suite.py \
   --experiment-id E003_qkv_architecture_gauntlet \
   --candidate differential \
   --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
-  --hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-file>.yaml \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path \
   --control-mode matched \
-  --min-n 100 \
+  --min-n 50 \
   --bootstrap-samples 1000 \
   --fdr-alpha 0.05 \
   --seed 1
@@ -253,12 +300,12 @@ uv run scripts/run_mechanism_probe_suite.py \
   --experiment-id E004_operator_binding_qkv_gauntlet \
   --candidate operator_valued \
   --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
   --control-mode matched \
-  --min-n 100 \
+  --min-n 50 \
   --bootstrap-samples 1000 \
   --fdr-alpha 0.05 \
   --seed 2
@@ -271,15 +318,25 @@ uv run scripts/run_mechanism_probe_suite.py \
   --experiment-id E004_operator_binding_qkv_gauntlet \
   --candidate operator_valued \
   --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
-  --hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-file>.yaml \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path \
   --control-mode matched \
-  --min-n 100 \
+  --min-n 50 \
   --bootstrap-samples 1000 \
   --fdr-alpha 0.05 \
   --seed 2
 ```
+
+Each run writes:
+
+```text
+metrics.json
+claim_gates.json
+summary.md
+```
+
+`metrics.json` contains task-suite validation, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
 
 Regenerate a summary from existing suite artifacts:
 

@@ -82,6 +82,8 @@ def run_probe_suite(
 
     if not exploratory and hypothesis_doc is None:
         raise ValueError("confirmatory mechanism probe suite requires --hypothesis-doc; use --exploratory otherwise")
+    if not exploratory and probe_only:
+        raise ValueError("confirmatory mechanism probe suite cannot use --probe-only; use --exploratory --probe-only")
     if exploratory and probe_only is False:
         # Full exploratory runs are allowed, but still capped later.
         pass
@@ -102,7 +104,10 @@ def run_probe_suite(
         exploratory=exploratory,
         min_n=min_n,
         require_decoys=not exploratory,
+        require_restoration_tokens=not exploratory and not probe_only,
     )
+    if not exploratory and not task_validation.valid:
+        raise ValueError("confirmatory task suite invalid: " + "; ".join(task_validation.errors))
     control = resolve_control(
         preset,
         control_mode=control_mode,
@@ -141,6 +146,7 @@ def run_probe_suite(
             "deterministic_provenance": task_validation.deterministic_provenance,
             "pair_counts_by_family": task_validation.pair_counts_by_family,
             "confirmatory_floor_met": task_validation.confirmatory_floor_met,
+            "restoration_token_metadata_valid": task_validation.restoration_token_metadata_valid,
             "validation_errors": list(task_validation.errors),
             "validation_warnings": list(task_validation.warnings),
             "min_n": min_n,
@@ -611,6 +617,24 @@ def _compute_patching_metrics(
             ).to_dict(),
             "_bootstrap_results": {},
         }
+    if not site.continuous:
+        return {
+            "patching": {"valid": False, "reason": "site metadata marks this site as non-continuous"},
+            "mediation_fraction": mediation_fraction(
+                component_patch_restoration=None,
+                full_layer_patch_restoration=None,
+            ).to_dict(),
+            "_bootstrap_results": {},
+        }
+    if site.full_layer_site is None:
+        return {
+            "patching": {"valid": False, "reason": "site preset has no valid full-layer comparator"},
+            "mediation_fraction": mediation_fraction(
+                component_patch_restoration=None,
+                full_layer_patch_restoration=None,
+            ).to_dict(),
+            "_bootstrap_results": {},
+        }
 
     token_pairs = []
     for record in records:
@@ -621,6 +645,18 @@ def _compute_patching_metrics(
                 "patching": {
                     "valid": False,
                     "reason": "task records lack explicit target_token_id/foil_token_id patching metadata",
+                },
+                "mediation_fraction": mediation_fraction(
+                    component_patch_restoration=None,
+                    full_layer_patch_restoration=None,
+                ).to_dict(),
+                "_bootstrap_results": {},
+            }
+        if isinstance(target, bool) or not isinstance(target, int) or isinstance(foil, bool) or not isinstance(foil, int):
+            return {
+                "patching": {
+                    "valid": False,
+                    "reason": "target_token_id and foil_token_id must be integer GPT-2 token ids",
                 },
                 "mediation_fraction": mediation_fraction(
                     component_patch_restoration=None,
@@ -648,7 +684,7 @@ def _compute_patching_metrics(
             clean_capture = capture_activations(
                 model,
                 clean_ids,
-                sites=[site.site, "attn_out"],
+                sites=sorted({site.site, site.full_layer_site}),
                 detach=True,
                 cpu=True,
                 checkpoint_path=checkpoint_path,
@@ -673,8 +709,8 @@ def _compute_patching_metrics(
             full_layer = run_with_interventions(
                 model,
                 corrupt_ids,
-                [make_cache_patch(clean_capture.cache, site="attn_out", layer=site.layer)],
-                capture_sites=["attn_out"],
+                [make_cache_patch(clean_capture.cache, site=site.full_layer_site, layer=site.layer)],
+                capture_sites=[site.full_layer_site],
                 schedule_mode="eval",
             )
             full_result = restoration_score(
@@ -727,6 +763,8 @@ def _compute_patching_metrics(
             "valid": True,
             "component_patch_restoration": component_mean,
             "full_layer_patch_restoration": full_mean,
+            "component_site": site.site,
+            "full_layer_comparator": site.full_layer_site,
             "valid_pairs": len(component_scores),
             "formula": "(patched_logitdiff - corrupted_logitdiff) / (clean_logitdiff - corrupted_logitdiff)",
         },
@@ -834,6 +872,8 @@ def _inputs_with_fdr(cell_id: str, inputs: CellGateInputs, fdr_results: dict[str
             "random_site_null_passed": inputs.random_site_null_passed and rejected("auc_minus_random_site_auc"),
             "matched_control_passed": inputs.matched_control_passed and rejected("auc_minus_matched_control_auc"),
             "specificity_fdr_passed": rejected("target_vs_decoy_specificity"),
+            "patching_fdr_passed": inputs.patching_valid and rejected("component_patch_restoration"),
+            "mediation_fdr_passed": inputs.mediation_valid and rejected("mediation_fraction"),
         }
     )
 
@@ -880,6 +920,8 @@ def _gate_inputs(
         specificity_ci_passed=specificity_ci_pass,
         patching_valid=patching_valid,
         mediation_valid=mediation_valid,
+        patching_fdr_passed=False,
+        mediation_fdr_passed=False,
         force_noncanonical_control=control.force_noncanonical,
         extra_blockers=extra_blockers,
     )

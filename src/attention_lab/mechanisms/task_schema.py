@@ -18,6 +18,8 @@ PROVENANCE_FIELDS = (
     "created_at",
 )
 CONFIRMATORY_MIN_PAIRS_PER_FAMILY = 50
+RESTORATION_TOKEN_ID_FIELDS = ("target_token_id", "foil_token_id")
+RESTORATION_TOKEN_TEXT_FIELDS = ("target_token_text", "foil_token_text")
 
 
 @dataclass(frozen=True)
@@ -73,6 +75,7 @@ class TaskValidationResult:
     pair_counts_by_family: dict[str, int]
     deterministic_provenance: bool
     confirmatory_floor_met: bool
+    restoration_token_metadata_valid: bool = True
 
 
 def load_task_suite(path: str | Path) -> TaskSuite:
@@ -121,6 +124,9 @@ def validate_task_suite(
     exploratory: bool,
     min_n: int,
     require_decoys: bool = True,
+    require_restoration_tokens: bool = False,
+    tokenizer_name: str = "gpt2",
+    vocab_size: int = 50304,
 ) -> TaskValidationResult:
     errors: list[str] = []
     warnings: list[str] = []
@@ -159,13 +165,23 @@ def validate_task_suite(
     if exploratory and not deterministic:
         warnings.append("exploratory task suite lacks deterministic generator provenance; claims are capped")
 
+    token_errors = validate_restoration_token_metadata(
+        suite,
+        require=require_restoration_tokens,
+        tokenizer_name=tokenizer_name,
+        vocab_size=vocab_size,
+    )
+    errors.extend(token_errors)
+
     return TaskValidationResult(
         valid=not errors,
         errors=tuple(errors),
         warnings=tuple(warnings),
         pair_counts_by_family=pair_counts,
         deterministic_provenance=deterministic,
-        confirmatory_floor_met=all(count >= CONFIRMATORY_MIN_PAIRS_PER_FAMILY for count in pair_counts.values()),
+        confirmatory_floor_met=bool(pair_counts)
+        and all(count >= CONFIRMATORY_MIN_PAIRS_PER_FAMILY for count in pair_counts.values()),
+        restoration_token_metadata_valid=not token_errors,
     )
 
 
@@ -221,3 +237,79 @@ def _string_field(row: dict[str, Any], field_name: str, index: int) -> str:
     if not text:
         raise ValueError(f"task record {index} field {field_name} may not be empty")
     return text
+
+
+def validate_restoration_token_metadata(
+    suite: TaskSuite,
+    *,
+    require: bool,
+    tokenizer_name: str = "gpt2",
+    vocab_size: int = 50304,
+) -> list[str]:
+    if tokenizer_name != "gpt2":
+        return [f"restoration token metadata validation only supports GPT-2 tokenizer, got {tokenizer_name!r}"]
+    if not require and not any(_has_any_restoration_token_field(record.metadata) for record in suite.records):
+        return []
+
+    import tiktoken
+
+    enc = tiktoken.get_encoding("gpt2")
+    errors: list[str] = []
+    for record in suite.records:
+        metadata = record.metadata
+        missing = [
+            field
+            for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS)
+            if field not in metadata
+        ]
+        if missing:
+            if require:
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} lacks restoration token metadata: "
+                    f"{', '.join(missing)}"
+                )
+            continue
+
+        target_id = metadata.get("target_token_id")
+        foil_id = metadata.get("foil_token_id")
+        target_text = metadata.get("target_token_text")
+        foil_text = metadata.get("foil_token_text")
+        for field_name, value in (("target_token_id", target_id), ("foil_token_id", foil_id)):
+            if isinstance(value, bool) or not isinstance(value, int):
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} has non-integer {field_name}"
+                )
+            elif value < 0 or value >= vocab_size:
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} has out-of-range {field_name}={value}"
+                )
+        for text_field, token_text, id_field, token_id in (
+            ("target_token_text", target_text, "target_token_id", target_id),
+            ("foil_token_text", foil_text, "foil_token_id", foil_id),
+        ):
+            if not isinstance(token_text, str) or not token_text:
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} has invalid {text_field}"
+                )
+                continue
+            encoded = enc.encode(token_text)
+            if len(encoded) != 1:
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} has {text_field} "
+                    f"that is not a single GPT-2 token"
+                )
+                continue
+            if isinstance(token_id, int) and not isinstance(token_id, bool) and encoded[0] != token_id:
+                errors.append(
+                    f"pair {record.pair_id} in family {record.family_id} {text_field} encodes to "
+                    f"{encoded[0]}, not {id_field}={token_id}"
+                )
+        if target_id == foil_id and isinstance(target_id, int):
+            errors.append(
+                f"pair {record.pair_id} in family {record.family_id} uses identical target and foil token ids"
+            )
+    return errors
+
+
+def _has_any_restoration_token_field(metadata: dict[str, Any]) -> bool:
+    return any(field in metadata for field in (*RESTORATION_TOKEN_ID_FIELDS, *RESTORATION_TOKEN_TEXT_FIELDS))

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import torch
 
 from attention_lab.mechanisms.capture import capture_activations
 from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec, run_with_interventions
 from attention_lab.mechanisms.patching import make_cache_patch, mediation_fraction, restoration_score
+from attention_lab.mechanisms.presets import SitePreset
+from attention_lab.mechanisms.suite import _compute_patching_metrics
+from attention_lab.mechanisms.task_schema import TaskRecord
 from attention_lab.models.gpt import GPT, GPTConfig
 
 
@@ -14,6 +19,21 @@ def tiny_model() -> GPT:
         GPTConfig(
             block_size=8,
             vocab_size=64,
+            n_layer=1,
+            n_head=2,
+            n_embd=16,
+            dropout=0.0,
+            bias=False,
+            attention_type="standard",
+        )
+    )
+
+
+def tiny_gpt2_vocab_model() -> GPT:
+    return GPT(
+        GPTConfig(
+            block_size=16,
+            vocab_size=50304,
             n_layer=1,
             n_head=2,
             n_embd=16,
@@ -97,3 +117,87 @@ def test_restoration_and_mediation_denominator_edges_are_invalid():
     assert "denominator" in (restoration.reason or "")
     assert not mediation.valid
     assert "denominator" in (mediation.reason or "")
+
+
+def test_suite_patching_skips_discrete_route_site():
+    result = _compute_patching_metrics(
+        records=[],
+        site=SitePreset("selected_track", 0, "route", None, continuous=False),
+        model=tiny_model(),
+        attention_type="multi_qkv_static_3track_global",
+        tokenizer_name="gpt2",
+        block_size=8,
+        vocab_size=64,
+        checkpoint_path=Path("dummy.pt"),
+        device="cpu",
+        batch_size=1,
+        bootstrap_samples=5,
+        seed=0,
+    )
+
+    assert result["patching"]["valid"] is False
+    assert "discrete route/index" in result["patching"]["reason"]
+
+
+def test_suite_patching_rejects_non_integer_token_metadata():
+    record = TaskRecord(
+        x_pos="Sentence: The analyst did not approve the report. Answer:",
+        x_neg="Sentence: The analyst approved the report. Answer:",
+        x_para="Sentence: The analyst never approved the report. Answer:",
+        x_decoy="Sentence: The analyst carefully approved the report. Answer:",
+        pair_id="pair_0",
+        template_id="template_0",
+        family_id="negation",
+        metadata={"target_token_id": "2081", "foil_token_id": 3991},
+    )
+
+    result = _compute_patching_metrics(
+        records=[record],
+        site=SitePreset("attn_out", 0, "activation", "attn_out"),
+        model=tiny_gpt2_vocab_model(),
+        attention_type="standard",
+        tokenizer_name="gpt2",
+        block_size=16,
+        vocab_size=50304,
+        checkpoint_path=Path("dummy.pt"),
+        device="cpu",
+        batch_size=1,
+        bootstrap_samples=5,
+        seed=0,
+    )
+
+    assert result["patching"]["valid"] is False
+    assert "integer GPT-2 token ids" in result["patching"]["reason"]
+
+
+def test_suite_patching_valid_toy_restoration_emits_artifacts():
+    torch.manual_seed(3)
+    record = TaskRecord(
+        x_pos="Yes:",
+        x_neg="No:",
+        x_para="Never:",
+        x_decoy="Often:",
+        pair_id="pair_0",
+        template_id="template_0",
+        family_id="negation",
+        metadata={"target_token_id": 2081, "foil_token_id": 3991},
+    )
+
+    result = _compute_patching_metrics(
+        records=[record],
+        site=SitePreset("attn_out", 0, "activation", "attn_out"),
+        model=tiny_gpt2_vocab_model(),
+        attention_type="standard",
+        tokenizer_name="gpt2",
+        block_size=16,
+        vocab_size=50304,
+        checkpoint_path=Path("dummy.pt"),
+        device="cpu",
+        batch_size=1,
+        bootstrap_samples=5,
+        seed=0,
+    )
+
+    assert "component_patch_restoration" in result["patching"]
+    assert "full_layer_patch_restoration" in result["patching"]
+    assert "mediation_fraction" in result

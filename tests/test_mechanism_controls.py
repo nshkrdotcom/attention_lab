@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from attention_lab.mechanisms.controls import resolve_control, select_random_site_null
+from attention_lab.mechanisms.controls import is_seed_mismatched, resolve_control, select_random_site_null
 from attention_lab.mechanisms.presets import resolve_preset
 
 
@@ -17,6 +17,7 @@ def test_tier1_presets_resolve_seed_matched_controls():
     assert e004.matched_control is not None
     assert e004.matched_control.run_name == "standard_refactor_control_30m_seed2_rung500"
     assert "seed2" in str(e004.matched_control.checkpoint_path)
+    assert "seed1" not in str(e004.matched_control.checkpoint_path)
 
 
 def test_control_override_is_recorded_as_noncanonical(tmp_path):
@@ -37,6 +38,40 @@ def test_control_override_is_recorded_as_noncanonical(tmp_path):
     assert resolved.available
     assert not resolved.canonical
     assert "override" in (resolved.reason or "")
+
+
+def test_e004_seed1_override_is_seed_mismatched(tmp_path):
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    config = tmp_path / "control.yaml"
+    checkpoint = tmp_path / "standard_refactor_control_30m_seed1_rung500_fake" / "ckpt_last.pt"
+    config.write_text("x: 1\n", encoding="utf-8")
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.write_bytes(b"not a real checkpoint for resolution-only test")
+
+    resolved = resolve_control(
+        preset,
+        control_mode="matched",
+        control_config=config,
+        control_checkpoint=checkpoint,
+    )
+
+    assert resolved.override_used
+    assert resolved.available
+    assert is_seed_mismatched(preset, resolved)
+
+
+def test_control_mode_none_is_unavailable_for_candidate_evidence():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+    resolved = resolve_control(
+        preset,
+        control_mode="none",
+        control_config=None,
+        control_checkpoint=None,
+    )
+
+    assert not resolved.available
+    assert not resolved.canonical
+    assert "disabled" in (resolved.reason or "")
 
 
 def test_random_site_null_requires_matched_dimension_and_excludes_candidate():
@@ -81,6 +116,28 @@ def test_missing_random_site_null_reports_feasibility_limit_for_low_dim_probabil
     assert selected.candidate_feature_dim == 5
     assert "feasibility limit" in (selected.reason or "")
     assert np.isfinite(selected.candidate_feature_dim)
+
+
+def test_e004_full_width_operator_output_can_select_matched_random_site():
+    preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
+    operator_combined = next(site for site in preset.target_sites if site.site == "operator_combined_out")
+    shapes = {
+        "operator_combined_out[0]": (8, 384),
+        "operator_probs[0]": (8, 5),
+        "attn_out[0]": (8, 384),
+        "resid_mid[0]": (8, 384),
+    }
+    selected = select_random_site_null(
+        candidate=operator_combined,
+        candidate_key="operator_combined_out[0]",
+        feature_shapes=shapes,
+        pool=preset.random_site_pool,
+        seed=0,
+    )
+
+    assert selected.available
+    assert selected.selected_feature_dim == 384
+    assert selected.selected_site in {"attn_out[0]", "resid_mid[0]"}
 
 
 def test_tier2_tier3_presets_are_not_executable():

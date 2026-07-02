@@ -2,9 +2,9 @@
 
 This document is the current dynamic status page for Attention Lab experiments. It is intentionally both an experiment-status ledger and a technical interpretation note. Keep `README.md` and `AGENTS.md` short by pointing to this file instead of duplicating fast-changing run state.
 
-Last updated from pasted local run artifacts: 2026-07-01 UTC.
+Last updated from local Tier-1 mechanism-probe artifacts: 2026-07-01 UTC.
 
-Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; route-index probe semantics were fixed for E002 position rotation; QC passed with ruff and pytest; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
+Latest incremental update: E001 and E002 have completed local 3000-step checkpoints for the main completed variants; E003 and E004 have rung checkpoints under runs/screen; mechanism backfill inventories and the cross-experiment candidate report have been regenerated; post-hoc quick probes exist for E001, E002, E003 rung500 candidates plus controls, and E004 standard/operator/dynamic/q3 quick-probe targets; Tier-1 E003/E004 mechanism-probe hypothesis docs, deterministic task suites, and real suite artifacts now exist; the E003/E004 confirmatory Tier-1 runs completed but remained `insufficient_evidence`; route-index probe semantics were fixed for E002 position rotation; QC passed with ruff and pytest; latest committed status anchor is 8aa6add8b77a2c376c2194801a46d7e572dbd0ce.
 
 ## Current Bottom Line
 
@@ -16,8 +16,8 @@ The important current status is:
 | --- | --- | --- | --- | --- |
 | E001 CP trilinear attention | Completed local full runs for standard, CP-bilinear, and CP-trilinear; lambda-zero and standard-refactor remain incomplete/unavailable. | Three local full-run checkpoints exist under runs/experiments/E001_cp_trilinear_attention. | Quick probes exist for standard, CP-bilinear, and CP-trilinear. | Local single-seed training result only; not a broad architecture claim. |
 | E002 Multi-QKV shift/register | Completed local full runs for standard refactor, static global, train-rotation global, and position-rotation global. | Canonical completed checkpoints exist under runs/experiments/E002_multitrack_qkv_shift_register. | Quick probes exist for standard refactor control, static, train rotation, position rotation, and position-rotation capture-only. | Route specialization workbench is probeable; route-index semantics require discrete/continuous separation. |
-| E003 QKV architecture gauntlet | Screen/rung artifacts exist for differential, scope-gated, and standard controls. | Rung checkpoints exist under runs/screen. | Rung500 probes exist for standard control, differential, and scope-gated. | Rung survival and post-hoc probes support mechanism follow-up, not final scientific claims. |
-| E004 operator/binding QKV gauntlet | Screen/rung artifacts exist for operator-valued, dynamic-value, q3k3v3 rung020, and standard controls. | Available rung checkpoints exist under runs/screen. | Rung500 probes exist for standard control, operator-valued, and dynamic-value diagnostic rescue; q3k3v3 has a rung020 quick probe; historical partial operator-valued probe remains retained. | Operator-valued is ready for deeper mechanism probing; dynamic-value remains diagnostic rescue; q3k3v3 remains profiling/redesign-oriented. |
+| E003 QKV architecture gauntlet | Screen/rung artifacts exist for differential, scope-gated, and standard controls. | Rung checkpoints exist under runs/screen. | Rung500 quick probes exist; Tier-1 differential exploratory and confirmatory suite artifacts exist. Confirmatory status is `insufficient_evidence`. | Rung survival and post-hoc probes support mechanism follow-up, not final scientific claims. |
+| E004 operator/binding QKV gauntlet | Screen/rung artifacts exist for operator-valued, dynamic-value, q3k3v3 rung020, and standard controls. | Available rung checkpoints exist under runs/screen. | Rung500 quick probes exist; Tier-1 operator-valued exploratory and confirmatory suite artifacts exist. Confirmatory status is `insufficient_evidence`. Historical partial operator-valued probe remains retained. | Operator-valued is probeable, but current Tier-1 artifacts do not support `candidate_mechanism_evidence`; dynamic-value remains diagnostic rescue; q3k3v3 remains profiling/redesign-oriented. |
 
 ## Current Checkpoint Inventory
 
@@ -125,6 +125,10 @@ Current probe outputs exist for:
 - reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/
 - reports/mechanisms/probes/E004_dynamic_value_rung500_diagnostic_rescue/
 - reports/mechanisms/probes/E004_q3k3v3_rung020_quick/
+- reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path/
+- reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path/
+- reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path/
+- reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path/
 
 The canonical E004 operator-valued rung500 probe is:
 
@@ -310,6 +314,15 @@ standard_refactor_control_30m_seed1_rung500
 
 Post-hoc mechanism probes now exist for standard control, differential, and scope-gated rung500.
 
+Tier-1 differential suite artifacts now exist:
+
+```text
+reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path/
+reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path/
+```
+
+The confirmatory Tier-1 run used the canonical seed1 matched control and deterministic 50-pair negation task suite. It completed as `insufficient_evidence`: random-site comparisons, matched-control comparisons, and target-vs-decoy specificity did not clear the gates. This is not `candidate_mechanism_evidence`.
+
 Current best E003 candidates:
 
 ```text
@@ -322,7 +335,7 @@ Interpretation boundary:
 ```text
 E003 has checkpoint-backed rung evidence and post-hoc probe artifacts.
 This supports deeper mechanism investigation.
-It does not yet establish that differential or scope-gated streams form semantically clean mechanisms.
+It does not establish that differential or scope-gated streams form semantically clean mechanisms.
 ```
 
 The next E003 question is:
@@ -374,6 +387,15 @@ Canonical probe artifact:
 reports/mechanisms/probes/E004_operator_valued_rung500_inventory_path/
 ```
 
+Tier-1 operator-valued suite artifacts:
+
+```text
+reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path/
+reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path/
+```
+
+The confirmatory Tier-1 run used the canonical seed2 matched control and deterministic 50-pair negation task suite. It completed as `insufficient_evidence`: full-width operator output sites did not beat random-site/matched-control/specificity gates, and `operator_probs` had the expected low-dimensional random-site feasibility cap. This is not `candidate_mechanism_evidence`.
+
 Historical partial probe artifact:
 
 ```text
@@ -387,9 +409,9 @@ reports/mechanisms/probes/E004_operator_valued_rung500/
 Interpretation boundary:
 
 ```text
-E004 operator-valued has checkpoint-backed rung evidence and a richer post-hoc probe.
+E004 operator-valued has checkpoint-backed rung evidence, richer post-hoc quick probes, and Tier-1 suite artifacts.
 This supports deeper operator-mode mechanism investigation.
-It does not yet prove operator probabilities or operator-specific outputs are semantically clean mechanisms.
+It does not prove operator probabilities or operator-specific outputs are semantically clean mechanisms.
 ```
 
 The next E004 question is:
@@ -407,7 +429,10 @@ uv run ruff check .
 All checks passed.
 
 uv run pytest
-388 passed, 1 skipped in 12.81s
+429 passed, 1 skipped in 34.39s
+
+uv run pytest --run-integration
+430 passed in 34.32s
 ```
 
 Targeted tests also passed:
@@ -484,24 +509,9 @@ Attention Lab is using deliberately nonstandard attention architectures as inter
 
 The E001-E004 backfill / quick-probe artifact phase is complete. Do not rerun broad quick-probe backfill just to refresh status docs.
 
-Next implementation should build the Tier-1 mechanism-probe framework:
+The Tier-1 E003/E004 mechanism-probe workflow now exists and has produced real artifacts. The current confirmatory outcome is `insufficient_evidence`, not `candidate_mechanism_evidence`.
 
-- pre-registered hypothesis docs
-- minimum-size task contrast suites
-- trained linear-probe AUC
-- bootstrap confidence intervals
-- multiple-comparison correction
-- matched-control normalization
-- causal patching / restoration metrics
-- claim gates
-- summary report synthesis
-
-Initial executable Tier-1 targets:
-
-- E003 differential_qkv_anti_value_30m_seed1_rung500
-- E004 operator_valued_attention_30m_seed2_rung500
-
-Follow-up work remains useful for scope_gated_qkv_30m_seed1_rung500, E001 CP diagnostics, E002 route specialization, dynamic-value rescue, and q3k3v3 profiling, but those should not displace the Tier-1 probe-framework implementation.
+Follow-up work remains useful for scope_gated_qkv_30m_seed1_rung500, E001 CP diagnostics, E002 route specialization, dynamic-value rescue, and q3k3v3 profiling. For E003/E004 Tier-1, the next scientific investment should be improving or broadening pre-registered task contrasts only if the new task design is justified before running, then adding cross-seed replication if a future Tier-1 run clears gates.
 
 Defer broad scientific claims until component-level intervention locality, feature purity, trained-probe evidence, statistical controls, matched controls, and cross-seed or cross-run stability are measured.
 

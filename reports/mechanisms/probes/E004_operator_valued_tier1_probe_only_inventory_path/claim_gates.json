@@ -1,0 +1,250 @@
+{
+  "cells": {
+    "operator_add_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_bind_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_combined_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_gate_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_probs[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": false,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": false,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_suppress_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    },
+    "operator_transform_out[0]|family=negation_scope": {
+      "blockers": [],
+      "caps": [
+        "exploratory mode caps claims below confirmatory evidence"
+      ],
+      "inputs": {
+        "canonical_control": true,
+        "confirmatory_floor_met": true,
+        "exploratory": true,
+        "extra_blockers": [],
+        "force_noncanonical_control": false,
+        "grouped_split": true,
+        "hypothesis_doc_valid": false,
+        "matched_control_available": true,
+        "matched_control_passed": false,
+        "mediation_fdr_passed": false,
+        "mediation_valid": false,
+        "min_n_passed": true,
+        "noncanonical_control": false,
+        "patching_fdr_passed": false,
+        "patching_valid": false,
+        "primary_ci_passed": true,
+        "primary_fdr_passed": true,
+        "probe_only": true,
+        "random_site_null_available": true,
+        "random_site_null_passed": false,
+        "real_probe_metrics": true,
+        "shuffled_null_passed": true,
+        "specificity_ci_passed": false,
+        "specificity_fdr_passed": false
+      },
+      "status": "exploratory_probe_signal",
+      "status_vocabulary_scope": "mechanism-probe scoped; distinct from the repository's broader experiment status vocabulary"
+    }
+  },
+  "overall_status": "exploratory_probe_signal",
+  "status_vocabulary": [
+    "insufficient_evidence",
+    "exploratory_probe_signal",
+    "controlled_probe_signal",
+    "candidate_mechanism_evidence"
+  ],
+  "status_vocabulary_scope": "mechanism-probe scoped; distinct from global experiment statuses"
+}

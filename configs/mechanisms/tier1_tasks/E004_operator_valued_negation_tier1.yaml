@@ -1,0 +1,1161 @@
+schema_version: 1
+metadata:
+  generator_name: attention_lab_tier1_negation_template_filler
+  generator_version: '1'
+  template_set: e004_operator_valued_negation_prompts_v1
+  filler_set: negation_scope_fillers_v1
+  generation_seed: 2
+  created_at: '2026-07-01T00:00:00Z'
+  candidate: e004_operator_valued
+  restoration_token_metadata: gpt2_single_token_true_false_v1
+records:
+- pair_id: e004_operator_valued_negation_scope_pair_0000
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Sentence: The editor did not verify the
+    schedule. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Sentence: The editor verify the schedule.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Sentence: The editor never verify the
+    schedule. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Sentence: The editor clearly verify
+    the schedule. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: verify
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e004_operator_valued_negation_scope_pair_0001
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Statement: The editor did not accept
+    the checklist. Is a negation marker present? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Statement: The editor accept the checklist.
+    Is a negation marker present? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Statement: The editor never accept the
+    checklist. Is a negation marker present? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Statement: The editor boldly accept
+    the checklist. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: accept
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0002
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Text: The editor did not archive the
+    update. Does this text explicitly negate the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Text: The editor archive the update.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Text: The editor never archive the update.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Text: The editor today archive the
+    update. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: archive
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0003
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Example: The analyst did not revise the
+    proposal. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Example: The analyst revise the proposal.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Example: The analyst never revise the
+    proposal. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Example: The analyst usually revise
+    the proposal. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: revise
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0004
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Input: The nurse did not approve the
+    report. Does a negation cue reverse the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Input: The nurse approve the report.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Input: The nurse never approve the report.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Input: The nurse carefully approve
+    the report. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: approve
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0005
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Clause: The analyst did not verify the
+    update. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Clause: The analyst verify the update.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Clause: The analyst never verify the
+    update. Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Clause: The analyst usually verify
+    the update. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: verify
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0006
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Premise: The coach did not publish the
+    report. Does the premise include negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Premise: The coach publish the report.
+    Does the premise include negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Premise: The coach never publish the
+    report. Does the premise include negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Premise: The coach usually publish
+    the report. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: publish
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0007
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Record: The pilot did not confirm the
+    design. Is explicit negation present in the record? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Record: The pilot confirm the design.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Record: The pilot never confirm the
+    design. Is explicit negation present in the record? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Record: The pilot today confirm the
+    design. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: confirm
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0008
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Utterance: The teacher did not publish
+    the checklist. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Utterance: The teacher publish the checklist.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Utterance: The teacher never publish
+    the checklist. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Utterance: The teacher often publish
+    the checklist. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: publish
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e004_operator_valued_negation_scope_pair_0009
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Observation: The engineer did not publish
+    the dataset. Is the described action negated? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Observation: The engineer publish the
+    dataset. Is the described action negated? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Observation: The engineer never publish
+    the dataset. Is the described action negated? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Observation: The engineer today publish
+    the dataset. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: publish
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0010
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Sentence: The teacher did not archive
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Sentence: The teacher archive the dataset.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Sentence: The teacher never archive
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Sentence: The teacher usually archive
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: archive
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0011
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Statement: The pilot did not archive
+    the checklist. Is a negation marker present? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Statement: The pilot archive the checklist.
+    Is a negation marker present? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Statement: The pilot never archive the
+    checklist. Is a negation marker present? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Statement: The pilot quietly archive
+    the checklist. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: archive
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e004_operator_valued_negation_scope_pair_0012
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Text: The nurse did not revise the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Text: The nurse revise the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Text: The nurse never revise the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Text: The nurse carefully revise the
+    schedule. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: revise
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0013
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Example: The curator did not accept the
+    update. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Example: The curator accept the update.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Example: The curator never accept the
+    update. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Example: The curator quietly accept
+    the update. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: accept
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e004_operator_valued_negation_scope_pair_0014
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Input: The auditor did not deliver the
+    package. Does a negation cue reverse the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Input: The auditor deliver the package.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Input: The auditor never deliver the
+    package. Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Input: The auditor boldly deliver the
+    package. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: deliver
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0015
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Clause: The nurse did not revise the
+    package. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Clause: The nurse revise the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Clause: The nurse never revise the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Clause: The nurse boldly revise the
+    package. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: revise
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0016
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Premise: The auditor did not verify the
+    design. Does the premise include negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Premise: The auditor verify the design.
+    Does the premise include negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Premise: The auditor never verify the
+    design. Does the premise include negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Premise: The auditor often verify the
+    design. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: verify
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e004_operator_valued_negation_scope_pair_0017
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Record: The teacher did not confirm the
+    schedule. Is explicit negation present in the record? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Record: The teacher confirm the schedule.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Record: The teacher never confirm the
+    schedule. Is explicit negation present in the record? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Record: The teacher quickly confirm
+    the schedule. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: confirm
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0018
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Utterance: The coach did not approve
+    the memo. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Utterance: The coach approve the memo.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Utterance: The coach never approve the
+    memo. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Utterance: The coach boldly approve
+    the memo. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: approve
+    object: the memo
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0019
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Observation: The nurse did not approve
+    the design. Is the described action negated? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Observation: The nurse approve the design.
+    Is the described action negated? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Observation: The nurse never approve
+    the design. Is the described action negated? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Observation: The nurse quickly approve
+    the design. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: approve
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0020
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Sentence: The engineer did not revise
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Sentence: The engineer revise the dataset.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Sentence: The engineer never revise
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Sentence: The engineer quickly revise
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: revise
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0021
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Statement: The engineer did not approve
+    the dataset. Is a negation marker present? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Statement: The engineer approve the dataset.
+    Is a negation marker present? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Statement: The engineer never approve
+    the dataset. Is a negation marker present? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Statement: The engineer today approve
+    the dataset. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: approve
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0022
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Text: The teacher did not revise the
+    package. Does this text explicitly negate the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Text: The teacher revise the package.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Text: The teacher never revise the package.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Text: The teacher carefully revise
+    the package. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: revise
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0023
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Example: The pilot did not accept the
+    package. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Example: The pilot accept the package.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Example: The pilot never accept the
+    package. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Example: The pilot usually accept the
+    package. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: accept
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0024
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Input: The editor did not release the
+    package. Does a negation cue reverse the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Input: The editor release the package.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Input: The editor never release the
+    package. Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Input: The editor quickly release the
+    package. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: release
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0025
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Clause: The pilot did not verify the
+    schedule. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Clause: The pilot verify the schedule.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Clause: The pilot never verify the schedule.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Clause: The pilot boldly verify the
+    schedule. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: verify
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0026
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Premise: The analyst did not release
+    the update. Does the premise include negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Premise: The analyst release the update.
+    Does the premise include negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Premise: The analyst never release the
+    update. Does the premise include negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Premise: The analyst carefully release
+    the update. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: release
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0027
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Record: The nurse did not approve the
+    design. Is explicit negation present in the record? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Record: The nurse approve the design.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Record: The nurse never approve the
+    design. Is explicit negation present in the record? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Record: The nurse boldly approve the
+    design. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: approve
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0028
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Utterance: The pilot did not publish
+    the update. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Utterance: The pilot publish the update.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Utterance: The pilot never publish the
+    update. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Utterance: The pilot carefully publish
+    the update. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: publish
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0029
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Observation: The editor did not archive
+    the schedule. Is the described action negated? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Observation: The editor archive the schedule.
+    Is the described action negated? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Observation: The editor never archive
+    the schedule. Is the described action negated? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Observation: The editor quickly archive
+    the schedule. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: archive
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0030
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Sentence: The coach did not accept the
+    proposal. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Sentence: The coach accept the proposal.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Sentence: The coach never accept the
+    proposal. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Sentence: The coach carefully accept
+    the proposal. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: accept
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0031
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Statement: The editor did not confirm
+    the design. Is a negation marker present? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Statement: The editor confirm the design.
+    Is a negation marker present? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Statement: The editor never confirm
+    the design. Is a negation marker present? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Statement: The editor boldly confirm
+    the design. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: confirm
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0032
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Text: The planner did not verify the
+    proposal. Does this text explicitly negate the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Text: The planner verify the proposal.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Text: The planner never verify the proposal.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Text: The planner clearly verify the
+    proposal. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: verify
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e004_operator_valued_negation_scope_pair_0033
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Example: The auditor did not revise the
+    schedule. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Example: The auditor revise the schedule.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Example: The auditor never revise the
+    schedule. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Example: The auditor quickly revise
+    the schedule. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: revise
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0034
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Input: The nurse did not publish the
+    invoice. Does a negation cue reverse the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Input: The nurse publish the invoice.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Input: The nurse never publish the invoice.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Input: The nurse carefully publish
+    the invoice. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: publish
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0035
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Clause: The planner did not archive the
+    invoice. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Clause: The planner archive the invoice.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Clause: The planner never archive the
+    invoice. Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Clause: The planner carefully archive
+    the invoice. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: archive
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0036
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Premise: The auditor did not release
+    the proposal. Does the premise include negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Premise: The auditor release the proposal.
+    Does the premise include negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Premise: The auditor never release the
+    proposal. Does the premise include negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Premise: The auditor often release
+    the proposal. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: release
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e004_operator_valued_negation_scope_pair_0037
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Record: The teacher did not publish the
+    checklist. Is explicit negation present in the record? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Record: The teacher publish the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Record: The teacher never publish the
+    checklist. Is explicit negation present in the record? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Record: The teacher today publish the
+    checklist. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: publish
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0038
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Utterance: The teacher did not approve
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Utterance: The teacher approve the proposal.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Utterance: The teacher never approve
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Utterance: The teacher quickly approve
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: approve
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0039
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Observation: The editor did not accept
+    the memo. Is the described action negated? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Observation: The editor accept the memo.
+    Is the described action negated? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Observation: The editor never accept
+    the memo. Is the described action negated? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Observation: The editor carefully accept
+    the memo. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: accept
+    object: the memo
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0040
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Sentence: The coach did not accept the
+    dataset. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Sentence: The coach accept the dataset.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Sentence: The coach never accept the
+    dataset. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Sentence: The coach boldly accept the
+    dataset. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: accept
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0041
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Statement: The engineer did not archive
+    the memo. Is a negation marker present? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Statement: The engineer archive the memo.
+    Is a negation marker present? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Statement: The engineer never archive
+    the memo. Is a negation marker present? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Statement: The engineer today archive
+    the memo. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: archive
+    object: the memo
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0042
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Text: The analyst did not deliver the
+    schedule. Does this text explicitly negate the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Text: The analyst deliver the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Text: The analyst never deliver the
+    schedule. Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Text: The analyst carefully deliver
+    the schedule. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: deliver
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e004_operator_valued_negation_scope_pair_0043
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Example: The engineer did not deliver
+    the schedule. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Example: The engineer deliver the schedule.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Example: The engineer never deliver
+    the schedule. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Example: The engineer quickly deliver
+    the schedule. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: deliver
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e004_operator_valued_negation_scope_pair_0044
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Input: The pilot did not publish the
+    checklist. Does a negation cue reverse the action? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Input: The pilot publish the checklist.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Input: The pilot never publish the checklist.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Input: The pilot today publish the
+    checklist. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: publish
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0045
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Clause: The teacher did not deliver the
+    proposal. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Clause: The teacher deliver the proposal.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Clause: The teacher never deliver the
+    proposal. Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Clause: The teacher usually deliver
+    the proposal. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: deliver
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e004_operator_valued_negation_scope_pair_0046
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Premise: The editor did not publish the
+    design. Does the premise include negation? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Premise: The editor publish the design.
+    Does the premise include negation? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Premise: The editor never publish the
+    design. Does the premise include negation? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Premise: The editor today publish the
+    design. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: publish
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0047
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Record: The nurse did not verify the
+    schedule. Is explicit negation present in the record? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Record: The nurse verify the schedule.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Record: The nurse never verify the schedule.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Record: The nurse today verify the
+    schedule. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: verify
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e004_operator_valued_negation_scope_pair_0048
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Utterance: The nurse did not verify the
+    proposal. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Utterance: The nurse verify the proposal.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Utterance: The nurse never verify the
+    proposal. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Utterance: The nurse boldly verify
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: verify
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e004_operator_valued_negation_scope_pair_0049
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E004 operator-valued Tier-1 probe. Observation: The engineer did not revise
+    the dataset. Is the described action negated? Answer:'
+  x_neg: 'E004 operator-valued Tier-1 probe. Observation: The engineer revise the
+    dataset. Is the described action negated? Answer:'
+  x_para: 'E004 operator-valued Tier-1 probe. Observation: The engineer never revise
+    the dataset. Is the described action negated? Answer:'
+  x_decoy: 'E004 operator-valued Tier-1 probe. Observation: The engineer clearly revise
+    the dataset. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: revise
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly

@@ -11,6 +11,7 @@ class SitePreset:
     tensor_kind: str
     control_site: str | None
     continuous: bool = True
+    full_layer_site: str | None = "attn_out"
 
     @property
     def key(self) -> str:

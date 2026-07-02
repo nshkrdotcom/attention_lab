@@ -48,6 +48,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         "## Task Suite",
         f"- deterministic_provenance: `{task.get('deterministic_provenance')}`",
         f"- confirmatory_floor_met: `{task.get('confirmatory_floor_met')}`",
+        f"- restoration_token_metadata_valid: `{task.get('restoration_token_metadata_valid')}`",
         f"- pair_counts_by_family: `{task.get('pair_counts_by_family')}`",
         f"- validation_errors: `{task.get('validation_errors')}`",
         f"- validation_warnings: `{task.get('validation_warnings')}`",
@@ -66,6 +67,9 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         gate = claim_gates.get("cells", {}).get(cell_id, {})
         random_site = cell.get("random_site_null", {})
         alignment = cell.get("alignment_to_control", {})
+        random_status = _random_site_status(cell, gate)
+        patching = cell.get("patching", {})
+        mediation = cell.get("mediation_fraction", {})
         lines.extend(
             [
                 f"### `{cell_id}`",
@@ -76,8 +80,14 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
                 f"- auc_minus_random_site_auc: `{cell.get('auc_minus_random_site_auc')}`",
                 f"- auc_minus_matched_control_auc: `{cell.get('auc_minus_matched_control_auc')}`",
                 f"- target_vs_decoy_specificity: `{cell.get('target_vs_decoy_specificity')}`",
+                f"- random_site_status: `{random_status}`",
                 f"- random_site_null_available: `{random_site.get('random_site_null_available')}`",
+                f"- selected_random_site: `{random_site.get('selected_site')}`",
                 f"- random_site_reason: {random_site.get('reason') or 'none'}",
+                f"- patching_valid: `{patching.get('valid')}`",
+                f"- patching_reason: {patching.get('reason') or 'none'}",
+                f"- mediation_fraction_valid: `{mediation.get('valid')}`",
+                f"- mediation_fraction: `{mediation.get('mediation_fraction')}`",
                 f"- probe_direction_cosine_to_control: `{alignment.get('probe_direction_cosine_to_control')}`",
                 f"- alignment_available: `{alignment.get('available')}`",
                 "",
@@ -106,6 +116,18 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
     if mode.get("exploratory"):
         lines.append("Exploratory mode capped the claim ladder below confirmatory evidence.")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _random_site_status(cell: dict[str, Any], gate: dict[str, Any]) -> str:
+    random_site = cell.get("random_site_null", {})
+    if not random_site.get("random_site_null_available"):
+        return "unavailable_no_compatible_matched_dimensionality_site"
+    blockers = gate.get("blockers") or []
+    if any("random-site null comparison failed" in blocker for blocker in blockers):
+        return "available_but_candidate_did_not_beat_null_after_correction"
+    if cell.get("auc_minus_random_site_auc") is None:
+        return "available_but_metric_unavailable"
+    return "available"
 
 
 def load_suite_artifacts(output_dir: str | Path) -> tuple[dict[str, Any], dict[str, Any]]:

@@ -1345,6 +1345,17 @@ Read first:
 docs/mechanism_probe_framework.md
 ```
 
+Committed Tier-1 inputs:
+
+```text
+docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
+docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
+```
+
+Regenerate or validate task suites with `scripts/generate_tier1_mechanism_tasks.py`.
+
 Executable Tier-1 presets:
 
 ```text
@@ -1352,28 +1363,74 @@ E003 differential -> standard_refactor_control_30m_seed1_rung500
 E004 operator-valued -> standard_refactor_control_30m_seed2_rung500
 ```
 
-Exploratory cheap scan:
+E003 exploratory cheap scan:
 
 ```bash
 uv run scripts/run_mechanism_probe_suite.py \
   --experiment-id E003_qkv_architecture_gauntlet \
   --candidate differential \
   --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
-  --task-file <task-file> \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
   --output-dir reports/mechanisms/probes/E003_differential_tier1_probe_only_inventory_path \
   --exploratory \
   --probe-only \
   --control-mode matched \
-  --min-n 100 \
+  --min-n 50 \
   --bootstrap-samples 1000 \
   --fdr-alpha 0.05 \
   --seed 1
 ```
 
-Confirmatory runs require:
+E003 confirmatory full run:
 
 ```bash
---hypothesis-doc docs/mechanisms/hypotheses/<hypothesis-file>.yaml
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E003_qkv_architecture_gauntlet \
+  --candidate differential \
+  --checkpoint runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 1
+```
+
+E004 exploratory cheap scan:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E004_operator_binding_qkv_gauntlet \
+  --candidate operator_valued \
+  --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_probe_only_inventory_path \
+  --exploratory \
+  --probe-only \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 2
+```
+
+E004 confirmatory full run:
+
+```bash
+uv run scripts/run_mechanism_probe_suite.py \
+  --experiment-id E004_operator_binding_qkv_gauntlet \
+  --candidate operator_valued \
+  --checkpoint runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt \
+  --task-file configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml \
+  --hypothesis-doc docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml \
+  --output-dir reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path \
+  --control-mode matched \
+  --min-n 50 \
+  --bootstrap-samples 1000 \
+  --fdr-alpha 0.05 \
+  --seed 2
 ```
 
 Outputs:
@@ -1385,6 +1442,8 @@ summary.md
 ```
 
 `candidate_mechanism_evidence` is mechanism-probe scoped and means single-seed, checkpoint-backed, statistically controlled evidence. It is not replication and not a global experiment status.
+
+E004 `operator_probs` is a low-dimensional probability site and may lack a matched-dimensional random-site null. That is reported as a per-cell feasibility limit, not a run-wide implementation failure. Noncanonical control overrides are recorded but cap claims below `candidate_mechanism_evidence`.
 
 ### Strict capture mode
 

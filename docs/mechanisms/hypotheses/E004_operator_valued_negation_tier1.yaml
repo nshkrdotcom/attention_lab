@@ -1,0 +1,110 @@
+CLAIM: >
+  The promoted E004 operator-valued rung500 checkpoint exposes task-relevant negation
+  information at operator-valued sites beyond seed-matched standard-attention controls,
+  matched random-site nulls when feasible, shuffled-label nulls, and decoy contrasts.
+KILL_CONDITION:
+  - Any target site lacks real trained probe metrics under grouped template-level splitting.
+  - Any confirmatory family has fewer than 50 contrast pairs or lacks deterministic provenance.
+  - Decoy specificity fails after bootstrap confidence intervals and FDR-BH correction.
+  - The canonical seed2 matched control is unavailable, overridden noncanonically, or seed-mismatched.
+  - A random-site null is unavailable or not beaten for any site x layer x family cell claiming controlled evidence.
+  - The low-dimensional operator_probs cell is interpreted as full-width d_model evidence or coerced into an activation null.
+  - Restoration or mediation metrics are unavailable, invalid, or have invalid denominators.
+  - Results only support controlled_probe_signal when causal restoration/mediation fails but probe/null/control gates pass.
+MECHANISM_PROOF: >
+  Candidate evidence requires grouped linear-probe AUC above chance, above shuffled labels,
+  above a matched-dimensional random site where one exists, and above the canonical seed2 standard control
+  for comparable full-width operator output sites, all under bootstrap confidence intervals and FDR-BH correction,
+  plus target-vs-decoy specificity and valid component/full-layer restoration with a valid mediation_fraction.
+NEAREST_BORING_EXPLANATION: >
+  Operator-valued sites may only reflect lexical frequency, prompt surface form, broad topic/adverb artifacts,
+  ordinary standard-attention output features, or a low-dimensional routing probability that is not comparable
+  to full-width activation sites.
+CONTROL_THAT_RULES_IT_OUT: >
+  Seed-matched standard_refactor_control_30m_seed2_rung500 probes, shuffled-label nulls,
+  matched-dimensional random-site nulls, grouped template splits, x_decoy controls, and explicit
+  feasibility caps for operator_probs when no compatible null/control site exists.
+TARGET_SITES:
+  - site: operator_probs
+    layer: 0
+    tensor_kind: probability
+    control_site: null
+    full_layer_comparator: attn_out
+    feasibility_note: >
+      Low-dimensional operator probability vectors must not be coerced into d_model activation
+      comparisons. This cell can provide exploratory/probe signal but cannot claim controlled
+      evidence when matched random-site/control comparisons are unavailable.
+  - site: operator_add_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+  - site: operator_suppress_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+  - site: operator_gate_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+  - site: operator_transform_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+  - site: operator_bind_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+  - site: operator_combined_out
+    layer: 0
+    tensor_kind: activation
+    control_site: attn_out
+    full_layer_comparator: attn_out
+TASK_CONTRASTS:
+  x_pos: explicit negation with a not-style marker
+  x_neg: same template/filler action without negation
+  x_para: negation preserved under marker variation using never
+  x_decoy: matched topic/shape/adverb control without negation
+PRIMARY_METRIC: linear_probe_auc_minus_0_5
+STATISTICAL_TEST: >
+  Grouped train/test split by template_id, bootstrap confidence intervals over grouped
+  pairs, and FDR-BH over every computed site x layer x task_family x metric cell.
+MIN_N: 50
+FDR_SCOPE: >
+  Every computed site x layer x task_family x metric cell in the run, including
+  linear_probe_auc_minus_0_5, auc_minus_shuffled_auc, auc_minus_random_site_auc when available,
+  auc_minus_matched_control_auc when available, target_vs_decoy_specificity,
+  component_patch_restoration, and mediation_fraction when valid; not only the
+  pre-registered target site and not only the primary metric.
+EXPECTED_DIRECTION: positive
+CHECKPOINT_EXPECTATIONS:
+  candidate_run: operator_valued_attention_30m_seed2_rung500
+  candidate_checkpoint: runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt
+  canonical_control_run: standard_refactor_control_30m_seed2_rung500
+  canonical_control_checkpoint: runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt
+MATCHED_CONTROL_RULE: >
+  The canonical seed2 standard-refactor rung500 control must be used for candidate_mechanism_evidence.
+  Noncanonical overrides may be recorded for exploratory analysis but cap claims below candidate_mechanism_evidence.
+RANDOM_SITE_NULL_RULE: >
+  Each site x layer cell needs a non-candidate site with matched feature dimensionality and compatible tensor kind.
+  operator_probs may lack such a null because it is low-dimensional probability output, while full-width
+  operator output sites may use matched full-width activation sites when available.
+SPECIFICITY_GATE: >
+  The bootstrap confidence interval for target_vs_decoy_specificity must exclude zero in the
+  expected positive direction after FDR-BH correction.
+RESTORATION_AND_MEDIATION_REQUIREMENTS: >
+  component_patch_restoration, full_layer_patch_restoration, and mediation_fraction must be valid.
+  Invalid restoration or mediation denominators force controlled_probe_signal or insufficient_evidence,
+  not candidate_mechanism_evidence.
+DISALLOWED_CLAIMS:
+  - replicated finding
+  - universal mechanism
+  - architecture superiority
+  - solved negation
+  - lower superposition
+  - representational novelty
+  - candidate-to-control alignment proves cross-architecture universality

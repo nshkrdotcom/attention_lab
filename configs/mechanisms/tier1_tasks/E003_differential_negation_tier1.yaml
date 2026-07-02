@@ -1,0 +1,1161 @@
+schema_version: 1
+metadata:
+  generator_name: attention_lab_tier1_negation_template_filler
+  generator_version: '1'
+  template_set: e003_differential_negation_prompts_v1
+  filler_set: negation_scope_fillers_v1
+  generation_seed: 1
+  created_at: '2026-07-01T00:00:00Z'
+  candidate: e003_differential
+  restoration_token_metadata: gpt2_single_token_true_false_v1
+records:
+- pair_id: e003_differential_negation_scope_pair_0000
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Sentence: The analyst did not confirm the
+    memo. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Sentence: The analyst confirm the memo.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Sentence: The analyst never confirm the
+    memo. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Sentence: The analyst boldly confirm the
+    memo. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: confirm
+    object: the memo
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e003_differential_negation_scope_pair_0001
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Statement: The editor did not deliver the
+    package. Is a negation marker present? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Statement: The editor deliver the package.
+    Is a negation marker present? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Statement: The editor never deliver the
+    package. Is a negation marker present? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Statement: The editor quietly deliver
+    the package. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: deliver
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0002
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Text: The editor did not publish the checklist.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Text: The editor publish the checklist.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Text: The editor never publish the checklist.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Text: The editor boldly publish the checklist.
+    Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: publish
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e003_differential_negation_scope_pair_0003
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Example: The pilot did not verify the report.
+    Is the action denied by a negation cue? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Example: The pilot verify the report. Is
+    the action denied by a negation cue? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Example: The pilot never verify the report.
+    Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Example: The pilot clearly verify the
+    report. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: verify
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e003_differential_negation_scope_pair_0004
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Input: The coach did not accept the report.
+    Does a negation cue reverse the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Input: The coach accept the report. Does
+    a negation cue reverse the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Input: The coach never accept the report.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Input: The coach quickly accept the report.
+    Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: accept
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0005
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Clause: The analyst did not release the
+    invoice. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Clause: The analyst release the invoice.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Clause: The analyst never release the invoice.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Clause: The analyst quietly release the
+    invoice. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: release
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0006
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Premise: The planner did not deliver the
+    invoice. Does the premise include negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Premise: The planner deliver the invoice.
+    Does the premise include negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Premise: The planner never deliver the
+    invoice. Does the premise include negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Premise: The planner today deliver the
+    invoice. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: deliver
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0007
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Record: The editor did not deliver the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Record: The editor deliver the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Record: The editor never deliver the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Record: The editor often deliver the checklist.
+    Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: deliver
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0008
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Utterance: The auditor did not revise the
+    invoice. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Utterance: The auditor revise the invoice.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Utterance: The auditor never revise the
+    invoice. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Utterance: The auditor often revise the
+    invoice. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: revise
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0009
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Observation: The pilot did not accept the
+    design. Is the described action negated? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Observation: The pilot accept the design.
+    Is the described action negated? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Observation: The pilot never accept the
+    design. Is the described action negated? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Observation: The pilot today accept the
+    design. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: accept
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0010
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Sentence: The engineer did not deliver the
+    update. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Sentence: The engineer deliver the update.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Sentence: The engineer never deliver the
+    update. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Sentence: The engineer often deliver the
+    update. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: deliver
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0011
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Statement: The nurse did not deliver the
+    dataset. Is a negation marker present? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Statement: The nurse deliver the dataset.
+    Is a negation marker present? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Statement: The nurse never deliver the
+    dataset. Is a negation marker present? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Statement: The nurse today deliver the
+    dataset. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: deliver
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0012
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Text: The curator did not approve the dataset.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Text: The curator approve the dataset. Does
+    this text explicitly negate the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Text: The curator never approve the dataset.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Text: The curator quickly approve the
+    dataset. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: approve
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0013
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Example: The curator did not release the
+    package. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Example: The curator release the package.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Example: The curator never release the
+    package. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Example: The curator quickly release the
+    package. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: release
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0014
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Input: The coach did not confirm the checklist.
+    Does a negation cue reverse the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Input: The coach confirm the checklist.
+    Does a negation cue reverse the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Input: The coach never confirm the checklist.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Input: The coach carefully confirm the
+    checklist. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: confirm
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0015
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Clause: The nurse did not release the report.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Clause: The nurse release the report. Is
+    there an explicit not-or-never style negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Clause: The nurse never release the report.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Clause: The nurse clearly release the
+    report. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: release
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e003_differential_negation_scope_pair_0016
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Premise: The teacher did not deliver the
+    schedule. Does the premise include negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Premise: The teacher deliver the schedule.
+    Does the premise include negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Premise: The teacher never deliver the
+    schedule. Does the premise include negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Premise: The teacher often deliver the
+    schedule. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: deliver
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0017
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Record: The pilot did not revise the package.
+    Is explicit negation present in the record? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Record: The pilot revise the package. Is
+    explicit negation present in the record? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Record: The pilot never revise the package.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Record: The pilot carefully revise the
+    package. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The pilot
+    verb: revise
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0018
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Utterance: The planner did not accept the
+    design. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Utterance: The planner accept the design.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Utterance: The planner never accept the
+    design. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Utterance: The planner today accept the
+    design. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: accept
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0019
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Observation: The auditor did not approve
+    the invoice. Is the described action negated? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Observation: The auditor approve the invoice.
+    Is the described action negated? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Observation: The auditor never approve
+    the invoice. Is the described action negated? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Observation: The auditor clearly approve
+    the invoice. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: approve
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e003_differential_negation_scope_pair_0020
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Sentence: The curator did not archive the
+    report. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Sentence: The curator archive the report.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Sentence: The curator never archive the
+    report. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Sentence: The curator quietly archive
+    the report. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: archive
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0021
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Statement: The analyst did not archive the
+    invoice. Is a negation marker present? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Statement: The analyst archive the invoice.
+    Is a negation marker present? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Statement: The analyst never archive the
+    invoice. Is a negation marker present? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Statement: The analyst carefully archive
+    the invoice. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: archive
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0022
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Text: The auditor did not confirm the dataset.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Text: The auditor confirm the dataset. Does
+    this text explicitly negate the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Text: The auditor never confirm the dataset.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Text: The auditor quickly confirm the
+    dataset. Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: confirm
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0023
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Example: The coach did not deliver the report.
+    Is the action denied by a negation cue? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Example: The coach deliver the report. Is
+    the action denied by a negation cue? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Example: The coach never deliver the report.
+    Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Example: The coach quietly deliver the
+    report. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: deliver
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0024
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Input: The teacher did not publish the update.
+    Does a negation cue reverse the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Input: The teacher publish the update. Does
+    a negation cue reverse the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Input: The teacher never publish the update.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Input: The teacher usually publish the
+    update. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: publish
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e003_differential_negation_scope_pair_0025
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Clause: The curator did not deliver the
+    schedule. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Clause: The curator deliver the schedule.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Clause: The curator never deliver the schedule.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Clause: The curator quickly deliver the
+    schedule. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: deliver
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0026
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Premise: The analyst did not accept the
+    schedule. Does the premise include negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Premise: The analyst accept the schedule.
+    Does the premise include negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Premise: The analyst never accept the schedule.
+    Does the premise include negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Premise: The analyst often accept the
+    schedule. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: accept
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0027
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Record: The coach did not release the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Record: The coach release the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Record: The coach never release the checklist.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Record: The coach carefully release the
+    checklist. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: release
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0028
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Utterance: The engineer did not release
+    the checklist. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Utterance: The engineer release the checklist.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Utterance: The engineer never release the
+    checklist. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Utterance: The engineer today release
+    the checklist. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: release
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0029
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Observation: The coach did not revise the
+    invoice. Is the described action negated? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Observation: The coach revise the invoice.
+    Is the described action negated? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Observation: The coach never revise the
+    invoice. Is the described action negated? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Observation: The coach carefully revise
+    the invoice. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: revise
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0030
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Sentence: The engineer did not approve the
+    dataset. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Sentence: The engineer approve the dataset.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Sentence: The engineer never approve the
+    dataset. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Sentence: The engineer clearly approve
+    the dataset. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: approve
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: clearly
+- pair_id: e003_differential_negation_scope_pair_0031
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Statement: The engineer did not release
+    the schedule. Is a negation marker present? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Statement: The engineer release the schedule.
+    Is a negation marker present? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Statement: The engineer never release the
+    schedule. Is a negation marker present? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Statement: The engineer usually release
+    the schedule. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: release
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e003_differential_negation_scope_pair_0032
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Text: The editor did not release the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Text: The editor release the schedule. Does
+    this text explicitly negate the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Text: The editor never release the schedule.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Text: The editor quietly release the schedule.
+    Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: release
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0033
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Example: The planner did not accept the
+    report. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Example: The planner accept the report.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Example: The planner never accept the report.
+    Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Example: The planner usually accept the
+    report. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: accept
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e003_differential_negation_scope_pair_0034
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Input: The auditor did not confirm the update.
+    Does a negation cue reverse the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Input: The auditor confirm the update. Does
+    a negation cue reverse the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Input: The auditor never confirm the update.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Input: The auditor quietly confirm the
+    update. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: confirm
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0035
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Clause: The planner did not archive the
+    proposal. Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Clause: The planner archive the proposal.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Clause: The planner never archive the proposal.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Clause: The planner today archive the
+    proposal. Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: archive
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0036
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Premise: The nurse did not confirm the schedule.
+    Does the premise include negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Premise: The nurse confirm the schedule.
+    Does the premise include negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Premise: The nurse never confirm the schedule.
+    Does the premise include negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Premise: The nurse usually confirm the
+    schedule. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The nurse
+    verb: confirm
+    object: the schedule
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: usually
+- pair_id: e003_differential_negation_scope_pair_0037
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Record: The auditor did not verify the design.
+    Is explicit negation present in the record? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Record: The auditor verify the design. Is
+    explicit negation present in the record? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Record: The auditor never verify the design.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Record: The auditor today verify the design.
+    Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The auditor
+    verb: verify
+    object: the design
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: today
+- pair_id: e003_differential_negation_scope_pair_0038
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Utterance: The analyst did not inspect the
+    dataset. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Utterance: The analyst inspect the dataset.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Utterance: The analyst never inspect the
+    dataset. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Utterance: The analyst carefully inspect
+    the dataset. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: inspect
+    object: the dataset
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: carefully
+- pair_id: e003_differential_negation_scope_pair_0039
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Observation: The coach did not deliver the
+    invoice. Is the described action negated? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Observation: The coach deliver the invoice.
+    Is the described action negated? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Observation: The coach never deliver the
+    invoice. Is the described action negated? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Observation: The coach quietly deliver
+    the invoice. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: deliver
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0040
+  template_id: negation_scope_template_000
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Sentence: The curator did not revise the
+    invoice. Does the sentence contain explicit negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Sentence: The curator revise the invoice.
+    Does the sentence contain explicit negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Sentence: The curator never revise the
+    invoice. Does the sentence contain explicit negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Sentence: The curator often revise the
+    invoice. Does the sentence contain explicit negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: revise
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0041
+  template_id: negation_scope_template_001
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Statement: The editor did not release the
+    update. Is a negation marker present? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Statement: The editor release the update.
+    Is a negation marker present? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Statement: The editor never release the
+    update. Is a negation marker present? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Statement: The editor quickly release
+    the update. Is a negation marker present? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: release
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0042
+  template_id: negation_scope_template_002
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Text: The curator did not confirm the proposal.
+    Does this text explicitly negate the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Text: The curator confirm the proposal.
+    Does this text explicitly negate the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Text: The curator never confirm the proposal.
+    Does this text explicitly negate the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Text: The curator boldly confirm the proposal.
+    Does this text explicitly negate the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The curator
+    verb: confirm
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e003_differential_negation_scope_pair_0043
+  template_id: negation_scope_template_003
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Example: The planner did not archive the
+    checklist. Is the action denied by a negation cue? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Example: The planner archive the checklist.
+    Is the action denied by a negation cue? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Example: The planner never archive the
+    checklist. Is the action denied by a negation cue? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Example: The planner boldly archive the
+    checklist. Is the action denied by a negation cue? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The planner
+    verb: archive
+    object: the checklist
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e003_differential_negation_scope_pair_0044
+  template_id: negation_scope_template_004
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Input: The editor did not inspect the report.
+    Does a negation cue reverse the action? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Input: The editor inspect the report. Does
+    a negation cue reverse the action? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Input: The editor never inspect the report.
+    Does a negation cue reverse the action? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Input: The editor quietly inspect the
+    report. Does a negation cue reverse the action? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: inspect
+    object: the report
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0045
+  template_id: negation_scope_template_005
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Clause: The editor did not inspect the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Clause: The editor inspect the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Clause: The editor never inspect the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Clause: The editor often inspect the package.
+    Is there an explicit not-or-never style negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The editor
+    verb: inspect
+    object: the package
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: often
+- pair_id: e003_differential_negation_scope_pair_0046
+  template_id: negation_scope_template_006
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Premise: The teacher did not verify the
+    update. Does the premise include negation? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Premise: The teacher verify the update.
+    Does the premise include negation? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Premise: The teacher never verify the update.
+    Does the premise include negation? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Premise: The teacher boldly verify the
+    update. Does the premise include negation? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The teacher
+    verb: verify
+    object: the update
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: boldly
+- pair_id: e003_differential_negation_scope_pair_0047
+  template_id: negation_scope_template_007
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Record: The coach did not archive the invoice.
+    Is explicit negation present in the record? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Record: The coach archive the invoice. Is
+    explicit negation present in the record? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Record: The coach never archive the invoice.
+    Is explicit negation present in the record? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Record: The coach quickly archive the
+    invoice. Is explicit negation present in the record? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The coach
+    verb: archive
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quickly
+- pair_id: e003_differential_negation_scope_pair_0048
+  template_id: negation_scope_template_008
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Utterance: The engineer did not approve
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Utterance: The engineer approve the proposal.
+    Does the utterance contain a negating marker? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Utterance: The engineer never approve the
+    proposal. Does the utterance contain a negating marker? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Utterance: The engineer quietly approve
+    the proposal. Does the utterance contain a negating marker? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The engineer
+    verb: approve
+    object: the proposal
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly
+- pair_id: e003_differential_negation_scope_pair_0049
+  template_id: negation_scope_template_009
+  family_id: negation_scope
+  x_pos: 'E003 differential Tier-1 probe. Observation: The analyst did not approve
+    the invoice. Is the described action negated? Answer:'
+  x_neg: 'E003 differential Tier-1 probe. Observation: The analyst approve the invoice.
+    Is the described action negated? Answer:'
+  x_para: 'E003 differential Tier-1 probe. Observation: The analyst never approve
+    the invoice. Is the described action negated? Answer:'
+  x_decoy: 'E003 differential Tier-1 probe. Observation: The analyst quietly approve
+    the invoice. Is the described action negated? Answer:'
+  metadata:
+    phenomenon: explicit_negation
+    target_token_text: ' true'
+    foil_token_text: ' false'
+    target_token_id: 2081
+    foil_token_id: 3991
+    subject: The analyst
+    verb: approve
+    object: the invoice
+    positive_marker: did not
+    paraphrase_marker: never
+    decoy_control: quietly

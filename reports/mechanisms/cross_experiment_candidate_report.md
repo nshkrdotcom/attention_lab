@@ -3,6 +3,14 @@
 Generated from structured backfill inventories. It is not a training-result claim.
 Inventory source commits: 17c563d01f8ba9d14583cb8e3df29040f4cf40df.
 
+Post-generation Tier-1 note: E003 differential and E004 operator-valued Tier-1
+mechanism-probe suites have since been run from the promoted rung500 checkpoints.
+The confirmatory outputs are
+`reports/mechanisms/probes/E003_differential_tier1_confirmatory_inventory_path/`
+and
+`reports/mechanisms/probes/E004_operator_valued_tier1_confirmatory_inventory_path/`;
+both report `insufficient_evidence`, not `candidate_mechanism_evidence`.
+
 ## Promote Full Mechanism Run (`promote_full_mechanism_run`)
 - `differential_qkv_anti_value_30m_seed1_rung500` (E003_qkv_architecture_gauntlet, `differential_qkv_anti_value`): evidence=checkpoint_recompute; checkpoint=available; next=run matched full mechanism probe from checkpoint before full promotion
 - `scope_gated_qkv_30m_seed1_rung500` (E003_qkv_architecture_gauntlet, `scope_gated_qkv`): evidence=checkpoint_recompute; checkpoint=available; next=run matched full mechanism probe from checkpoint before full promotion

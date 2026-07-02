@@ -426,6 +426,26 @@ docs/mechanism_probe_framework.md
 
 It is scoped to statistically controlled post-hoc mechanism checks for promoted E003/E004 candidates, not generic probing infrastructure.
 
+Committed Tier-1 hypothesis docs live under:
+
+```text
+docs/mechanisms/hypotheses/E003_differential_negation_tier1.yaml
+docs/mechanisms/hypotheses/E004_operator_valued_negation_tier1.yaml
+```
+
+Committed deterministic Tier-1 task suites live under:
+
+```text
+configs/mechanisms/tier1_tasks/E003_differential_negation_tier1.yaml
+configs/mechanisms/tier1_tasks/E004_operator_valued_negation_tier1.yaml
+```
+
+Regenerate or validate them with:
+
+```text
+scripts/generate_tier1_mechanism_tasks.py
+```
+
 Executable Tier-1 presets are:
 
 ```text
@@ -460,6 +480,8 @@ FDR-BH over every computed site x layer x task_family x metric cell
 target-vs-decoy specificity
 valid patch/restoration and mediation metrics for candidate_mechanism_evidence
 ```
+
+Non-exploratory `--probe-only` is not confirmatory. Cheap probe-only staging must use `--exploratory --probe-only` and cannot reach `candidate_mechanism_evidence`.
 
 Random-site null unavailability caps only the affected `(site x layer)` cell, not the whole run. Missing matched controls, noncanonical/seed-mismatched controls, missing decoys, invalid denominators, and exploratory/probe-only mode must cap claims honestly.
 

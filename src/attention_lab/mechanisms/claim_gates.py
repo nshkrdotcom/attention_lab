@@ -39,6 +39,8 @@ class CellGateInputs:
     specificity_ci_passed: bool
     patching_valid: bool
     mediation_valid: bool
+    patching_fdr_passed: bool = True
+    mediation_fdr_passed: bool = True
     force_noncanonical_control: bool = False
     extra_blockers: tuple[str, ...] = ()
 
@@ -111,6 +113,9 @@ def evaluate_cell_claim_gate(inputs: CellGateInputs) -> CellGateResult:
 
     if not inputs.patching_valid or not inputs.mediation_valid:
         blockers.append("valid causal patching/restoration and mediation metrics are required")
+        return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
+    if not inputs.patching_fdr_passed or not inputs.mediation_fdr_passed:
+        blockers.append("restoration/mediation metrics failed corrected statistical gate")
         return _result(CONTROLLED_PROBE_SIGNAL, blockers, caps, inputs)
 
     return _result(CANDIDATE_MECHANISM_EVIDENCE, blockers, caps, inputs)
