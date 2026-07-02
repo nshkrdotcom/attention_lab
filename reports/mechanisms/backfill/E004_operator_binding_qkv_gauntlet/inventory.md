@@ -1,6 +1,6 @@
 # Mechanism Backfill Inventory: E004_operator_binding_qkv_gauntlet
 
-- generated_from_commit: `0b81cf2804733cb95688a45ff31f2556e38a3ce7`
+- generated_from_commit: `17c563d01f8ba9d14583cb8e3df29040f4cf40df`
 - repo_root_relative: `True`
 
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
