@@ -9,7 +9,7 @@ from typing import Any
 import torch
 
 from attention_lab.mechanisms.cache import ActivationCache, ActivationRecord, tensor_summary
-from attention_lab.mechanisms.hook_sites import format_site_name, get_hook_site_status, site_base
+from attention_lab.mechanisms.hook_sites import format_site_name, get_hook_site_specs, get_hook_site_status, site_base
 from attention_lab.mechanisms.interventions import InterventionKind, InterventionSpec
 
 
@@ -26,6 +26,7 @@ class CaptureResult:
     loss: torch.Tensor | None
     cache: ActivationCache
     missing_sites: dict[str, MissingHookSite]
+    declared_but_unemitted_sites: dict[str, MissingHookSite]
 
 
 class ActivationRecorder:
@@ -40,6 +41,7 @@ class ActivationRecorder:
         interventions: list[InterventionSpec] | None = None,
         checkpoint_path: Path | None = None,
         batch_metadata: dict[str, Any] | None = None,
+        require_declared_sites: bool = False,
     ):
         self.model = model
         self.attention_type = getattr(getattr(model, "config", None), "attention_type", "standard")
@@ -50,11 +52,13 @@ class ActivationRecorder:
         self.dtype = dtype
         self.checkpoint_path = checkpoint_path
         self.batch_metadata = batch_metadata or {}
+        self.require_declared_sites = require_declared_sites
         self.capture_all = sites is None
         self.requested_sites = list(sites or [])
         self.requested_bases = {site_base(site) for site in self.requested_sites}
         self.records: dict[str, ActivationRecord] = {}
         self.missing_sites: dict[str, MissingHookSite] = {}
+        self.declared_but_unemitted_sites: dict[str, MissingHookSite] = {}
         self.interventions = interventions or []
         self.applied_interventions: list[dict[str, Any]] = []
         self.failed_interventions: list[dict[str, Any]] = []
@@ -112,6 +116,8 @@ class ActivationRecorder:
 
     def finalize(self) -> None:
         if self.capture_all:
+            if self.require_declared_sites:
+                self._finalize_declared_sites()
             return
         seen_bases = {site_base(key) for key in self.records}
         seen_keys = set(self.records)
@@ -131,6 +137,28 @@ class ActivationRecorder:
                     site=requested,
                     status="missing",
                     reason=status.reason or "site was not emitted by this forward pass",
+                )
+        if self.require_declared_sites:
+            self._finalize_declared_sites()
+
+    def _finalize_declared_sites(self) -> None:
+        seen_bases = {site_base(key) for key in self.records}
+        seen_keys = set(self.records)
+        for spec in get_hook_site_specs(self.attention_type):
+            if spec.name in seen_keys or site_base(spec.name) in seen_bases:
+                continue
+            status = get_hook_site_status(self.attention_type, spec.name)
+            if status.declared and not status.runtime_supported:
+                self.declared_but_unemitted_sites[spec.name] = MissingHookSite(
+                    site=spec.name,
+                    status="unsupported",
+                    reason=status.reason or "unsupported",
+                )
+            else:
+                self.declared_but_unemitted_sites[spec.name] = MissingHookSite(
+                    site=spec.name,
+                    status="missing",
+                    reason=status.reason or "declared site was not emitted by this forward pass",
                 )
 
     def to_cache(self) -> ActivationCache:
@@ -241,6 +269,7 @@ def capture_activations(
     batch_metadata: dict[str, Any] | None = None,
     step: int | None = None,
     schedule_mode: str | None = None,
+    require_declared_sites: bool = False,
 ) -> CaptureResult:
     recorder = ActivationRecorder(
         model=model,
@@ -250,6 +279,7 @@ def capture_activations(
         dtype=dtype,
         checkpoint_path=Path(checkpoint_path) if checkpoint_path is not None else None,
         batch_metadata=batch_metadata,
+        require_declared_sites=require_declared_sites,
     )
     logits, loss = model(
         input_ids,
@@ -259,7 +289,13 @@ def capture_activations(
         activation_recorder=recorder,
     )
     recorder.finalize()
-    return CaptureResult(logits=logits, loss=loss, cache=recorder.to_cache(), missing_sites=recorder.missing_sites)
+    return CaptureResult(
+        logits=logits,
+        loss=loss,
+        cache=recorder.to_cache(),
+        missing_sites=recorder.missing_sites,
+        declared_but_unemitted_sites=recorder.declared_but_unemitted_sites,
+    )
 
 
 def hash_model_config(config: Any) -> str | None:

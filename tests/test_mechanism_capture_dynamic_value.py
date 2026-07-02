@@ -6,9 +6,8 @@ from attention_lab.mechanisms.capture import capture_activations
 from attention_lab.models.gpt import GPT, GPTConfig
 
 
-def test_dynamic_value_capture_exposes_gate_delta_relationship():
-    torch.manual_seed(0)
-    model = GPT(
+def tiny_dynamic_model() -> GPT:
+    return GPT(
         GPTConfig(
             block_size=8,
             vocab_size=64,
@@ -20,6 +19,23 @@ def test_dynamic_value_capture_exposes_gate_delta_relationship():
             attention_type="dynamic_value_query_conditioned_attention",
         )
     )
+
+
+def test_dynamic_value_noop_capture_preserves_logits():
+    torch.manual_seed(10)
+    model = tiny_dynamic_model()
+    model.eval()
+    input_ids = torch.randint(0, 64, (2, 8))
+    baseline_logits, _ = model(input_ids)
+
+    result = capture_activations(model, input_ids, detach=True)
+
+    assert torch.allclose(result.logits, baseline_logits, atol=0.0, rtol=0.0)
+
+
+def test_dynamic_value_capture_exposes_gate_delta_relationship():
+    torch.manual_seed(0)
+    model = tiny_dynamic_model()
     model.eval()
     result = capture_activations(model, torch.randint(0, 64, (2, 8)), detach=True)
     records = result.cache.records

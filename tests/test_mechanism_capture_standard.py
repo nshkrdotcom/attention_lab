@@ -47,6 +47,17 @@ def test_standard_model_captures_standard_sites_on_real_forward_pass():
     assert not result.missing_sites
 
 
+def test_strict_capture_all_reports_no_declared_gaps_for_standard_model():
+    torch.manual_seed(4)
+    model = GPT(tiny_config())
+    model.eval()
+    input_ids = torch.randint(0, 64, (2, 8))
+
+    result = capture_activations(model, input_ids, detach=True, require_declared_sites=True)
+
+    assert not result.declared_but_unemitted_sites
+
+
 def test_capture_disabled_has_no_output_side_effects():
     torch.manual_seed(1)
     model = GPT(tiny_config())

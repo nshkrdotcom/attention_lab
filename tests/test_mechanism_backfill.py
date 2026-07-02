@@ -92,6 +92,8 @@ def test_backfill_inventory_reports_missing_and_existing_artifacts(tmp_path):
         run_dir=run_root,
     )
 
+    assert inventory["repo_root_relative"] is True
+    assert "generated_from_commit" in inventory
     rows = {row["run_name"]: row for row in inventory["candidates"]}
     assert rows["candidate"]["checkpoint_status"] == "available"
     assert rows["candidate"]["evidence_level"] == "checkpoint_recompute"
@@ -126,10 +128,44 @@ def test_backfill_outputs_validate_json_and_mark_missing_reasons(tmp_path):
 
     loaded = json.loads((out_dir / "inventory.json").read_text(encoding="utf-8"))
     assert loaded["schema_version"] == 1
+    assert loaded["repo_root_relative"] is True
+    assert "generated_from_commit" in loaded
     assert "candidate" in (out_dir / "inventory.md").read_text(encoding="utf-8")
     assert "checkpoint_unavailable" in (out_dir / "missing_artifacts.md").read_text(encoding="utf-8")
     after = sorted(report_dir.glob("**/*")) if report_dir.exists() else []
     assert before == after
+
+
+def test_backfill_inventory_generation_is_deterministic_without_timestamps(tmp_path):
+    root = tmp_path
+    experiment_id = "E999_test"
+    config_dir = root / "configs" / "experiments" / experiment_id
+    run_root = root / "runs" / "experiments" / experiment_id
+    report_dir = root / "reports" / "experiments" / experiment_id
+    write_config(
+        config_dir / "candidate.yaml",
+        run_name="candidate",
+        attention_type="scope_gated_qkv",
+        out_dir=f"runs/experiments/{experiment_id}/candidate",
+    )
+
+    first = build_experiment_inventory(
+        experiment_id=experiment_id,
+        repo_root=root,
+        config_dir=config_dir,
+        report_dir=report_dir,
+        run_dir=run_root,
+    )
+    second = build_experiment_inventory(
+        experiment_id=experiment_id,
+        repo_root=root,
+        config_dir=config_dir,
+        report_dir=report_dir,
+        run_dir=run_root,
+    )
+
+    assert first == second
+    assert "generated_at" not in first
 
 
 def test_backfill_does_not_attach_prefixed_screen_artifacts_to_base_config(tmp_path):

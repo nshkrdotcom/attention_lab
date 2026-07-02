@@ -146,6 +146,22 @@ uv run scripts/compare_mechanism_candidates.py --backfill-root reports/mechanism
 
 Queue readiness, promotion reports, and gauntlet reports can contribute `artifact_summary` evidence. They do not contain historical activations. Post-hoc probes require checkpoints and produce derived artifacts only under `reports/mechanisms/`.
 
+Mechanism backfill inventories include deterministic provenance (`generated_from_commit` and `repo_root_relative`) and no timestamp. Cross-experiment candidate classifications are evidence-gated: a row with `evidence_level: not_available` must remain `not_evaluated` even if its attention type belongs to a known promotion, rescue, route-specialization, or CP follow-up family.
+
+The post-hoc probe CLI exposes the native intervention contract:
+
+```bash
+--interventions zero,mean_ablate,scale,replace,patch_from_cache
+--scale <float>
+--replacement-tensor <tensor.pt>
+--source-cache <activation_cache_with_tensors.pt>
+--source-site <site>
+--batch-indices 0,1
+--token-indices 3,4,5
+```
+
+`scale` requires `--scale`, `replace` requires either `--replacement-tensor` or `--source-cache`, and `patch_from_cache` requires `--source-cache`. The probe reads the tokenizer from the config, currently supports GPT-2, validates token IDs against configured vocab size, and records tokenizer metadata in derived probe outputs.
+
 ## No Full Runs In This Working Copy
 
 For this documentation and checklist pass:

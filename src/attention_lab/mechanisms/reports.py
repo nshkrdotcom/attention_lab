@@ -31,6 +31,10 @@ def classify_candidate(row: dict[str, Any]) -> str:
         or gauntlet_status not in {None, "missing"}
         or promotion_status not in {None, "missing"}
     )
+    has_usable_evidence = has_any_evidence and row.get("evidence_level") != "not_available"
+
+    if not has_usable_evidence:
+        return "not_evaluated"
 
     if (
         experiment_id == "E004_operator_binding_qkv_gauntlet"
@@ -45,36 +49,47 @@ def classify_candidate(row: dict[str, Any]) -> str:
         and attention_type in {"differential_qkv_anti_value", "scope_gated_qkv"}
         and "rung500" in run_name
         and gauntlet_status == "pass"
+        and has_usable_evidence
     ):
         return "promote_full_mechanism_run"
     if (
         experiment_id == "E004_operator_binding_qkv_gauntlet"
         and attention_type == "dynamic_value_query_conditioned_attention"
         and ("rung500" in run_name or promotion_status == "kill")
+        and has_usable_evidence
     ):
         return "diagnostic_rescue"
     if (
         experiment_id == "E004_operator_binding_qkv_gauntlet"
         and attention_type == "q3k3v3_role_routed_attention"
-        and has_any_evidence
+        and has_usable_evidence
     ):
         return "profiling_redesign"
-    if experiment_id == "E002_multitrack_qkv_shift_register" and attention_type in {
-        "multi_qkv_static_3track_global",
-        "multi_qkv_position_rotation_3track_global",
-    }:
+    if (
+        experiment_id == "E002_multitrack_qkv_shift_register"
+        and attention_type in {
+            "multi_qkv_static_3track_global",
+            "multi_qkv_position_rotation_3track_global",
+        }
+        and (checkpoint_available or row.get("run_summary_status") == "available")
+    ):
         return "route_specialization_workbench"
-    if experiment_id == "E001_cp_trilinear_attention" and attention_type in {"cp_bilinear", "cp_trilinear"}:
+    if (
+        experiment_id == "E001_cp_trilinear_attention"
+        and attention_type in {"cp_bilinear", "cp_trilinear"}
+        and (checkpoint_available or row.get("run_summary_status") == "available")
+    ):
         return "cp_diagnostic_followup"
-    if not has_any_evidence:
-        return "not_evaluated"
     return "unsupported_or_incomplete"
 
 
 def generate_cross_experiment_report(backfill_root: Path) -> str:
     rows = []
+    source_commits = set()
     for inventory_path in sorted(backfill_root.glob("*/inventory.json")):
         inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+        if inventory.get("generated_from_commit"):
+            source_commits.add(inventory["generated_from_commit"])
         rows.extend(inventory.get("candidates", []))
     if not rows:
         raise ValueError(f"no inventory.json files found under {backfill_root}")
@@ -87,6 +102,7 @@ def generate_cross_experiment_report(backfill_root: Path) -> str:
         "# Cross-Experiment Mechanism Candidate Report",
         "",
         "Generated from structured backfill inventories. It is not a training-result claim.",
+        f"Inventory source commits: {', '.join(sorted(source_commits)) if source_commits else 'unknown'}.",
         "",
     ]
     for classification in REPORT_ORDER:

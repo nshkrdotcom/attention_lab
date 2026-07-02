@@ -746,6 +746,8 @@ src/attention_lab/mechanisms/
 
 It provides a deterministic hook-site registry, `ActivationCache` records, activation capture during real forward passes, zero/mean/scale/replace/cache-patching interventions, E001-E004 backfill inventories, and a generated cross-experiment mechanism candidate report. This layer is native to the local GPT and attention modules. TransformerLens compatibility is an adapter goal, not a prerequisite.
 
+Backfill inventories are deterministic derived artifacts. They record the git commit used as the source state and mark paths as repo-root-relative. They intentionally do not include a timestamp, so repeated generation from the same tree is comparable.
+
 Generate derived E001-E004 inventories without modifying historical artifacts:
 
 ```bash
@@ -767,6 +769,37 @@ uv run scripts/run_mechanism_probe.py \
   --output-dir reports/mechanisms/probes/E004_operator_valued_rung500
 ```
 
+`run_mechanism_probe.py` reads the tokenizer from `config["data"]["tokenizer"]`, currently supports `gpt2`, validates token IDs against the configured vocabulary size, and writes tokenizer metadata into the activation and probe summaries. Unsupported tokenizers fail explicitly.
+
+The probe CLI supports the same intervention kinds as the Python API:
+
+```bash
+# Shape-compatible tensor replacement.
+uv run scripts/run_mechanism_probe.py \
+  --config <config.yaml> \
+  --checkpoint <ckpt_last.pt> \
+  --prompt "The history of mathematics" \
+  --sites attn_out \
+  --interventions replace \
+  --replacement-tensor <tensor.pt> \
+  --output-dir reports/mechanisms/probes/<probe_name>
+
+# Cache patching for selected batch/token positions.
+uv run scripts/run_mechanism_probe.py \
+  --config <config.yaml> \
+  --checkpoint <ckpt_last.pt> \
+  --prompt "The history of mathematics" \
+  --sites attn_out \
+  --interventions patch_from_cache \
+  --source-cache <activation_cache_with_tensors.pt> \
+  --source-site attn_out \
+  --batch-indices 0 \
+  --token-indices 3,4,5 \
+  --output-dir reports/mechanisms/probes/<probe_name>
+```
+
+The CLI fails before model execution if `scale` lacks `--scale`, `replace` lacks both `--replacement-tensor` and `--source-cache`, or `patch_from_cache` lacks `--source-cache`.
+
 Backfill evidence levels are:
 
 ```text
@@ -776,6 +809,8 @@ not_available          checkpoint or required evidence is absent
 ```
 
 Missing historical activations remain missing. The backfill reports list unavailable items explicitly as `missing`, `not_recorded`, or `checkpoint_unavailable`.
+
+Capture-all can be made strict through `capture_activations(..., require_declared_sites=True)`. Strict mode reports declared-but-unemitted hook sites separately from explicitly requested missing sites, so disabled optional branches and unsupported declared sites are visible without faking tensors.
 
 ## Testing and quality checks
 

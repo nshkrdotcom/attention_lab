@@ -32,6 +32,7 @@ def test_candidate_classification_matches_structured_inputs():
                 checkpoint_status="available",
                 gauntlet_status="pass",
                 promotion_status="promote",
+                evidence_level="checkpoint_recompute",
             )
         )
         == "promote_full_mechanism_run"
@@ -44,6 +45,7 @@ def test_candidate_classification_matches_structured_inputs():
                 attention_type="dynamic_value_query_conditioned_attention",
                 gauntlet_status="kill",
                 promotion_status="kill",
+                evidence_level="artifact_summary",
             )
         )
         == "diagnostic_rescue"
@@ -55,6 +57,7 @@ def test_candidate_classification_matches_structured_inputs():
                 run_name="multi_qkv_static_3track_global_30m_seed1",
                 attention_type="multi_qkv_static_3track_global",
                 checkpoint_status="available",
+                evidence_level="checkpoint_recompute",
             )
         )
         == "route_specialization_workbench"
@@ -76,6 +79,7 @@ def test_report_generation_is_deterministic_and_includes_cannot_conclude(tmp_pat
                 checkpoint_status="available",
                 gauntlet_status="pass",
                 promotion_status="promote",
+                evidence_level="checkpoint_recompute",
             ),
             row(
                 experiment_id="E004_operator_binding_qkv_gauntlet",
@@ -104,6 +108,31 @@ def test_report_refuses_to_overstate_missing_evidence():
             row(
                 experiment_id="E004_operator_binding_qkv_gauntlet",
                 attention_type="q3k3v3_role_routed_attention",
+            )
+        )
+        == "not_evaluated"
+    )
+
+
+def test_positive_workbench_classifications_require_available_evidence():
+    assert (
+        classify_candidate(
+            row(
+                experiment_id="E001_cp_trilinear_attention",
+                run_name="cp_trilinear_r8_lambda0_30m_seed1",
+                attention_type="cp_trilinear",
+                evidence_level="not_available",
+            )
+        )
+        == "not_evaluated"
+    )
+    assert (
+        classify_candidate(
+            row(
+                experiment_id="E002_multitrack_qkv_shift_register",
+                run_name="multi_qkv_static_3track_global_30m_seed1",
+                attention_type="multi_qkv_static_3track_global",
+                evidence_level="not_available",
             )
         )
         == "not_evaluated"

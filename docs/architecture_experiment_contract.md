@@ -59,5 +59,11 @@ Survival screens and full-run comparisons are not mechanism explanations. Mechan
 - Activation capture returns `ActivationCache` records from real forward passes.
 - Interventions support zero, mean ablation, replacement, scaling, and cache patching at named sites.
 - Backfill inventories distinguish `artifact_summary`, `checkpoint_recompute`, and `not_available`.
+- Backfill inventories record deterministic generation provenance: `generated_from_commit` and `repo_root_relative`.
+- Positive cross-experiment classifications require usable evidence. Rows with `evidence_level: not_available` remain `not_evaluated` even if their attention type matches a known follow-up family.
 
 Do not claim that a historical run has recoverable activations unless tensors were actually captured or can be recomputed from a checkpoint and a specified prompt/eval batch. Historical run directories remain read-only evidence inputs; derived mechanism artifacts belong under `reports/mechanisms/`.
+
+Post-hoc probes must use the tokenizer declared by the config. The current probe CLI supports GPT-2 tokenization and fails explicitly for unsupported tokenizers or prompt token IDs outside the configured vocabulary. Probe outputs must record tokenizer metadata.
+
+Capture-only instrumentation is part of the live forward path. New hook support must include no-op capture equivalence tests showing that logits are unchanged when capture is enabled and no interventions are applied. If a declared site cannot be emitted for a config or remains runtime-unsupported, `capture_activations(..., require_declared_sites=True)` must report it instead of fabricating tensors.

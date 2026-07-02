@@ -32,6 +32,7 @@ reports/mechanisms/probes/
 ```
 
 Historical run directories and historical experiment reports remain read-only evidence inputs.
+Generated inventories include `generated_from_commit` and `repo_root_relative`. They intentionally omit timestamps so repeated generation from the same source state is deterministic.
 
 ## Expected Checkpoint Locations
 
@@ -101,6 +102,8 @@ not_available:
 ```
 
 Every unavailable item is emitted in the derived `missing_artifacts.md` files as `checkpoint_unavailable`, `missing`, or `not_recorded`.
+
+Cross-experiment candidate classification is evidence-gated. A candidate with `evidence_level: not_available` remains `not_evaluated` even if its attention type matches a known family such as CP follow-up or Multi-QKV route-specialization workbench.
 
 ## Hook Sites Supported In This Task
 
@@ -202,6 +205,14 @@ patch_from_cache:
 
 Patch compatibility validates attention type and tensor shape. Missing or failed intervention sites are returned explicitly.
 
+Capture-only instrumentation must be math-preserving. Architecture-specific hook support is covered by no-op capture equivalence tests on tiny real models. For capture completeness audits, use:
+
+```python
+capture_activations(model, input_ids, require_declared_sites=True)
+```
+
+Strict mode adds `declared_but_unemitted_sites` to the capture result. It reports supported sites that were declared but not emitted in that forward pass and declared runtime-unsupported sites such as unoptimized full CP rank-component tensors.
+
 ## Post-Hoc Probe Workflow
 
 Use a checkpoint-backed candidate only:
@@ -215,6 +226,35 @@ uv run scripts/run_mechanism_probe.py \
   --interventions zero \
   --output-dir reports/mechanisms/probes/E004_operator_valued_rung500
 ```
+
+The probe CLI reads `data.tokenizer` from the config, currently supports `gpt2`, validates prompt token IDs against configured `vocab_size`, and records tokenizer metadata in `activation_summary.json`, `intervention_summary.json`, and `probe_report.md`.
+
+Additional intervention examples:
+
+```bash
+uv run scripts/run_mechanism_probe.py \
+  --config <config.yaml> \
+  --checkpoint <ckpt_last.pt> \
+  --prompt "The history of mathematics" \
+  --sites attn_out \
+  --interventions replace \
+  --replacement-tensor <tensor.pt> \
+  --output-dir reports/mechanisms/probes/<replace_probe>
+
+uv run scripts/run_mechanism_probe.py \
+  --config <config.yaml> \
+  --checkpoint <ckpt_last.pt> \
+  --prompt "The history of mathematics" \
+  --sites attn_out \
+  --interventions patch_from_cache \
+  --source-cache <activation_cache_with_tensors.pt> \
+  --source-site attn_out \
+  --batch-indices 0 \
+  --token-indices 3,4,5 \
+  --output-dir reports/mechanisms/probes/<patch_probe>
+```
+
+The CLI fails before model execution if `scale` lacks `--scale`, `replace` lacks both `--replacement-tensor` and `--source-cache`, or `patch_from_cache` lacks `--source-cache`.
 
 The probe writes:
 

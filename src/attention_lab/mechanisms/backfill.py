@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -106,6 +107,8 @@ def build_experiment_inventory(
     return {
         "schema_version": 1,
         "experiment_id": experiment_id,
+        "generated_from_commit": _git_commit(repo_root),
+        "repo_root_relative": True,
         "config_dir": _rel(repo_root, config_dir),
         "report_dir": _rel(repo_root, report_dir),
         "run_dir": _rel(repo_root, run_dir),
@@ -257,6 +260,9 @@ def _write_inventory_md(inventory: dict[str, Any], path: Path) -> None:
     lines = [
         f"# Mechanism Backfill Inventory: {inventory['experiment_id']}",
         "",
+        f"- generated_from_commit: `{inventory.get('generated_from_commit') or 'unknown'}`",
+        f"- repo_root_relative: `{inventory.get('repo_root_relative')}`",
+        "",
         "| run | attention | checkpoint | diagnostics | evidence | posthoc |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
@@ -322,3 +328,17 @@ def _rel(root: Path, path: Path | None) -> str | None:
         return str(path.relative_to(root))
     except ValueError:
         return str(path)
+
+
+def _git_commit(repo_root: Path) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    commit = result.stdout.strip()
+    return commit or None

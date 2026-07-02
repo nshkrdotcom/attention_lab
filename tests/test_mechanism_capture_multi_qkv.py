@@ -22,6 +22,30 @@ def tiny_multi_config(attention_type: str, route_formula: str) -> GPTConfig:
     )
 
 
+def test_multi_qkv_noop_capture_preserves_logits_for_completed_variants():
+    variants = [
+        ("multi_qkv_static_3track_global", "layer_mod", None, "eval"),
+        ("multi_qkv_train_rotation_3track_global", "layer_plus_step_train_layer_eval", 1, "train"),
+        ("multi_qkv_position_rotation_3track_global", "layer_plus_position", None, "eval"),
+    ]
+    for seed, (attention_type, route_formula, step, schedule_mode) in enumerate(variants, start=10):
+        torch.manual_seed(seed)
+        model = GPT(tiny_multi_config(attention_type, route_formula))
+        model.eval()
+        input_ids = torch.randint(0, 64, (1, 8))
+        baseline_logits, _ = model(input_ids, step=step, schedule_mode=schedule_mode)
+
+        result = capture_activations(
+            model,
+            input_ids,
+            step=step,
+            schedule_mode=schedule_mode,
+            detach=True,
+        )
+
+        assert torch.allclose(result.logits, baseline_logits, atol=0.0, rtol=0.0)
+
+
 def test_static_global_selected_track_matches_layer_mod_track_count():
     torch.manual_seed(0)
     model = GPT(tiny_multi_config("multi_qkv_static_3track_global", "layer_mod"))

@@ -35,4 +35,32 @@ def test_cp_capture_exposes_lambda_and_score_contribution_without_changing_logit
     assert records["cp_score[0]"].tensor.abs().sum() > 0
     assert torch.count_nonzero(records["cp_output[0]"].tensor) == 0
     assert torch.allclose(result.logits, baseline_logits)
-    assert "cp_rank_component" in result.missing_sites or "cp_rank_component[layer, rank]" not in records
+    assert "cp_rank_component[layer, rank]" not in records
+
+
+def test_cp_strict_capture_reports_rank_components_as_unsupported_declared_sites():
+    torch.manual_seed(1)
+    model = GPT(
+        GPTConfig(
+            block_size=8,
+            vocab_size=64,
+            n_layer=1,
+            n_head=2,
+            n_embd=16,
+            dropout=0.0,
+            bias=False,
+            attention_type="cp_trilinear",
+            cp_rank=4,
+        )
+    )
+    model.eval()
+    result = capture_activations(
+        model,
+        torch.randint(0, 64, (1, 8)),
+        detach=True,
+        require_declared_sites=True,
+    )
+
+    missing = result.declared_but_unemitted_sites["cp_rank_component[layer, rank]"]
+    assert missing.status == "unsupported"
+    assert "summary-only" in missing.reason
