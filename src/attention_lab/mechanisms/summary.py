@@ -30,6 +30,10 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
     overall_candidate_mechanism_gate_passed = bool(
         claim_gates.get("overall_candidate_mechanism_gate_passed", overall_claim_gate_passed)
     )
+    overall_gate_aggregation = claim_gates.get(
+        "overall_gate_aggregation",
+        "existential over evaluated cells; true means at least one cell reached the gate",
+    )
 
     lines = [
         "# Tier-1 Mechanism Probe Suite Summary",
@@ -48,6 +52,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
         f"- feature_pooling: `{pooling.get('strategy')}`",
         f"- task_aligned_pooling: `{pooling.get('task_aligned')}`",
         f"- overall_mechanism_probe_status: `{overall}`",
+        f"- overall_gate_aggregation: {overall_gate_aggregation}",
         f"- overall_exploratory_signal: `{overall_exploratory_signal}`",
         f"- overall_controlled_probe_gate_passed: `{overall_controlled_probe_gate_passed}`",
         f"- overall_candidate_mechanism_gate_passed: `{overall_candidate_mechanism_gate_passed}`",
@@ -104,6 +109,7 @@ def render_summary(metrics: dict[str, Any], claim_gates: dict[str, Any]) -> str:
                 f"- controlled_probe_gate_passed: `{gate.get('controlled_probe_gate_passed')}`",
                 f"- candidate_mechanism_gate_passed: `{gate.get('candidate_mechanism_gate_passed')}`",
                 f"- highest_status: `{gate.get('highest_status')}`",
+                f"- highest_status_semantics: {gate.get('highest_status_semantics') or 'highest claim ladder threshold reached for this cell'}",
                 f"- claim_gate_passed: `{gate.get('claim_gate_passed')}`",
                 f"- status_kind: `{gate.get('status_kind')}`",
                 f"- blockers: `{gate.get('blockers')}`",
@@ -193,6 +199,7 @@ def validate_suite_artifacts(output_dir: str | Path) -> list[str]:
             errors.append(f"metrics.json missing {key}")
     for key in (
         "overall_status",
+        "overall_gate_aggregation",
         "overall_exploratory_signal",
         "overall_controlled_probe_gate_passed",
         "overall_candidate_mechanism_gate_passed",
@@ -237,6 +244,7 @@ def validate_suite_artifacts(output_dir: str | Path) -> list[str]:
             "controlled_probe_gate_passed",
             "candidate_mechanism_gate_passed",
             "highest_status",
+            "highest_status_semantics",
             "claim_gate_passed",
             "status_kind",
             "blockers",

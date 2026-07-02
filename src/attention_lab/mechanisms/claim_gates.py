@@ -71,6 +71,7 @@ class CellGateResult:
             "controlled_probe_gate_passed": self.controlled_probe_gate_passed,
             "candidate_mechanism_gate_passed": self.candidate_mechanism_gate_passed,
             "highest_status": self.highest_status,
+            "highest_status_semantics": "highest claim ladder threshold reached for this cell",
             "claim_gate_passed": self.claim_gate_passed,
             "claim_gate_passed_semantics": (
                 "candidate_mechanism_gate_passed compatibility alias; "

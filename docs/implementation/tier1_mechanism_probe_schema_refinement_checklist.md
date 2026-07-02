@@ -15,6 +15,8 @@ Follow-up remediation for the Tier-1 mechanism-probe suite after review of the f
   - `overall_exploratory_signal`
   - `overall_controlled_probe_gate_passed`
   - `overall_candidate_mechanism_gate_passed`
+- [x] Document that run-level `overall_*` gate booleans are existential over evaluated cells, not all-cell or primary-cell pass indicators.
+- [x] Document `highest_status` as the highest mechanism-probe claim ladder threshold reached for a cell.
 - [x] Update summary rendering and artifact validation to require the explicit gate fields.
 - [x] Enforce built-in Tier-1 deterministic regeneration during confirmatory suite execution, not only in validate-only generation commands.
 - [x] Add a regression where a built-in task suite is tampered with and `content_sha256` is recomputed, then confirmatory execution still rejects it before checkpoint loading.

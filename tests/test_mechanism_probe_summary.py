@@ -58,6 +58,7 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     }
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
+        "overall_gate_aggregation": "existential over evaluated cells",
         "overall_claim_gate_passed": False,
         "overall_exploratory_signal": True,
         "overall_controlled_probe_gate_passed": False,
@@ -71,6 +72,7 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
                 "controlled_probe_gate_passed": False,
                 "candidate_mechanism_gate_passed": False,
                 "highest_status": "exploratory_probe_signal",
+                "highest_status_semantics": "highest claim ladder threshold reached for this cell",
                 "status_kind": "exploratory_signal",
             }
         },
@@ -89,7 +91,9 @@ def test_summary_includes_single_seed_and_status_vocabulary_caveats():
     assert "Exploratory mode capped" in summary
     assert "exploratory signal is not a passed confirmatory claim gate" in summary
     assert "overall_controlled_probe_gate_passed" in summary
+    assert "overall_gate_aggregation" in summary
     assert "candidate_mechanism_gate_passed" in summary
+    assert "highest claim ladder threshold reached for this cell" in summary
 
 
 def test_suite_artifact_validation_checks_required_schema(tmp_path):
@@ -124,6 +128,7 @@ def test_suite_artifact_validation_checks_required_schema(tmp_path):
     }
     claim_gates = {
         "overall_status": "exploratory_probe_signal",
+        "overall_gate_aggregation": "existential over evaluated cells",
         "overall_claim_gate_passed": False,
         "overall_exploratory_signal": True,
         "overall_controlled_probe_gate_passed": False,
@@ -139,6 +144,7 @@ def test_suite_artifact_validation_checks_required_schema(tmp_path):
                 "controlled_probe_gate_passed": False,
                 "candidate_mechanism_gate_passed": False,
                 "highest_status": "exploratory_probe_signal",
+                "highest_status_semantics": "highest claim ladder threshold reached for this cell",
                 "status_kind": "exploratory_signal",
             }
         },

@@ -11,6 +11,7 @@
       "controlled_probe_gate_passed": false,
       "exploratory_signal": true,
       "highest_status": "exploratory_probe_signal",
+      "highest_status_semantics": "highest claim ladder threshold reached for this cell",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -56,6 +57,7 @@
       "controlled_probe_gate_passed": false,
       "exploratory_signal": true,
       "highest_status": "exploratory_probe_signal",
+      "highest_status_semantics": "highest claim ladder threshold reached for this cell",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -101,6 +103,7 @@
       "controlled_probe_gate_passed": false,
       "exploratory_signal": true,
       "highest_status": "exploratory_probe_signal",
+      "highest_status_semantics": "highest claim ladder threshold reached for this cell",
       "inputs": {
         "canonical_control": true,
         "canonical_site": true,
@@ -141,6 +144,7 @@
   "overall_claim_gate_passed": false,
   "overall_controlled_probe_gate_passed": false,
   "overall_exploratory_signal": true,
+  "overall_gate_aggregation": "existential over evaluated cells; true means at least one cell reached the gate, not that every selected site/layer/family passed",
   "overall_status": "exploratory_probe_signal",
   "status_vocabulary": [
     "insufficient_evidence",

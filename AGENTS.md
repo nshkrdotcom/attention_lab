@@ -469,7 +469,7 @@ candidate_mechanism_evidence
 
 Do not confuse `candidate_mechanism_evidence` with the broader project status vocabulary. It means single-seed, checkpoint-backed, statistically controlled mechanism evidence, not replication.
 
-`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. Machine-readable outputs include `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, `status_kind`, and the compatibility `claim_gate_passed` field. Treat `claim_gate_passed` as an alias for `candidate_mechanism_gate_passed`; controlled-probe evidence has its own boolean and does not imply causal mechanism evidence.
+`exploratory_probe_signal` is an exploratory status, not a passed confirmatory claim gate. Machine-readable outputs include `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, `status_kind`, and the compatibility `claim_gate_passed` field. `highest_status` means the highest mechanism-probe claim ladder threshold reached for that cell. Treat `claim_gate_passed` as an alias for `candidate_mechanism_gate_passed`; controlled-probe evidence has its own boolean and does not imply causal mechanism evidence. Run-level `overall_*` gate booleans are existential over evaluated cells: `true` means at least one cell reached that gate, not that every selected site/layer/family passed and not necessarily that a pre-registered primary cell passed.
 
 Confirmatory Tier-1 runs require:
 

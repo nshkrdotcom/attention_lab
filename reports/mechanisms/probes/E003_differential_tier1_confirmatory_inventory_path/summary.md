@@ -13,6 +13,7 @@ An exploratory signal is not a passed confirmatory claim gate.
 - feature_pooling: `patch_positions_mean`
 - task_aligned_pooling: `True`
 - overall_mechanism_probe_status: `insufficient_evidence`
+- overall_gate_aggregation: existential over evaluated cells; true means at least one cell reached the gate, not that every selected site/layer/family passed
 - overall_exploratory_signal: `False`
 - overall_controlled_probe_gate_passed: `False`
 - overall_candidate_mechanism_gate_passed: `False`
@@ -55,6 +56,7 @@ An exploratory signal is not a passed confirmatory claim gate.
 - controlled_probe_gate_passed: `False`
 - candidate_mechanism_gate_passed: `False`
 - highest_status: `insufficient_evidence`
+- highest_status_semantics: highest claim ladder threshold reached for this cell
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -83,6 +85,7 @@ An exploratory signal is not a passed confirmatory claim gate.
 - controlled_probe_gate_passed: `False`
 - candidate_mechanism_gate_passed: `False`
 - highest_status: `insufficient_evidence`
+- highest_status_semantics: highest claim ladder threshold reached for this cell
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['matched-control comparison failed', 'target-vs-decoy specificity gate failed']`
@@ -111,6 +114,7 @@ An exploratory signal is not a passed confirmatory claim gate.
 - controlled_probe_gate_passed: `False`
 - candidate_mechanism_gate_passed: `False`
 - highest_status: `insufficient_evidence`
+- highest_status_semantics: highest claim ladder threshold reached for this cell
 - claim_gate_passed: `False`
 - status_kind: `insufficient_evidence`
 - blockers: `['random-site null comparison failed', 'matched-control comparison failed', 'target-vs-decoy specificity gate failed']`

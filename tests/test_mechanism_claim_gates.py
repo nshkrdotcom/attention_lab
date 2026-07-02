@@ -48,6 +48,7 @@ def test_candidate_mechanism_evidence_requires_all_gates():
     assert result.claim_gate_passed is True
     assert result.highest_status == CANDIDATE_MECHANISM_EVIDENCE
     assert result.to_dict()["status_kind"] == "candidate_mechanism_claim"
+    assert "threshold reached for this cell" in result.to_dict()["highest_status_semantics"]
 
 
 def test_raw_delta_or_missing_stats_cannot_pass_gate():

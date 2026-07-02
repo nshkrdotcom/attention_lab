@@ -301,7 +301,9 @@ candidate_mechanism_gate_passed
 highest_status
 ```
 
-`controlled_probe_gate_passed=true` means the controlled probe threshold cleared. It does not imply valid causal patching/restoration. `candidate_mechanism_gate_passed=true` is the mechanism-evidence threshold and requires the full causal/restoration/mediation gate family. `claim_gate_passed` is retained as a compatibility alias for `candidate_mechanism_gate_passed`; new consumers should use the explicit booleans.
+`highest_status` means the highest mechanism-probe claim ladder threshold reached for that cell. `controlled_probe_gate_passed=true` means the controlled probe threshold cleared. It does not imply valid causal patching/restoration. `candidate_mechanism_gate_passed=true` is the mechanism-evidence threshold and requires the full causal/restoration/mediation gate family. `claim_gate_passed` is retained as a compatibility alias for `candidate_mechanism_gate_passed`; new consumers should use the explicit booleans.
+
+Run-level `overall_*` gate booleans are existential over evaluated cells. `overall_candidate_mechanism_gate_passed=true` means at least one evaluated `(site x layer x task_family)` cell reached `candidate_mechanism_evidence`; it does not mean every selected cell passed and does not by itself indicate that a pre-registered primary cell passed. Consumers that need all-cell or primary-cell semantics must inspect the per-cell entries.
 
 ## Commands
 
@@ -387,7 +389,7 @@ claim_gates.json
 summary.md
 ```
 
-`metrics.json` contains task-suite validation, content fingerprint validation, declared random-site pool scope, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps, `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, the compatibility `claim_gate_passed` field, `status_kind`, and the overall mechanism-probe status. `summary.md` is the human-readable limitation report.
+`metrics.json` contains task-suite validation, content fingerprint validation, declared random-site pool scope, control canonicality, per-cell probe/null/control/alignment metrics, FDR-BH tested cells, and patching/restoration metrics when run. `claim_gates.json` contains per-cell blockers/caps, `exploratory_signal`, `controlled_probe_gate_passed`, `candidate_mechanism_gate_passed`, `highest_status`, the compatibility `claim_gate_passed` field, `status_kind`, the overall mechanism-probe status, and `overall_gate_aggregation` documenting that run-level booleans are existential over evaluated cells. `summary.md` is the human-readable limitation report.
 
 Regenerate a summary from existing suite artifacts:
 

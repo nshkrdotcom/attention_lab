@@ -348,6 +348,10 @@ def run_probe_suite(
         cell_gate_results[cell_id] = result
     claim_gates = {
         "overall_status": overall_status(list(cell_gate_results.values())),
+        "overall_gate_aggregation": (
+            "existential over evaluated cells; true means at least one cell reached the gate, "
+            "not that every selected site/layer/family passed"
+        ),
         "overall_exploratory_signal": any(result.exploratory_signal for result in cell_gate_results.values()),
         "overall_controlled_probe_gate_passed": any(
             result.controlled_probe_gate_passed for result in cell_gate_results.values()
