@@ -1,5 +1,8 @@
 # Mechanism Backfill Inventory: E002_multitrack_qkv_shift_register
 
+- generated_from_commit: `6aca6f3eb39334f04c380bb09c57f6ec8342eaa0`
+- repo_root_relative: `True`
+
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
 | --- | --- | --- | --- | --- | --- |
 | multi_qkv_layer_shift_3track_30m_seed1 | multi_qkv_layer_shift | checkpoint_unavailable | missing | not_available | checkpoint_unavailable |

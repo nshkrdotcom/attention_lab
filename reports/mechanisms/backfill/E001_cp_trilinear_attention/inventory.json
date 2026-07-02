@@ -176,6 +176,8 @@
   ],
   "config_dir": "configs/experiments/E001_cp_trilinear_attention",
   "experiment_id": "E001_cp_trilinear_attention",
+  "generated_from_commit": "6aca6f3eb39334f04c380bb09c57f6ec8342eaa0",
+  "repo_root_relative": true,
   "report_dir": "reports/experiments/E001_cp_trilinear_attention",
   "run_dir": "runs/experiments/E001_cp_trilinear_attention",
   "schema_version": 1

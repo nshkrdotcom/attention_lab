@@ -1,5 +1,8 @@
 # Mechanism Backfill Inventory: E001_cp_trilinear_attention
 
+- generated_from_commit: `6aca6f3eb39334f04c380bb09c57f6ec8342eaa0`
+- repo_root_relative: `True`
+
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
 | --- | --- | --- | --- | --- | --- |
 | cp_bilinear_r8_30m_seed1 | cp_bilinear | available | available | checkpoint_recompute | checkpoint_recompute_available |

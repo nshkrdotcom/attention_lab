@@ -1,5 +1,8 @@
 # Mechanism Backfill Inventory: E003_qkv_architecture_gauntlet
 
+- generated_from_commit: `6aca6f3eb39334f04c380bb09c57f6ec8342eaa0`
+- repo_root_relative: `True`
+
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
 | --- | --- | --- | --- | --- | --- |
 | differential_qkv_anti_value_30m_seed1 | differential_qkv_anti_value | checkpoint_unavailable | missing | not_available | checkpoint_unavailable |

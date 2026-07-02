@@ -1,5 +1,8 @@
 # Mechanism Backfill Inventory: E004_operator_binding_qkv_gauntlet
 
+- generated_from_commit: `6aca6f3eb39334f04c380bb09c57f6ec8342eaa0`
+- repo_root_relative: `True`
+
 | run | attention | checkpoint | diagnostics | evidence | posthoc |
 | --- | --- | --- | --- | --- | --- |
 | dynamic_value_query_conditioned_attention_30m_seed2 | dynamic_value_query_conditioned_attention | checkpoint_unavailable | missing | not_available | checkpoint_unavailable |

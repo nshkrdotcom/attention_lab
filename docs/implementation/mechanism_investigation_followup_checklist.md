@@ -1,13 +1,13 @@
 # Mechanism Investigation Follow-Up Checklist
 
-Status: in progress.
+Status: implemented and validated.
 
 This checklist hardens the initial mechanism investigation substrate after review. It
 does not add new attention architectures and does not reinterpret historical runs.
 
 ## Checklist
 
-- [ ] Probe CLI exposes the full supported intervention contract.
+- [x] Probe CLI exposes the full supported intervention contract.
   - Long-term fix: move probe argument validation and intervention construction into
     a reusable library module instead of embedding it in the script.
   - Required behavior: `zero`, `mean_ablate`, `scale`, `replace`, and
@@ -19,7 +19,7 @@ does not add new attention architectures and does not reinterpret historical run
   - Tests: probe helper tests build real `InterventionSpec` objects from tensors and
     `ActivationCache` objects.
 
-- [ ] Probe tokenization is config-driven.
+- [x] Probe tokenization is config-driven.
   - Long-term fix: derive the tokenizer from `config["data"]["tokenizer"]`, validate
     prompt token IDs against the configured vocabulary size, and record tokenizer
     metadata in probe outputs.
@@ -28,7 +28,7 @@ does not add new attention architectures and does not reinterpret historical run
   - Tests: tokenizer encoding validates vocabulary bounds and rejects unsupported
     tokenizer names.
 
-- [ ] Positive candidate classifications require evidence.
+- [x] Positive candidate classifications require evidence.
   - Long-term fix: centralize evidence gating in report classification before
     architecture-specific positive categories.
   - Required behavior: `not_available` rows cannot be classified as promotion,
@@ -37,7 +37,7 @@ does not add new attention architectures and does not reinterpret historical run
   - Tests: unavailable E001 CP and E002 route-specialization-shaped rows classify as
     `not_evaluated`.
 
-- [ ] Capture-all can report declared-but-unemitted hook sites.
+- [x] Capture-all can report declared-but-unemitted hook sites.
   - Long-term fix: add explicit strict capture completeness reporting without changing
     default non-strict capture behavior.
   - Required behavior: `capture_activations(..., require_declared_sites=True)` reports
@@ -47,14 +47,14 @@ does not add new attention architectures and does not reinterpret historical run
     are reported as unsupported, and disabled Q3 pair-product sites are reported as
     declared but unemitted.
 
-- [ ] No-op capture equivalence is checked for every instrumented novel family.
+- [x] No-op capture equivalence is checked for every instrumented novel family.
   - Long-term fix: every live architecture-specific recorder path has a regression
     test proving capture-only forwards preserve logits in eval mode.
   - Required behavior: operator-valued, differential QKV, scope-gated QKV, Multi-QKV,
     CP, dynamic-value, and Q3K3V3 capture-only forwards match baseline forwards.
   - Tests: tiny real model forward-pass tests use real tensors and no mocks.
 
-- [ ] Backfill inventories include deterministic generation provenance.
+- [x] Backfill inventories include deterministic generation provenance.
   - Long-term fix: generated inventory JSON/Markdown records the git commit used as
     the source state and declares that paths are repo-root-relative. No timestamp is
     emitted, so regenerated inventories remain deterministic for a fixed tree.
@@ -63,7 +63,7 @@ does not add new attention architectures and does not reinterpret historical run
   - Tests: temporary realistic inventories contain provenance keys and deterministic
     repeated generation.
 
-- [ ] Documentation and generated reports are refreshed.
+- [x] Documentation and generated reports are refreshed.
   - Long-term fix: README and mechanism implementation docs describe the hardened CLI,
     strict completeness mode, evidence-gated classification, and deterministic
     provenance.
@@ -71,7 +71,7 @@ does not add new attention architectures and does not reinterpret historical run
     `reports/mechanisms/cross_experiment_candidate_report.md` are regenerated from
     structured artifacts, not hand-edited.
 
-- [ ] QC is green before commit and push.
+- [x] QC is green before commit and push.
   - Required commands:
     - `uv sync`
     - `uv run ruff check .`

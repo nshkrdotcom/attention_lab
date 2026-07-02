@@ -1,6 +1,7 @@
 # Cross-Experiment Mechanism Candidate Report
 
 Generated from structured backfill inventories. It is not a training-result claim.
+Inventory source commits: 6aca6f3eb39334f04c380bb09c57f6ec8342eaa0.
 
 ## Promote Full Mechanism Run (`promote_full_mechanism_run`)
 - `differential_qkv_anti_value_30m_seed1_rung500` (E003_qkv_architecture_gauntlet, `differential_qkv_anti_value`): evidence=checkpoint_recompute; checkpoint=available; next=run matched full mechanism probe from checkpoint before full promotion
@@ -20,7 +21,6 @@ Generated from structured backfill inventories. It is not a training-result clai
 ## Cp Diagnostic Followup (`cp_diagnostic_followup`)
 - `cp_bilinear_r8_30m_seed1` (E001_cp_trilinear_attention, `cp_bilinear`): evidence=checkpoint_recompute; checkpoint=available; next=run lambda/null and CP contribution probes
 - `cp_trilinear_r8_30m_seed1` (E001_cp_trilinear_attention, `cp_trilinear`): evidence=checkpoint_recompute; checkpoint=available; next=run lambda/null and CP contribution probes
-- `cp_trilinear_r8_lambda0_30m_seed1` (E001_cp_trilinear_attention, `cp_trilinear`): evidence=not_available; checkpoint=checkpoint_unavailable; next=run lambda/null and CP contribution probes
 
 ## Unsupported Or Incomplete (`unsupported_or_incomplete`)
 - `standard_30m_seed1` (E001_cp_trilinear_attention, `standard`): evidence=checkpoint_recompute; checkpoint=available; next=complete missing checkpoint, diagnostics, or report artifacts
@@ -42,6 +42,7 @@ Generated from structured backfill inventories. It is not a training-result clai
 - `standard_refactor_control_30m_seed2_rung500` (E004_operator_binding_qkv_gauntlet, `standard`): evidence=checkpoint_recompute; checkpoint=available; next=complete missing checkpoint, diagnostics, or report artifacts
 
 ## Not Evaluated (`not_evaluated`)
+- `cp_trilinear_r8_lambda0_30m_seed1` (E001_cp_trilinear_attention, `cp_trilinear`): evidence=not_available; checkpoint=checkpoint_unavailable; next=do not classify scientifically until artifacts exist
 - `standard_refactor_control_30m_seed1` (E001_cp_trilinear_attention, `standard`): evidence=not_available; checkpoint=checkpoint_unavailable; next=do not classify scientifically until artifacts exist
 - `multi_qkv_layer_shift_3track_30m_seed1` (E002_multitrack_qkv_shift_register, `multi_qkv_layer_shift`): evidence=not_available; checkpoint=checkpoint_unavailable; next=do not classify scientifically until artifacts exist
 - `multi_qkv_softmix_3track_30m_seed1` (E002_multitrack_qkv_shift_register, `multi_qkv_softmix`): evidence=not_available; checkpoint=checkpoint_unavailable; next=do not classify scientifically until artifacts exist

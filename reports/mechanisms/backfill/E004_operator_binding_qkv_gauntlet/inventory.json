@@ -499,6 +499,8 @@
   ],
   "config_dir": "configs/experiments/E004_operator_binding_qkv_gauntlet",
   "experiment_id": "E004_operator_binding_qkv_gauntlet",
+  "generated_from_commit": "6aca6f3eb39334f04c380bb09c57f6ec8342eaa0",
+  "repo_root_relative": true,
   "report_dir": "reports/experiments/E004_operator_binding_qkv_gauntlet",
   "run_dir": "runs/experiments/E004_operator_binding_qkv_gauntlet",
   "schema_version": 1
