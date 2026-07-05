@@ -13,6 +13,13 @@
 # rung150 on a throughput gate. Both need their own fix (a diagnostic
 # rescue, a speed profile/redesign) before a full run is worth it.
 #
+# Runs entirely in the FOREGROUND. No nohup, no backgrounding (&), no
+# redirection to a log file, no pipes. Run this directly in a terminal you
+# intend to leave open (or a tmux/screen session if you want it to survive
+# a disconnect) -- everything train.py prints goes straight to your screen,
+# live, as it happens, each line timestamped at the source (see
+# src/attention_lab/training/train.py's `_ts()` helper).
+#
 # Does not use `set -e` at the top level: an unattended overnight batch
 # should not let one architecture's failure prevent the other three from
 # running. Each run is isolated in its own subshell and failures are
@@ -27,12 +34,9 @@ export ATTENTION_LAB_I_UNDERSTAND_THIS_IS_A_PROMOTED_FULL_RUN=1
 FAILURES=()
 STARTED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-echo "================================================================"
-echo "E003/E004 full-run promotion batch starting: ${STARTED_AT}"
-echo "================================================================"
+echo "[${STARTED_AT}] E003/E004 full-run promotion batch starting"
 
-echo ""
-echo "=== Verifying data manifest (once, shared across all runs) ==="
+echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Verifying data manifest (once, shared across all runs)"
 uv run scripts/verify_data.py \
   --data_root data/fineweb_edu_100m \
   --manifest data/fineweb_edu_100m/manifest.json \
@@ -43,49 +47,40 @@ run_architecture() {
   local config="$2"
   local run_dir="$3"
 
-  echo ""
-  echo "################################################################"
-  echo "### Starting full run: ${name}"
-  echo "### Config:  ${config}"
-  echo "### Run dir: ${run_dir}"
-  echo "### Started: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-  echo "################################################################"
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] ==== Starting full run: ${name} ===="
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] config:  ${config}"
+  echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] run_dir: ${run_dir}"
 
   if (
     set -e
-    echo "--- [${name}] train.py ---"
+    echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] [${name}] train.py starting"
     uv run scripts/train.py --config "${config}" --overwrite
+    echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] [${name}] train.py finished, running post-training checks"
 
-    echo "--- [${name}] verify_run.py (post-training) ---"
     uv run scripts/verify_run.py --run_dir "${run_dir}" \
       --expect-complete-training --expect-sample --expect-data-manifest
 
-    echo "--- [${name}] eval_loss.py ---"
     uv run scripts/eval_loss.py \
       --checkpoint "${run_dir}/checkpoints/ckpt_last.pt" \
       --data_root data/fineweb_edu_100m
 
-    echo "--- [${name}] eval_generate.py ---"
     uv run scripts/eval_generate.py \
       --checkpoint "${run_dir}/checkpoints/ckpt_last.pt" \
       --prompt "The history of mathematics"
 
-    echo "--- [${name}] eval_hellaswag.py ---"
     uv run scripts/eval_hellaswag.py \
       --checkpoint "${run_dir}/checkpoints/ckpt_last.pt" \
       --max_examples 100
 
-    echo "--- [${name}] summarize_run.py ---"
     uv run scripts/summarize_run.py --run_dir "${run_dir}"
 
-    echo "--- [${name}] verify_run.py (final, full expectations) ---"
     uv run scripts/verify_run.py --run_dir "${run_dir}" \
       --expect-complete-training --expect-sample --expect-eval-loss \
       --expect-hellaswag --expect-data-manifest
   ); then
-    echo "=== [${name}] COMPLETE: $(date -u +"%Y-%m-%dT%H:%M:%SZ") ==="
+    echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] [${name}] COMPLETE"
   else
-    echo "!!! [${name}] FAILED -- see output above. Continuing to next architecture. !!!" >&2
+    echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] [${name}] FAILED -- see output above. Continuing to next architecture."
     FAILURES+=("${name}")
   fi
 }
@@ -111,13 +106,10 @@ run_architecture \
   "runs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2"
 
 FINISHED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-echo ""
-echo "================================================================"
-echo "Batch finished: ${FINISHED_AT} (started: ${STARTED_AT})"
+echo "[${FINISHED_AT}] Batch finished (started: ${STARTED_AT})"
 if [[ ${#FAILURES[@]} -eq 0 ]]; then
-  echo "All four runs completed successfully."
+  echo "[${FINISHED_AT}] All four runs completed successfully."
 else
-  echo "FAILED (${#FAILURES[@]}): ${FAILURES[*]}"
-  echo "Re-run just the failed ones by copying their run_architecture block into a new script."
+  echo "[${FINISHED_AT}] FAILED (${#FAILURES[@]}): ${FAILURES[*]}"
+  echo "[${FINISHED_AT}] Re-run just the failed ones by copying their run_architecture block into a new script."
 fi
-echo "================================================================"

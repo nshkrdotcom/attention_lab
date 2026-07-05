@@ -3,6 +3,7 @@ import math
 import os
 import shutil
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,10 @@ from attention_lab.training.resume import (
     validate_resume_data_manifest,
 )
 from attention_lab.training.runtime import autocast_context, device_type_from_device, dtype_from_name
+
+
+def _ts() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def setup_distributed(requested_device: str) -> tuple[bool, int, int, int, str, bool]:
@@ -173,7 +178,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
 
     if master_process:
         prepare_run_dir(out_dir, config, config_path, overwrite=overwrite, resume=resume_path is not None)
-        print(f"using device: {device}")
+        print(f"[{_ts()}] using device: {device}")
     if ddp:
         dist.barrier()
 
@@ -191,8 +196,8 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
         raise ValueError("total_batch_size must be divisible by B * T * world_size")
     grad_accum_steps = total_batch_size // (B * T * world_size)
     if master_process:
-        print(f"total desired batch size: {total_batch_size}")
-        print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
+        print(f"[{_ts()}] total desired batch size: {total_batch_size}")
+        print(f"[{_ts()}] => calculated gradient accumulation steps: {grad_accum_steps}")
 
     train_loader = TokenShardLoader(data_config["data_root"], B, T, rank, world_size, "train", master_process)
     val_loader = TokenShardLoader(data_config["data_root"], B, T, rank, world_size, "val", master_process)
@@ -201,7 +206,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
     raw_model = GPT(model_config)
     raw_model.to(device)
     if master_process:
-        print(f"model parameters: {raw_model.num_parameters():,}")
+        print(f"[{_ts()}] model parameters: {raw_model.num_parameters():,}")
 
     model: torch.nn.Module = raw_model
     if bool(train_config.get("compile", False)):
@@ -233,7 +238,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
         start_step = int(checkpoint["step"])
         last_train_loss = checkpoint.get("train_loss")
         if master_process:
-            print(f"resumed from {resume_path} at step {start_step}")
+            print(f"[{_ts()}] resumed from {resume_path} at step {start_step}")
 
     logger = MetricsLogger(out_dir, append=resume_path is not None) if master_process else None
     if master_process and resume_path is not None:
@@ -268,7 +273,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
                         **collect_gpu_metrics(device_type),
                     }
                 )
-                print(f"step     0 | val loss: {val_loss:.4f} | val ppl: {math.exp(val_loss):.2f}")
+                print(f"[{_ts()}] step     0 | val loss: {val_loss:.4f} | val ppl: {math.exp(val_loss):.2f}")
 
         for step in range(start_step + 1, max_steps + 1):
             t0 = time.time()
@@ -330,7 +335,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
                     }
                 )
                 print(
-                    f"step {step:5d} | loss: {last_train_loss:.6f} | lr {lr:.4e} | "
+                    f"[{_ts()}] step {step:5d} | loss: {last_train_loss:.6f} | lr {lr:.4e} | "
                     f"norm: {float(grad_norm):.4f} | dt: {dt * 1000:.2f}ms | "
                     f"tok/sec: {tokens_per_sec:.2f}"
                 )
@@ -348,7 +353,7 @@ def train(config_path: str | Path, overwrite: bool = False, resume_path: str | N
                             **memory_metrics,
                         }
                     )
-                    print(f"step {step:5d} | val loss: {val_loss:.4f} | val ppl: {math.exp(val_loss):.2f}")
+                    print(f"[{_ts()}] step {step:5d} | val loss: {val_loss:.4f} | val ppl: {math.exp(val_loss):.2f}")
 
             if master_process and sample_every > 0 and (step % sample_every == 0 or step == max_steps):
                 write_samples(raw_model, out_dir, step, config, device, device_type, dtype)
