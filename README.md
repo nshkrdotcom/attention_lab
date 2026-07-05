@@ -1604,6 +1604,26 @@ Initial executable Tier-1 targets:
 
 Other E001-E004 follow-ups remain useful, but they should not displace restoring/rerunning the initial Tier-1 suite targets when checkpoint-backed recomputation is needed.
 
+### E003/E004 promoted full-run recovery
+
+The manual E003/E004 full-depth promotion helper is:
+
+```bash
+./scripts/experiments/run_full_e003_e004_promotions.sh
+```
+
+Run it in the foreground from the repository root. It verifies the shared data manifest once, trains the four selected full-depth promotion configs serially, resumes from `checkpoints/ckpt_last.pt` when one exists, and starts fresh with `--overwrite` only when no checkpoint exists for that run.
+
+The runnable E003/E004 full-run configs checkpoint every 100 steps for recovery from local GPU/driver stalls. Validation and sample cadence remain unchanged. Treat this as an operational recovery setting; do not interpret throughput differences against older checkpoints without noting the checkpoint-cadence difference.
+
+Optional second terminal stall watcher:
+
+```bash
+./scripts/experiments/watchdog_restart_on_stall.sh
+```
+
+The watcher polls the target `metrics.jsonl` files, captures diagnostics under `<run_dir>/stall_diagnostics/<UTC>/` when a live `train.py` process goes stale, kills the stuck Python process, and lets the foreground promotion script resume from the latest checkpoint. Useful environment overrides are `ATTENTION_LAB_STALL_SECONDS`, `ATTENTION_LAB_STALL_POLL_SECONDS`, `ATTENTION_LAB_STALL_DRY_RUN=1`, and `ATTENTION_LAB_TRAIN_RESTART_LIMIT`.
+
 ## First-day checklist
 
 Use this sequence for a new machine or a new clone:

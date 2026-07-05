@@ -38,7 +38,7 @@ train:
   warmup_steps: 100
   val_every: 250
   val_steps: 20
-  save_every: 1000
+  save_every: 100
   log_every: 10
 
 sample:
