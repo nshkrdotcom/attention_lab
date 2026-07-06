@@ -9,18 +9,29 @@ from attention_lab.training.validate_experiment import validate_experiment
 def test_validate_e002_first_build_configs():
     result = validate_experiment("E002_multitrack_qkv_shift_register")
     assert result["ok"] is True
-    assert result["config_count"] == 11
-    assert result["runnable_config_count"] == 5
+    # +4 vs. the original 11/5/1: seed-replication configs added 2026-07-06
+    # (multi_qkv_static/train_rotation seed1338/1339), classified as
+    # legacy_or_auxiliary_runnable_configs (not a new canonical baseline --
+    # they're seed variants of an existing one). See
+    # docs/mechanisms/spelunking_toolkit.md for why they exist.
+    assert result["config_count"] == 15
+    assert result["runnable_config_count"] == 9
     assert result["unimplemented_config_count"] == 6
     assert result["canonical_first_build_config_count"] == 4
-    assert result["legacy_or_auxiliary_runnable_config_count"] == 1
+    assert result["legacy_or_auxiliary_runnable_config_count"] == 5
     assert result["canonical_first_build_configs"] == [
         "standard_refactor_control_30m_seed1.yaml",
         "multi_qkv_static_3track_global_30m_seed1.yaml",
         "multi_qkv_train_rotation_3track_global_30m_seed1.yaml",
         "multi_qkv_position_rotation_3track_global_30m_seed1.yaml",
     ]
-    assert result["legacy_or_auxiliary_runnable_configs"] == ["standard_30m_seed1.yaml"]
+    assert result["legacy_or_auxiliary_runnable_configs"] == [
+        "standard_30m_seed1.yaml",
+        "multi_qkv_static_3track_global_30m_seed1338.yaml",
+        "multi_qkv_static_3track_global_30m_seed1339.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1338.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1339.yaml",
+    ]
 
 
 def test_e002_canonical_multi_qkv_configs_load_and_old_skeletons_remain_unimplemented(repo_root):

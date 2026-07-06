@@ -93,5 +93,13 @@ def test_e002_experiment_metadata_includes_canonical_initial_configs():
 
     assert set(CANONICAL_CONFIGS).issubset(config_names)
     assert experiment["canonical_first_build_configs"] == CANONICAL_CONFIGS
-    assert experiment["legacy_or_auxiliary_runnable_configs"] == ["standard_30m_seed1.yaml"]
+    # +4 vs. the original ["standard_30m_seed1.yaml"]: seed-replication
+    # configs added 2026-07-06, see docs/mechanisms/spelunking_toolkit.md.
+    assert experiment["legacy_or_auxiliary_runnable_configs"] == [
+        "standard_30m_seed1.yaml",
+        "multi_qkv_static_3track_global_30m_seed1338.yaml",
+        "multi_qkv_static_3track_global_30m_seed1339.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1338.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1339.yaml",
+    ]
     assert "standard_30m_seed1.yaml" not in experiment["canonical_first_build_configs"]

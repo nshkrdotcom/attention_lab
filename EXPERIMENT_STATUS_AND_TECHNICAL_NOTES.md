@@ -8,6 +8,8 @@ Latest incremental update: Tier-1 remediation tightened deterministic task-suite
 
 Operational update for the E003/E004 full-depth promotion batch: the promoted full-run helper now resumes from `checkpoints/ckpt_last.pt` when present and the runnable E003/E004 full-run configs checkpoint every 100 steps rather than 1000. A separate optional stall watcher, `scripts/experiments/watchdog_restart_on_stall.sh`, can capture live diagnostics and terminate a stale `train.py` process so the foreground helper resumes from the latest checkpoint. This is recovery plumbing only. It is not evidence that any E003/E004 3000-step promotion run completed; do not mark those full runs available until the expected final checkpoint and verifier/eval artifacts exist.
 
+Latest incremental update (2026-07-06): the E003/E004 3000-step promotion batch described above did complete. Full local checkpoints now exist for `differential_qkv_anti_value_30m_seed1`, `scope_gated_qkv_30m_seed1`, `operator_valued_attention_30m_seed2`, and a newly-promoted `standard_refactor_control_30m_seed2` (E004's seed2 control had never been run past rung500 before; it was needed so `operator_valued_attention`'s full-depth checkpoint has an equally-full-depth, not rung500, matched control). Re-running the *original* rung500 Tier-1 presets against these full checkpoints does not, on its own, produce a trustworthy verdict: `canonical` in `controls.py` is hardcoded to the rung500 control path, so any different checkpoint is flagged noncanonical and hard-capped at `insufficient_evidence` regardless of the underlying statistics. New presets (`differential_full`, `operator_valued_full` in `presets.py`) were added instead, matched to the full-depth controls, so `canonical_control` resolves `True` with no override. Both re-run at full depth still return `insufficient_evidence` (`reports/mechanisms/probes/E00{3,4}_*_tier1_confirmatory_full_run_canonical/`), but now for genuine statistical reasons, not a tooling artifact. Separately, a new general-purpose (not confirmatory-hypothesis-specific) instrumentation/visualization toolkit was added — see `docs/mechanisms/spelunking_toolkit.md` for what it is and its first-pass findings across the whole quiver, including a real attn_q/attn_k instrumentation gap found and fixed in `dynamic_value_query_conditioned_attention` (it computes real causal content attention via a fused SDPA kernel but never recorded q/k at all before this).
+
 ## Current Bottom Line
 
 The project has moved from architecture/training setup into checkpoint-backed mechanism backfill and post-hoc probing.
@@ -39,7 +41,14 @@ runs/screen/differential_qkv_anti_value_30m_seed1_rung500_407d76f5952e/checkpoin
 runs/screen/operator_valued_attention_30m_seed2_rung500_b6177af38f93/checkpoints/ckpt_last.pt
 runs/screen/standard_refactor_control_30m_seed1_rung500_7752266a764e/checkpoints/ckpt_last.pt
 runs/screen/standard_refactor_control_30m_seed2_rung500_3cc31db15c20/checkpoints/ckpt_last.pt
+
+runs/experiments/E003_qkv_architecture_gauntlet/differential_qkv_anti_value_30m_seed1/checkpoints/ckpt_last.pt
+runs/experiments/E003_qkv_architecture_gauntlet/scope_gated_qkv_30m_seed1/checkpoints/ckpt_last.pt
+runs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2/checkpoints/ckpt_last.pt
+runs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2/checkpoints/ckpt_last.pt
 ```
+
+Added 2026-07-06: the four full-depth (3000-step) checkpoints above. `differential_qkv_anti_value`/`scope_gated_qkv` reuse E002's existing `standard_refactor_control_30m_seed1` as their matched control (config-identical apart from metadata); `operator_valued_attention` uses the newly-promoted `standard_refactor_control_30m_seed2` above. The rung500 `runs/screen/...` checkpoints remain the record for the original gauntlet-screening pass and are not superseded, just no longer the only depth available.
 
 Additional E003/E004 rung020/rung150 and auxiliary candidate screen checkpoints also exist under `runs/screen/`. Use the verification commands near the end of this file for the exact current list before making evidence claims.
 

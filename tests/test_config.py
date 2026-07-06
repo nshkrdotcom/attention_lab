@@ -191,6 +191,14 @@ def test_e002_skeleton_config_contract(repo_root):
         "multi_qkv_static_3track_global_30m_seed1.yaml",
         "multi_qkv_train_rotation_3track_global_30m_seed1.yaml",
         "multi_qkv_position_rotation_3track_global_30m_seed1.yaml",
+        # Seed-replication configs added 2026-07-06 to test whether the
+        # static-vs-train_rotation induction-accuracy dissociation found by
+        # scripts/spelunk_checkpoint.py (see docs/mechanisms/spelunking_toolkit.md)
+        # is a robust architectural effect or a single-seed fluke.
+        "multi_qkv_static_3track_global_30m_seed1338.yaml",
+        "multi_qkv_static_3track_global_30m_seed1339.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1338.yaml",
+        "multi_qkv_train_rotation_3track_global_30m_seed1339.yaml",
     }
 
     configs = []
