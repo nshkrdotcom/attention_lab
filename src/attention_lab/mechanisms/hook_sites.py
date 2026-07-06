@@ -169,9 +169,25 @@ MULTI_QKV_SITES = (
         "Routed attention output before the layer-local projection.",
         architecture="multi_qkv",
     ),
+    _site(
+        "attn_weights[layer]",
+        "multi_qkv",
+        "probability",
+        ("batch", "head", "query_token", "key_token"),
+        "Post-softmax attention distribution over the routed track's Q/K.",
+        architecture="multi_qkv",
+    ),
 )
 
 CP_SITES = (
+    _site(
+        "attn_weights[layer]",
+        "cp",
+        "probability",
+        ("batch", "head", "query_token", "key_token"),
+        "Post-softmax attention distribution (standard scores + lambda-scaled CP score).",
+        architecture="cp",
+    ),
     _site(
         "cp_score[layer]",
         "cp",

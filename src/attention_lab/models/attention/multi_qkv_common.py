@@ -405,6 +405,8 @@ class MultiQKVBaseCausalSelfAttention(nn.Module):
         causal_mask = torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device).tril()
         scores = scores.masked_fill(~causal_mask, float("-inf"))
         attention = F.softmax(scores, dim=-1)
+        if activation_recorder is not None:
+            attention = activation_recorder.record("attn_weights", attention, layer=self.layer_idx)
         self._record_diagnostics(
             step=step,
             schedule_mode=schedule_mode,

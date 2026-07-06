@@ -166,6 +166,8 @@ class CPScoreAugmentedCausalSelfAttention(nn.Module):
         causal_mask = torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device).tril()
         scores = scores.masked_fill(~causal_mask, float("-inf"))
         attention = F.softmax(scores, dim=-1)
+        if activation_recorder is not None:
+            attention = activation_recorder.record("attn_weights", attention, layer=layer_idx)
         self._record_diagnostics(standard_scores, extra_scores, attention)
         attention = self.attn_dropout(attention)
         y = attention @ v
