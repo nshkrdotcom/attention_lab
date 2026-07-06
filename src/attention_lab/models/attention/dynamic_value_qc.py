@@ -58,6 +58,10 @@ class DynamicValueQueryConditionedCausalSelfAttention(nn.Module):
         q = self._split_heads(q_flat, batch_size, seq_len)
         k = self._split_heads(k_flat, batch_size, seq_len)
         v = self._split_heads(v_flat, batch_size, seq_len)
+        if activation_recorder is not None:
+            q = activation_recorder.record("attn_q", q, layer=layer_idx)
+            k = activation_recorder.record("attn_k", k, layer=layer_idx)
+            v = activation_recorder.record("attn_v", v, layer=layer_idx)
 
         content_heads = F.scaled_dot_product_attention(
             q,
