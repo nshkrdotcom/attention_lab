@@ -141,6 +141,74 @@ E004_OPERATOR_PRESET = MechanismProbePreset(
 )
 
 
+E002_CONTROL_SEED1_FULL = ControlPreset(
+    run_name="standard_refactor_control_30m_seed1",
+    config_path=Path("configs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1.yaml"),
+    checkpoint_path=Path(
+        "runs/experiments/E002_multitrack_qkv_shift_register/standard_refactor_control_30m_seed1/checkpoints/ckpt_last.pt"
+    ),
+)
+
+E004_CONTROL_SEED2_FULL = ControlPreset(
+    run_name="standard_refactor_control_30m_seed2",
+    config_path=Path("configs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2.yaml"),
+    checkpoint_path=Path(
+        "runs/experiments/E004_operator_binding_qkv_gauntlet/standard_refactor_control_30m_seed2/checkpoints/ckpt_last.pt"
+    ),
+)
+
+
+E003_DIFFERENTIAL_FULL_PRESET = MechanismProbePreset(
+    experiment_id="E003_qkv_architecture_gauntlet",
+    candidate="differential_full",
+    aliases=("differential_full", "differential_qkv_anti_value_full"),
+    tier="tier1",
+    executable=True,
+    status="executable",
+    attention_type="differential_qkv_anti_value",
+    run_name="differential_qkv_anti_value_30m_seed1",
+    config_path=Path("configs/experiments/E003_qkv_architecture_gauntlet/differential_qkv_anti_value_30m_seed1.yaml"),
+    expected_checkpoint_path=Path(
+        "runs/experiments/E003_qkv_architecture_gauntlet/differential_qkv_anti_value_30m_seed1/checkpoints/ckpt_last.pt"
+    ),
+    matched_control=E002_CONTROL_SEED1_FULL,
+    target_sites=E003_DIFFERENTIAL_PRESET.target_sites,
+    random_site_pool=E003_DIFFERENTIAL_PRESET.random_site_pool,
+    notes=(
+        "Same hypothesis and sites as the rung500 differential preset, re-pointed at the full "
+        "3000-step checkpoint (promoted 2026-07-05) with a properly matched, equally-full-depth "
+        "control (E002's standard_refactor_control_30m_seed1, config-identical to E003's own "
+        "control apart from metadata) -- this makes the control canonical without needing "
+        "--force-noncanonical-control, unlike re-running the rung500 preset against the new "
+        "checkpoint."
+    ),
+)
+
+
+E004_OPERATOR_FULL_PRESET = MechanismProbePreset(
+    experiment_id="E004_operator_binding_qkv_gauntlet",
+    candidate="operator_valued_full",
+    aliases=("operator_valued_full", "operator_full"),
+    tier="tier1",
+    executable=True,
+    status="executable",
+    attention_type="operator_valued_attention",
+    run_name="operator_valued_attention_30m_seed2",
+    config_path=Path("configs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2.yaml"),
+    expected_checkpoint_path=Path(
+        "runs/experiments/E004_operator_binding_qkv_gauntlet/operator_valued_attention_30m_seed2/checkpoints/ckpt_last.pt"
+    ),
+    matched_control=E004_CONTROL_SEED2_FULL,
+    target_sites=E004_OPERATOR_PRESET.target_sites,
+    random_site_pool=E004_OPERATOR_PRESET.random_site_pool,
+    notes=(
+        "Same hypothesis and sites as the rung500 operator-valued preset, re-pointed at the full "
+        "3000-step checkpoint (promoted 2026-07-05) with a newly-promoted, equally-full-depth "
+        "seed2 standard control -- makes the control canonical without --force-noncanonical-control."
+    ),
+)
+
+
 STUB_PRESETS = (
     MechanismProbePreset(
         experiment_id="E003_qkv_architecture_gauntlet",
@@ -203,7 +271,13 @@ STUB_PRESETS = (
 )
 
 
-PRESETS = (E003_DIFFERENTIAL_PRESET, E004_OPERATOR_PRESET, *STUB_PRESETS)
+PRESETS = (
+    E003_DIFFERENTIAL_PRESET,
+    E004_OPERATOR_PRESET,
+    E003_DIFFERENTIAL_FULL_PRESET,
+    E004_OPERATOR_FULL_PRESET,
+    *STUB_PRESETS,
+)
 
 
 def resolve_preset(experiment_id: str, candidate: str) -> MechanismProbePreset:

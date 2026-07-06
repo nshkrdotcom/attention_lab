@@ -20,6 +20,45 @@ def test_tier1_presets_resolve_seed_matched_controls():
     assert "seed1" not in str(e004.matched_control.checkpoint_path)
 
 
+def test_full_run_presets_resolve_to_full_depth_matched_controls_not_rung500():
+    # These exist so a full-run checkpoint can be checked against a real,
+    # equally-full-depth control without a noncanonical-control cap --
+    # unlike re-running the original rung500 preset against a full-run
+    # checkpoint, which is structurally incapable of ever reaching a
+    # non-capped verdict (the "expected" control there is hardcoded to
+    # rung500 and any different checkpoint -- even a properly matched,
+    # fully-trained one -- is flagged noncanonical).
+    e003_full = resolve_preset("E003_qkv_architecture_gauntlet", "differential_full")
+    e004_full = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued_full")
+
+    assert e003_full.matched_control is not None
+    assert "rung500" not in str(e003_full.matched_control.checkpoint_path)
+    assert "seed1" in str(e003_full.matched_control.checkpoint_path)
+
+    assert e004_full.matched_control is not None
+    assert "rung500" not in str(e004_full.matched_control.checkpoint_path)
+    assert "seed2" in str(e004_full.matched_control.checkpoint_path)
+
+    # Same hypothesis/sites as the rung500 presets -- only the checkpoint
+    # depth and control pairing changed.
+    rung500 = resolve_preset("E003_qkv_architecture_gauntlet", "differential")
+    assert e003_full.target_sites == rung500.target_sites
+
+
+def test_full_run_preset_control_resolves_canonical_with_no_override():
+    preset = resolve_preset("E003_qkv_architecture_gauntlet", "differential_full")
+
+    resolved = resolve_control(
+        preset,
+        control_mode="matched",
+        control_config=None,
+        control_checkpoint=None,
+    )
+
+    assert resolved.canonical
+    assert not resolved.override_used
+
+
 def test_control_override_is_recorded_as_noncanonical(tmp_path):
     preset = resolve_preset("E004_operator_binding_qkv_gauntlet", "operator_valued")
     config = tmp_path / "control.yaml"
